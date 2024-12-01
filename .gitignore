@@ -1,0 +1,103 @@
+# macOS関連
+.DS_Store
+.Trash
+.localized
+
+# Python関連
+__pycache__/
+*.pyc
+*.pyo
+*.env
+*.pem
+venv/
+myenv/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE関連
+.idea/
+.vscode/
+
+# 一時ファイルや履歴関連
+*.session
+*.history
+
+# バックアップや一時的なファイル
+flask_app_backup/
+large_files.txt
+remove_files.txt
+
+# 無関係なrequirements.txtを無視
+spacy/tests/package/requirements.txt
+google-cloud-sdk/**/requirements.txt
+venv/**/requirements.txt
+
+# データフォルダや一時的な作業フォルダを無視
+models/
+results/
+data/
+pdfs/
+pdfs_business_obstruction/
+pdfs_defamation/
+pdfs_human_rights/
+
+# 大きなファイルを無視
+*.csv
+*.pth
+*.ckpt
+*.tar.gz
+*.zip
+*.tar.xz
+*.rtf
+*.dmg
+
+# デスクトッププロジェクトの一部を無視
+Desktop/flask_app/
+Desktop/flask_project/
+Desktop/flutter/
+Desktop/moji-project/
+
+# 一般的なアーカイブやメディアファイルを無視
+*.mp3
+*.mp4
+*.mkv
+*.jpg
+*.png
+*.xip
+*.img
+
+# キャッシュやシステム関連
+.cache/
+Library/Saved Application State/*
+Library/WebKit/*
+.android/
+
+# Gitに追跡させない一時ファイル
+.git/objects/pack/tmp_pack_*
+
+# Render.comやデプロイ関連
+render.yaml
+runtime.txt
+
+# 機密情報
+.env
+*.key
+*.crt
+
+# Androidエミュレータ関連
+.android/
+.avd/
+*.img
+*.qcow2
+
+# ダウンロード関連
+Downloads/
+*.dmg
+
+# 必要な requirements.txt を明示的に追跡
+!requirements.txt

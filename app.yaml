@@ -1,0 +1,23 @@
+runtime: python310  # 必要に応じて python311, python312 を選択
+entrypoint: gunicorn -b :$PORT app:app
+
+env: flex
+
+resources:
+  cpu: 1
+  memory_gb: 1
+  disk_size_gb: 20
+
+env_variables:
+  GOOGLE_CLIENT_ID: 'your-google-client-id'
+  GOOGLE_CLIENT_SECRET: 'your-google-client-secret'
+  SECRET_KEY: 'your-secret-key'
+
+handlers:
+- url: /static
+  static_dir: static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always

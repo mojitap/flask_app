@@ -1,0 +1,30 @@
+# Pythonキャッシュと環境関連のファイル
+__pycache__/
+*.pyc
+*.pyo
+*.db
+
+# 環境変数や依存管理用ディレクトリ
+.env
+venv/
+node_modules/
+
+# 設定ファイルを除外
+setup.cfg
+
+# ログファイル
+*.log
+
+# データ関連ファイル
+*.csv
+results/
+models/
+
+# その他のファイル形式
+*.dmg
+*.pem
+*.rtf
+*.png
+
+# その他のテンポラリディレクトリ
+venv/

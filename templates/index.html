@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MojiTap - 言葉のチェックサービス</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+            margin: 0;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .logo {
+            background-color: #ffffff; 
+            padding: 10px; 
+            display: block;
+            margin: 0 auto;
+            max-width: 300px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 0;
+            font-size: 16px;
+            background-color: #1E3A8A;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2C5282;
+        }
+
+        a {
+            display: block;
+            margin-top: 10px;
+            color: #1E3A8A;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        @media (min-width: 600px) {
+            .container {
+                width: 500px;
+            }
+        }
+
+        @media (min-width: 900px) {
+            .container {
+                width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+        <div class="description">
+            このサービスは、SNS上で気になる言葉や心に残って消えない文章など、自分にとって見過ごすことのできない内容を検索窓に入力して、「誹謗中傷、名誉毀損、人権侵害、プライバシー侵害」に該当するのか調べる無料ツールです。
+        </div>
+        <form method="POST" action="/check">
+            <textarea name="text" placeholder="テキストを入力してください"></textarea>
+            <br>
+            <button type="submit">チェックする</button>
+        </form>
+        <a href="/terms">利用規約</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 MojiTap, All Rights Reserved.</p>
+    </footer>
+</body>
+<nav>
+    <ul>
+        <li><a href="https://mojitap.com/about">About Us</a></li>
+        <li><a href="https://mojitap.com/services">Services</a></li>
+        <li><a href="https://mojitap.com/contact">Contact Us</a></li>
+        <li><a href="https://mojitap.com/blog">Blog</a></li>
+    </ul>
+</nav>
+</html>
