@@ -1,7 +1,6 @@
 from google.cloud import storage
 import os
-from flask import Flask, redirect, url_for, request, render_template, jsonify
-from flask_dance.contrib.google import make_google_blueprint, google
+from flask import Flask, redirect, url_for, request, render_template, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_sitemap import Sitemap
 from dotenv import load_dotenv
@@ -10,6 +9,7 @@ import torch
 import re
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 from gunicorn.app.base import BaseApplication
+from google_auth_oauthlib.flow import Flow
 
 # Google Cloud Storageの設定
 BUCKET_NAME = "my-legal-data"
@@ -35,19 +35,6 @@ def download_model_from_gcs():
         print(f"Error downloading model: {e}")
         raise
 
-# GCSから判例データをダウンロードする関数
-def download_from_bucket(bucket_name, source_blob_name, destination_file_name):
-    """Google Cloud Storageからファイルをダウンロード"""
-    try:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(source_blob_name)
-        blob.download_to_filename(destination_file_name)
-        print(f"Downloaded {source_blob_name} to {destination_file_name}.")
-    except Exception as e:
-        print(f"Error downloading file from GCS: {e}")
-        raise
-
 # モデルのロード
 def load_model_and_tokenizer():
     global model, tokenizer
@@ -66,19 +53,41 @@ ext = Sitemap(app=app)
 # Flaskの設定
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
 
+# OAuth設定
+flow = Flow.from_client_secrets_file(
+    'client_secrets.json',
+    scopes=['https://www.googleapis.com/auth/userinfo.email'],
+    redirect_uri=os.getenv('OAUTH_REDIRECT_URI', 'http://localhost:5000/oauth2callback')
+)
+
+@app.route('/login')
+def login():
+    authorization_url, state = flow.authorization_url()
+    session['state'] = state
+    return redirect(authorization_url)
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    flow.fetch_token(authorization_response=request.url)
+    credentials = flow.credentials
+    return jsonify({
+        "message": "Login Successful!",
+        "credentials": {
+            "token": credentials.token,
+            "refresh_token": credentials.refresh_token,
+            "token_uri": credentials.token_uri,
+            "client_id": credentials.client_id,
+            "client_secret": credentials.client_secret,
+        },
+    })
+
 # モデルとトークナイザーのグローバル変数
 model = None
 tokenizer = None
 
-# 前処理関数
-def preprocess_text(text):
-    text = re.sub(r'[「」]', '', text)
-    return text.strip()
-
 # テキスト分類関数
 def classify_text(text):
     load_model_and_tokenizer()
-    text = preprocess_text(text)
     inputs = tokenizer(text, return_tensors='pt', truncation=True, padding='max_length', max_length=128)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -99,14 +108,6 @@ def classify():
     prediction = classify_text(text)
     return jsonify({'prediction': prediction})
 
-# Google OAuth 設定
-google_bp = make_google_blueprint(
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    redirect_url="/login/google/authorized"
-)
-app.register_blueprint(google_bp, url_prefix="/login")
-
 # SQLAlchemy データベース設定
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///search_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -120,42 +121,6 @@ class SearchData(db.Model):
 # データベース初期化
 with app.app_context():
     db.create_all()
-
-# spacy の日本語モデル
-nlp = spacy.load("ja_core_news_sm")
-
-# 判例PDFをダウンロードするルート
-@app.route('/download-pdf/<filename>', methods=['GET'])
-def download_pdf(filename):
-    """指定したファイルをGCSからダウンロード"""
-    bucket_name = "my-legal-data"
-    source_blob_name = f"pdfs/{filename}"  # バケット内のパス
-    destination_file_name = f"/tmp/{filename}"  # ローカル保存先
-
-    try:
-        download_from_bucket(bucket_name, source_blob_name, destination_file_name)
-        return jsonify({"message": f"{filename} downloaded to {destination_file_name}"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Sitemap 用ルート
-@app.route('/about')
-def about():
-    return "About Mojitap"
-
-# ヘルスチェックエンドポイント
-@app.route('/health')
-def health_check():
-    return "OK", 200
-
-# 環境変数確認エンドポイント
-@app.route("/check-env")
-def check_env():
-    return jsonify({
-        "GOOGLE_CLIENT_ID": os.getenv("GOOGLE_CLIENT_ID"),
-        "GOOGLE_CLIENT_SECRET": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "SECRET_KEY": os.getenv("SECRET_KEY")
-    })
 
 # Gunicorn用クラス
 class GunicornFlaskApp(BaseApplication):
@@ -174,12 +139,10 @@ class GunicornFlaskApp(BaseApplication):
 
 if __name__ == "__main__":
     print("Skipping model download for debugging...")
-    # download_model_from_gcs()  # コメントアウト
     print("Flask app is starting...")
 
     options = {
-        "bind": "0.0.0.0:5000",
+        "bind": f"0.0.0.0:{os.getenv('PORT', '5000')}",
         "workers": 1,
     }
     GunicornFlaskApp(app, options).run()
-
