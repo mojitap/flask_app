@@ -105,3 +105,5 @@ Downloads/
 # 大きなファイルを無視
 fine_tuned_bert/model.safetensors
 scrape_scripts/difference.txt
+
+client_secrets.json
