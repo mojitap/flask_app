@@ -81,7 +81,6 @@ Library/WebKit/*
 .git/objects/pack/tmp_pack_*
 
 # Render.comやデプロイ関連
-render.yaml
 runtime.txt
 
 # 機密情報
@@ -107,3 +106,4 @@ fine_tuned_bert/model.safetensors
 scrape_scripts/difference.txt
 
 client_secrets.json
+
