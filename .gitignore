@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.env
+**/*.env
 *.pem
 venv/
 myenv/
@@ -42,9 +43,6 @@ models/
 results/
 data/
 pdfs/
-pdfs_business_obstruction/
-pdfs_defamation/
-pdfs_human_rights/
 
 # 大きなファイルを無視
 *.csv
@@ -53,57 +51,11 @@ pdfs_human_rights/
 *.tar.gz
 *.zip
 *.tar.xz
-*.rtf
 *.dmg
-
-# デスクトッププロジェクトの一部を無視
-Desktop/flask_app/
-Desktop/flask_project/
-Desktop/flutter/
-Desktop/moji-project/
-
-# 一般的なアーカイブやメディアファイルを無視
-*.mp3
-*.mp4
-*.mkv
-*.jpg
-*.png
-*.xip
-*.img
-
-# キャッシュやシステム関連
-.cache/
-Library/Saved Application State/*
-Library/WebKit/*
-.android/
-
-# Gitに追跡させない一時ファイル
-.git/objects/pack/tmp_pack_*
-
-# Render.comやデプロイ関連
-runtime.txt
 
 # 機密情報
 .env
+**/*.env
 *.key
 *.crt
-
-# Androidエミュレータ関連
-.android/
-.avd/
-*.img
-*.qcow2
-
-# ダウンロード関連
-Downloads/
-*.dmg
-
-# 必要な requirements.txt を明示的に追跡
-!requirements.txt
-
-# 大きなファイルを無視
-fine_tuned_bert/model.safetensors
-scrape_scripts/difference.txt
-
 client_secrets.json
-

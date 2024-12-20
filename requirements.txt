@@ -198,4 +198,3 @@ wrapt==1.16.0
 xxhash==3.5.0
 yarl==1.13.1
 psycopg2-binary==2.9.6
-Flask-Sitemap>=0.3.2

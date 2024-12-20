@@ -1,11 +1,19 @@
 import logging
 import os
-from flask import Flask, request, abort, jsonify, redirect, url_for, session
+from flask import Flask, Response, url_for
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
-import torch
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-from google_auth_oauthlib.flow import Flow
+
+# ローカルと本番のパスを動的に設定
+GOOGLE_CREDENTIALS_LOCAL = os.path.join(os.getcwd(), 'client_secrets.json')
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', GOOGLE_CREDENTIALS_LOCAL)
+
+# 環境変数にパスを設定
+if os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+    print(f"Using GOOGLE_APPLICATION_CREDENTIALS: {GOOGLE_APPLICATION_CREDENTIALS}")
+else:
+    raise FileNotFoundError(f"Google credentials file not found at: {GOOGLE_APPLICATION_CREDENTIALS}")
 
 # ログの設定
 logging.basicConfig(level=logging.INFO)
@@ -13,128 +21,45 @@ logging.basicConfig(level=logging.INFO)
 # Flask アプリのインスタンス化
 app = Flask(__name__)
 
-# 環境変数を読み込む
+# .env ファイルの読み込み
 load_dotenv()
 
-# Flask の設定
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
-logging.info(f"SECRET_KEY is: {app.config['SECRET_KEY']}")
+# 環境変数の取得
+FLASK_ENV = os.getenv('FLASK_ENV', 'development')
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///default.db')
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+OAUTH_REDIRECT_URI = os.getenv('OAUTH_REDIRECT_URI')
 
-# SQLAlchemy データベース設定
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# 環境変数の確認
+logging.info(f"FLASK_ENV: {FLASK_ENV}")
+logging.info(f"DATABASE_URL: {DATABASE_URL}")
+logging.info(f"SECRET_KEY: {SECRET_KEY}")
+logging.info(f"OAUTH_REDIRECT_URI: {OAUTH_REDIRECT_URI}")
+
+# サイトマップのエンドポイント
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    urls = [url_for(rule.endpoint, _external=True) for rule in app.url_map.iter_rules() if "GET" in rule.methods and len(rule.arguments) == 0]
+    sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {"".join([f"<url><loc>{url}</loc></url>" for url in urls])}
+    </urlset>"""
+    return Response(sitemap_xml, mimetype="application/xml")
+
+# Flask の設定
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# SQLAlchemy の設定
 db = SQLAlchemy(app)
 
-# OAuth 設定
-print(f"Current directory: {os.getcwd()}")
-print(f"Looking for: {os.path.join(os.path.dirname(__file__), 'client_secrets.json')}")
-
-flow = Flow.from_client_secrets_file(
-    os.path.join(os.path.dirname(__file__), 'client_secrets.json'),
-    scopes=['https://www.googleapis.com/auth/userinfo.email'],
-    redirect_uri='https://mojitap.com/oauth2callback'
-)
-
-# モデルとトークナイザーのグローバル変数
-model = None
-tokenizer = None
-
-# 特定のパスをブロック
-@app.before_request
-def block_disallowed_paths():
-    blocked_paths = [
-        "wp-admin", "wp-content", "wp-includes", "wp-login.php", 
-        "wp-cron.php", "wp-comments-post.php", "wp-signup.php"
-    ]
-    if any(path in request.path for path in blocked_paths):
-        return "Blocked request", 404
-
-# モデルとトークナイザーのロード
-def load_model_and_tokenizer():
-    global model, tokenizer
-    if model is None or tokenizer is None:
-        logging.info("Loading model and tokenizer...")
-        model = DistilBertForSequenceClassification.from_pretrained("./models")
-        tokenizer = DistilBertTokenizer.from_pretrained("./models")
-
-# テキスト分類関数
-def classify_text(text):
-    load_model_and_tokenizer()
-    inputs = tokenizer(text, return_tensors='pt', truncation=True, padding='max_length', max_length=128)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        logits = outputs.logits
-        prediction = torch.argmax(logits, dim=1).item()
-    return prediction
-
-# データベースモデル
-class SearchData(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(500), nullable=False)
-
-# データベース初期化
-with app.app_context():
-    db.create_all()
-
-# 簡易ルート
+# 簡易ホームエンドポイント
 @app.route("/")
 def home():
-    return "Hello, Render!"
-
-# ログインルート
-@app.route('/login')
-def login():
-    authorization_url, state = flow.authorization_url()
-    session['state'] = state
-    return redirect(authorization_url)
-
-@app.route('/test_blocked_path')
-def test_blocked_path():
-    return "This route should not be blocked.", 200
-
-@app.route('/oauth2callback')
-def oauth2callback():
-    flow.fetch_token(authorization_response=request.url)
-    credentials = flow.credentials
-    return jsonify({
-        "message": "Login Successful!",
-        "credentials": {
-            "token": credentials.token,
-            "refresh_token": credentials.refresh_token,
-            "token_uri": credentials.token_uri,
-            "client_id": credentials.client_id,
-            "client_secret": credentials.client_secret,
-        },
-    })
-
-# 分類エンドポイント
-@app.route('/classify', methods=['POST'])
-def classify():
-    data = request.json
-    text = data.get('text', '')
-    prediction = classify_text(text)
-    return jsonify({'prediction': prediction})
-
-# エラーハンドリング
-@app.errorhandler(404)
-def not_found_error(error):
-    return jsonify({"error": "Page not found"}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    logging.error(f"Internal Server Error: {error}")
-    return jsonify({"error": "An internal error occurred"}), 500
+    return "Hello, Flask with Sitemap!"
 
 # アプリ起動
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
-
-@app.route("/test_db")
-def test_db_connection():
-    try:
-        db.session.execute('SELECT 1')
-        return "Database connection successful!"
-    except Exception as e:
-        logging.error(f"Database connection failed: {str(e)}")
-        return f"Database connection failed: {str(e)}", 500
