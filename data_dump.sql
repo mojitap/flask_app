@@ -1,0 +1,14 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE SearchData (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL
+);
+CREATE TABLE search_data (
+	id INTEGER NOT NULL, 
+	text VARCHAR(500) NOT NULL, 
+	PRIMARY KEY (id)
+);
+INSERT INTO search_data VALUES(1,'ムカつく');
+DELETE FROM sqlite_sequence;
+COMMIT;

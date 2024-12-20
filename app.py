@@ -2,7 +2,6 @@ import logging
 import os
 from flask import Flask, request, abort, jsonify, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
-from flask_sitemap import Sitemap
 from dotenv import load_dotenv
 import torch
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
@@ -13,23 +12,25 @@ logging.basicConfig(level=logging.INFO)
 
 # Flask アプリのインスタンス化
 app = Flask(__name__)
-ext = Sitemap(app=app)
 
 # 環境変数を読み込む
 load_dotenv()
 
-# Flaskの設定
+# Flask の設定
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
 logging.info(f"SECRET_KEY is: {app.config['SECRET_KEY']}")
 
 # SQLAlchemy データベース設定
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///search_data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# OAuth設定
+# OAuth 設定
+print(f"Current directory: {os.getcwd()}")
+print(f"Looking for: {os.path.join(os.path.dirname(__file__), 'client_secrets.json')}")
+
 flow = Flow.from_client_secrets_file(
-    'client_secrets.json',  # ファイルパス
+    os.path.join(os.path.dirname(__file__), 'client_secrets.json'),
     scopes=['https://www.googleapis.com/auth/userinfo.email'],
     redirect_uri='https://mojitap.com/oauth2callback'
 )
@@ -42,13 +43,11 @@ tokenizer = None
 @app.before_request
 def block_disallowed_paths():
     blocked_paths = [
-        ".env", "wordpress", "wp-admin", "wp-content", 
-        "updates.php", "bless.php", "index/admin.php", 
-        "wp-includes", "wp-login.php", "setup-config.php"
+        "wp-admin", "wp-content", "wp-includes", "wp-login.php", 
+        "wp-cron.php", "wp-comments-post.php", "wp-signup.php"
     ]
     if any(path in request.path for path in blocked_paths):
-        logging.info(f"Blocked path accessed: {request.path}")
-        abort(404)  # 404エラーを返す
+        return "Blocked request", 404
 
 # モデルとトークナイザーのロード
 def load_model_and_tokenizer():
@@ -116,6 +115,26 @@ def classify():
     prediction = classify_text(text)
     return jsonify({'prediction': prediction})
 
+# エラーハンドリング
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({"error": "Page not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logging.error(f"Internal Server Error: {error}")
+    return jsonify({"error": "An internal error occurred"}), 500
+
 # アプリ起動
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
+
+@app.route("/test_db")
+def test_db_connection():
+    try:
+        db.session.execute('SELECT 1')
+        return "Database connection successful!"
+    except Exception as e:
+        logging.error(f"Database connection failed: {str(e)}")
+        return f"Database connection failed: {str(e)}", 500
