@@ -39,6 +39,20 @@ logging.info("SpaCy model loaded.")
 # 🔹 Flask アプリケーションの作成
 app = Flask(__name__)
 
+# Flask-Loginの設定
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # ログインページのエンドポイント名を指定
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+@login_manager.user_loader
+def load_user(user_id):
+    """ユーザーをIDでロードする"""
+    return User(user_id)
+
 # 🔹 `offensive_words.json` のパス
 JSON_PATH = os.path.join(os.path.dirname(__file__), "offensive_words.json")
 
