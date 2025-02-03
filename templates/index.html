@@ -78,7 +78,7 @@
       SNS上で問題のある表現や言葉を検証するための無料ツールです。
     </div>
 
-    {% if current_user.is_authenticated %}
+    {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済み: 検索フォーム -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください"></textarea>
