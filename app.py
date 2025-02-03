@@ -12,7 +12,7 @@ import spacy
 import psycopg2
 
 from flask import Flask, request, jsonify, redirect, url_for, render_template
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
+from flask_login import current_user, LoginManager, login_user, logout_user, login_required, UserMixin
 from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
@@ -52,6 +52,11 @@ class User(UserMixin):
 def load_user(user_id):
     """ユーザーをIDでロードする"""
     return User(user_id)
+
+# ✅ current_user をテンプレートで使用可能にする
+@app.context_processor
+def inject_user():
+    return dict(current_user=current_user)
 
 # 🔹 `offensive_words.json` のパス
 JSON_PATH = os.path.join(os.path.dirname(__file__), "offensive_words.json")
@@ -113,7 +118,7 @@ class SearchHistory(db.Model):
 def update_offensive_words_from_search():
     """10回以上検索された単語を `offensive_words.json` に追加"""
     threshold = 10
-    words_to_add = SearchHistory.query.filter(SearchHistory.count >= threshold).all()
+    words_to_add = db.session.query(SearchHistory).filter(SearchHistory.count >= threshold).all()
 
     try:
         with open(JSON_PATH, "r", encoding="utf-8") as f:
