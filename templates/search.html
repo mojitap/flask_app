@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検索ページ</title>
+</head>
+<body>
+    <h1>検索ページ</h1>
+    {% if current_user.is_authenticated %}
+        <p>ログイン中のユーザー: {{ current_user.username }}</p>
+        <form method="POST" action="{{ url_for('search') }}">
+            <input type="text" name="query" placeholder="検索キーワードを入力してください" required>
+            <button type="submit">検索</button>
+        </form>
+        {% if error %}
+        <div class="error" style="color: red; margin-top: 10px;">{{ error }}</div>
+        {% endif %}
+        <a href="{{ url_for('logout') }}">ログアウト</a>
+    {% else %}
+        <p>ログインしてください。</p>
+        <a href="{{ url_for('login_google') }}">Googleでログイン</a> |
+        <a href="{{ url_for('login_twitter') }}">Twitterでログイン</a>
+    {% endif %}
+</body>
+</html>

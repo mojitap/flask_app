@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MojiTap Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ current_user.username }}!</h1>
+    {% if current_user.is_authenticated %}
+        <form action="/search" method="POST">
+            <label for="query">Enter your search query:</label>
+            <input type="text" id="query" name="query" required>
+            <button type="submit">Search</button>
+        </form>
+        <a href="/logout">Logout</a>
+    {% else %}
+        <p>ログインしてください。</p>
+        <a href="/login/google">Googleでログイン</a> |
+        <a href="/login/twitter">Twitterでログイン</a>
+    {% endif %}
+</body>
+</html>
