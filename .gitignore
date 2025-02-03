@@ -1,0 +1,65 @@
+# 🖥️ macOS関連（不要なファイルを無視）
+.DS_Store
+.Trash/
+.localized
+
+# 🐍 Python関連（不要なキャッシュを無視）
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# 🏗️ 仮想環境関連（ローカルの環境を無視）
+.venv/
+env/
+venv/
+myenv/
+flask_app_env/
+
+# 📜 Logs（ログファイルを無視）
+logs/
+*.log
+
+# 🚀 大容量ファイル（Git で管理しないファイル）
+*.mp4
+*.zip
+*.pth
+*.ckpt
+*.tar.gz
+*.tar.xz
+*.dmg
+*.csv  # データセットは Git で管理しない
+
+# 🔒 機密情報（パスワードやキーを無視）
+.env
+**/*.env
+*.key
+*.crt
+client_secrets.json
+
+# ⚙️ 設定関連（開発環境ごとに異なるファイルを無視）
+node_modules/
+.idea/
+.vscode/
+.gitconfig
+
+# 🗂️ 不要なフォルダ（データやモデルなどを無視）
+data/
+pdfs_human_rights/
+pdfs_business_obstruction/
+pdfs_defamation/
+instance/
+scrape_scripts/
+models/
+
+# 🔥 大容量の学習モデル（Git で管理しないファイル）
+*.safetensors
+models/model.safetensors
+scrape_scripts/difference.txt
+scrape_scripts/difference.txt.gz
+models/model.safetensors.gz
+git_backup.tar.gz
+
+# 🐳 Docker関連（Dockerファイルのキャッシュを無視）
+Docker.dmg
