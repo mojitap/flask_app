@@ -309,16 +309,16 @@ def quick_check():
     return jsonify({"result": "この文章は問題ありません。"})
 
 @app.route("/terms")
+@login_required
 def show_terms():
     try:
-        # `terms.txt` を読み込む
-        terms_path = os.path.join(os.path.dirname(__file__), "terms.txt")
-        with open(terms_path, "r", encoding="utf-8") as f:
+        TERMS_PATH = os.path.join(os.path.dirname(__file__), "terms.txt")
+        with open(TERMS_PATH, "r", encoding="utf-8") as f:
             terms_content = f.read()
+        return render_template("terms.html", terms_content=terms_content)
     except FileNotFoundError:
-        terms_content = "利用規約の内容が見つかりませんでした。"
-
-    return render_template("terms.html", terms_content=terms_content)
+        logging.error("terms.txt ファイルが見つかりません")
+        return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
 # 🔹 アプリ起動
 if __name__ == "__main__":
