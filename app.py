@@ -36,6 +36,60 @@ logging.info("Loading SpaCy model (ja_core_news_sm)...")
 nlp = spacy.load("ja_core_news_sm")
 logging.info("SpaCy model loaded.")
 
+# OAuthの設定
+app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")  # 環境変数から取得
+oauth = OAuth(app)
+
+# Google OAuth 設定
+oauth.register(
+    name="google",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+    api_base_url="https://www.googleapis.com/oauth2/v1/",
+    client_kwargs={"scope": "openid email profile"},
+)
+
+# Twitter OAuth 設定
+oauth.register(
+    name="twitter",
+    client_id=os.getenv("TWITTER_CLIENT_ID"),
+    client_secret=os.getenv("TWITTER_CLIENT_SECRET"),
+    request_token_url="https://api.twitter.com/oauth/request_token",
+    access_token_url="https://api.twitter.com/oauth/access_token",
+    authorize_url="https://api.twitter.com/oauth/authorize",
+    api_base_url="https://api.twitter.com/1.1/",
+)
+
+# Googleログイン
+@app.route("/login/google")
+def login_google():
+    redirect_uri = url_for("authorize_google", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@app.route("/authorize/google")
+def authorize_google():
+    token = oauth.google.authorize_access_token()
+    user_info = oauth.google.get("userinfo").json()
+    user = User(id=user_info["email"])  # emailをIDとして仮定
+    login_user(user)
+    return redirect("/")
+
+# Twitterログイン
+@app.route("/login/twitter")
+def login_twitter():
+    redirect_uri = url_for("authorize_twitter", _external=True)
+    return oauth.twitter.authorize_redirect(redirect_uri)
+
+@app.route("/authorize/twitter")
+def authorize_twitter():
+    token = oauth.twitter.authorize_access_token()
+    user_info = oauth.twitter.get("account/verify_credentials.json").json()
+    user = User(id=user_info["screen_name"])  # screen_nameをIDとして仮定
+    login_user(user)
+    return redirect("/")
+
 # 🔹 Flask アプリケーションの作成
 app = Flask(__name__)
 
@@ -255,9 +309,15 @@ def quick_check():
     return jsonify({"result": "この文章は問題ありません。"})
 
 @app.route("/terms")
-@login_required
 def show_terms():
-    terms_content = "ここに利用規約の内容を記載します。"
+    try:
+        # `terms.txt` を読み込む
+        terms_path = os.path.join(os.path.dirname(__file__), "terms.txt")
+        with open(terms_path, "r", encoding="utf-8") as f:
+            terms_content = f.read()
+    except FileNotFoundError:
+        terms_content = "利用規約の内容が見つかりませんでした。"
+
     return render_template("terms.html", terms_content=terms_content)
 
 # 🔹 アプリ起動
