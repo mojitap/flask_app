@@ -19,6 +19,12 @@
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           text-align: center;
       }
+      .logo {
+          max-width: 120px; /* ロゴサイズを制限 */
+          width: 100%;
+          height: auto; /* アスペクト比を保持 */
+          margin-bottom: 20px;
+      }
       h1 {
           text-align: center;
           font-size: 2rem; /* タイトルサイズ */
@@ -68,7 +74,7 @@
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
     <div class="description">
-      SNS上で問題のある表現や言葉を検証するための無料ツールです。
+      SNS上で問題のある表現や言葉を検証するためのツールです。
     </div>
 
     {% if current_user and current_user.is_authenticated %}
