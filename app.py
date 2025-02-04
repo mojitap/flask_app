@@ -203,8 +203,10 @@ with app.app_context():
 
 # ✅ Render の Cronジョブが有効なら 24時間ごとに `offensive_words.json` を更新
 def scheduled_update():
+    """定期的に `offensive_words.json` を更新"""
     while True:
-        update_offensive_words_from_search()
+        with app.app_context():  # アプリケーションコンテキストを作成
+            update_offensive_words_from_search()
         time.sleep(86400)  # 24時間ごと
 
 threading.Thread(target=scheduled_update, daemon=True).start()
