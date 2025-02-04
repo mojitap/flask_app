@@ -36,8 +36,13 @@ logging.info("Loading SpaCy model (ja_core_news_sm)...")
 nlp = spacy.load("ja_core_news_sm")
 logging.info("SpaCy model loaded.")
 
-# OAuthの設定
+# 🔹 Flask アプリケーションの作成
+app = Flask(__name__)  # Flaskアプリを最初に定義
+
+# Flaskの設定（この順序が重要）
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")  # 環境変数から取得
+
+# OAuthの設定
 oauth = OAuth(app)
 
 # Google OAuth 設定
@@ -89,9 +94,6 @@ def authorize_twitter():
     user = User(id=user_info["screen_name"])  # screen_nameをIDとして仮定
     login_user(user)
     return redirect("/")
-
-# 🔹 Flask アプリケーションの作成
-app = Flask(__name__)
 
 # Flask-Loginの設定
 login_manager = LoginManager()
