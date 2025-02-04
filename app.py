@@ -98,7 +98,7 @@ def authorize_twitter():
 # Flask-Loginの設定
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"  # ログインページのエンドポイント名を指定
+login_manager.login_view = "login_google"  # Googleログインが必須の場合
 
 class User(UserMixin):
     def __init__(self, id):
@@ -322,7 +322,13 @@ def show_terms():
         logging.error("terms.txt ファイルが見つかりません")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-# ✅ ここからエントリーポイントを追加
+@app.route("/logout")
+def logout():
+    """ログアウト処理"""
+    logout_user()  # Flask-Loginのログアウト
+    session.clear()  # Flaskのセッション全体をクリア（オプション）
+    return redirect("/")  # ログアウト後にホーム画面にリダイレクト
+
 if __name__ == "__main__":
     import sys
 
