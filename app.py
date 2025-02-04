@@ -311,7 +311,6 @@ def quick_check():
     return jsonify({"result": "この文章は問題ありません。"})
 
 @app.route("/terms")
-@login_required
 def show_terms():
     try:
         TERMS_PATH = os.path.join(os.path.dirname(__file__), "terms.txt")
