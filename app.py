@@ -322,7 +322,16 @@ def show_terms():
         logging.error("terms.txt ファイルが見つかりません")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-# 🔹 アプリ起動
+# ✅ ここからエントリーポイントを追加
 if __name__ == "__main__":
-    load_model()
-    app.run(debug=False, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+    import sys
+
+    if len(sys.argv) > 1 and sys.argv[1] == "update_offensive_words":
+        # 定期実行用のエントリポイント
+        with app.app_context():
+            update_offensive_words_from_search()
+            logging.info("✅ 定期的な `offensive_words.json` の更新が完了しました！")
+    else:
+        # Flaskアプリを通常通り起動
+        load_model()
+        app.run(debug=False, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
