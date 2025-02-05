@@ -12,13 +12,11 @@ requests>=2.25,<3.0
 numpy==1.24.3
 pydantic<2.0,>=1.10.2
 Werkzeug==2.2.3
-onnxruntime==1.20.1
-torch==2.6.0
-optimum==1.23.0
-optimum-intel==1.20.0
-neural-compressor>=2.0.0
-torchaudio==2.6.0
+
+# CPU版のPyTorch。2.0.1+cpu など安定版を使うのがおすすめ
+torch==2.0.1+cpu
+-f https://download.pytorch.org/whl/cpu
+
+# tokenizers は transformers の依存で入る場合が多いが、
+# バージョン指定が必要な場合は下記を残す
 tokenizers>=0.20,<0.22
-torchvision==0.21.0
-accelerate>=0.18.0
--f https://download.pytorch.org/whl/torch_stable.html
