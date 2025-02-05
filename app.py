@@ -11,7 +11,7 @@ import time
 import spacy
 import psycopg2
 
-from flask import Flask, request, jsonify, redirect, url_for, render_template
+from flask import Flask, request, jsonify, redirect, url_for, render_template, session
 from flask_login import current_user, LoginManager, login_user, logout_user, login_required, UserMixin
 from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
@@ -50,21 +50,30 @@ oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    access_token_url="https://accounts.google.com/o/oauth2/token",
-    authorize_url="https://accounts.google.com/o/oauth2/auth",
-    api_base_url="https://www.googleapis.com/oauth2/v1/",
-    client_kwargs={"scope": "openid email profile"},
+    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+    access_token_url="https://oauth2.googleapis.com/token",
+    userinfo_endpoint="https://openidconnect.googleapis.com/v1/userinfo",
+    client_kwargs={
+        "scope": "openid email profile"
+    }
 )
 
 # Twitter OAuth 設定
 oauth.register(
     name="twitter",
+    # 環境変数から読む（実際にはTWITTER_CLIENT_ID, TWITTER_CLIENT_SECRETをセットする）
     client_id=os.getenv("TWITTER_CLIENT_ID"),
     client_secret=os.getenv("TWITTER_CLIENT_SECRET"),
-    request_token_url="https://api.twitter.com/oauth/request_token",
-    access_token_url="https://api.twitter.com/oauth/access_token",
-    authorize_url="https://api.twitter.com/oauth/authorize",
-    api_base_url="https://api.twitter.com/1.1/",
+    
+    # OAuth2.0 のエンドポイント
+    authorize_url="https://twitter.com/i/oauth2/authorize",
+    access_token_url="https://api.twitter.com/2/oauth2/token",
+    api_base_url="https://api.twitter.com/2/",
+
+    # どのスコープを要求するか (要アプリ設定に応じて変更)
+    client_kwargs={
+        "scope": "tweet.read users.read offline.access"
+    }
 )
 
 # Googleログイン
@@ -90,8 +99,21 @@ def login_twitter():
 @app.route("/authorize/twitter")
 def authorize_twitter():
     token = oauth.twitter.authorize_access_token()
-    user_info = oauth.twitter.get("account/verify_credentials.json").json()
-    user = User(id=user_info["screen_name"])  # screen_nameをIDとして仮定
+    # v2のエンドポイントを利用
+    user_info = oauth.twitter.get("users/me?user.fields=username").json()
+
+    # user_info の例:
+    # {
+    #   "data": {
+    #       "id": "123456789",
+    #       "name": "John Smith",
+    #       "username": "johnsmith"
+    #   }
+    # }
+    # screen_name相当は "username" フィールドにある
+
+    username = user_info["data"]["username"]
+    user = User(id=username)
     login_user(user)
     return redirect("/")
 
@@ -323,10 +345,9 @@ def show_terms():
 
 @app.route("/logout")
 def logout():
-    """ログアウト処理"""
     logout_user()  # Flask-Loginのログアウト
     session.clear()  # Flaskのセッション全体をクリア（オプション）
-    return redirect("/")  # ログアウト後にホーム画面にリダイレクト
+    return redirect("/")
 
 if __name__ == "__main__":
     import sys
