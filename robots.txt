@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /xmlrpc.php
+Disallow: /test/
+Disallow: /setup-config.php
