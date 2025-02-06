@@ -1,13 +1,17 @@
 import os
 import logging
 import json
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from textblob import TextBlob
 import re
+
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory(app.static_folder, "robots.txt")
 
 # 環境変数の読み込み (.env)
 load_dotenv()
