@@ -102,6 +102,9 @@ def logout():
     session.clear()
     return redirect("/")
 
+# キャッシュ用の辞書（グローバル）
+search_cache = {}
+
 @app.route("/search", methods=["POST"])
 @login_required
 def search():
@@ -109,27 +112,44 @@ def search():
     if not query:
         return jsonify({"error": "検索クエリが空です。"})
 
-    result = {"query": query, "warnings": [], "sentiment": "中立", "notice": "検索結果は必ずしも正確ではありません。専門家にご相談ください。"}
+    # キャッシュを利用した感情解析
+    if query in search_cache:
+        sentiment = search_cache[query]["sentiment"]
+        warnings = search_cache[query]["warnings"]
+    else:
+        # 感情解析と攻撃的単語のチェックを実施
+        sentiment = TextBlob(query).sentiment.polarity
+        warnings = []
 
-    # 一致検索
-    for word in offensive_words.get("direct_insults", []):
-        if word in query:
-            result["warnings"].append(f"一致: {word}")
+        # 攻撃的な単語の直接一致を確認
+        for word in offensive_words.get("direct_insults", []):
+            if word in query:
+                warnings.append(f"一致: {word}")
 
-    # 部分一致検索
-    for phrase in offensive_words.get("aggressive_phrases", []):
-        if re.search(re.escape(phrase), query):
-            result["warnings"].append(f"部分一致: {phrase}")
+        # 攻撃的なフレーズの部分一致を確認
+        for phrase in offensive_words.get("aggressive_phrases", []):
+            if re.search(re.escape(phrase), query):
+                warnings.append(f"部分一致: {phrase}")
 
-    # 文脈解析（感情解析）
-    sentiment_score = TextBlob(query).sentiment.polarity
-    if sentiment_score < -0.3:
-        result["sentiment"] = "否定的"
-        result["warnings"].append("文脈解析: 攻撃的または否定的な表現が含まれています。")
-    elif sentiment_score > 0.3:
-        result["sentiment"] = "肯定的"
+        # 文脈解析（感情解析結果の判定）
+        if sentiment < -0.3:
+            sentiment_label = "否定的"
+            warnings.append("文脈解析: 攻撃的または否定的な表現が含まれています。")
+        elif sentiment > 0.3:
+            sentiment_label = "肯定的"
+        else:
+            sentiment_label = "中立的"
 
-    return jsonify(result)
+        # キャッシュに結果を保存
+        search_cache[query] = {"sentiment": sentiment_label, "warnings": warnings}
+
+    # レスポンスを返す
+    return jsonify({
+        "query": query,
+        "sentiment": search_cache[query]["sentiment"],
+        "warnings": search_cache[query]["warnings"],
+        "note": "この検索結果は必ずしも正確とは限りません。必要に応じて専門家にご相談ください。"
+    })
 
 @app.route("/terms")
 def show_terms():
