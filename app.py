@@ -1,17 +1,15 @@
 import os
 import logging
 import json
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from textblob import TextBlob
+from regex_utils import find_matches
 import re
-
-@app.route('/robots.txt')
-def robots_txt():
-    return send_from_directory(app.static_folder, "robots.txt")
+from detectors.offensive_detector import detect_offensive_words
 
 # 環境変数の読み込み (.env)
 load_dotenv()
@@ -48,9 +46,7 @@ oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
-    access_token_url="https://oauth2.googleapis.com/token",
-    userinfo_endpoint="https://openidconnect.googleapis.com/v1/userinfo",
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"}
 )
 oauth.register(
@@ -64,11 +60,16 @@ oauth.register(
 )
 
 # 攻撃的な単語リストをロード
-JSON_PATH = os.path.join(os.path.dirname(__file__), "offensive_words.json")
+JSON_PATH = os.path.join(os.path.dirname(__file__), "data", "offensive_words.json")
 with open(JSON_PATH, "r", encoding="utf-8") as f:
     offensive_words = json.load(f)
 
-# 🔹 ルート
+# ルート定義は app インスタンスが定義された後に記述する
+
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory(app.static_folder, "robots.txt")
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -116,43 +117,25 @@ def search():
     if not query:
         return jsonify({"error": "検索クエリが空です。"})
 
-    # キャッシュを利用した感情解析
-    if query in search_cache:
-        sentiment = search_cache[query]["sentiment"]
-        warnings = search_cache[query]["warnings"]
+    # 攻撃的な言葉を検出
+    detected_offensive = detect_offensive_words(query)
+    
+    # TextBlob を用いた感情解析
+    sentiment = TextBlob(query).sentiment.polarity
+    if sentiment < -0.3:
+        sentiment_label = "否定的"
+    elif sentiment > 0.3:
+        sentiment_label = "肯定的"
     else:
-        # 感情解析と攻撃的単語のチェックを実施
-        sentiment = TextBlob(query).sentiment.polarity
-        warnings = []
+        sentiment_label = "中立的"
 
-        # 攻撃的な単語の直接一致を確認
-        for word in offensive_words.get("direct_insults", []):
-            if word in query:
-                warnings.append(f"一致: {word}")
-
-        # 攻撃的なフレーズの部分一致を確認
-        for phrase in offensive_words.get("aggressive_phrases", []):
-            if re.search(re.escape(phrase), query):
-                warnings.append(f"部分一致: {phrase}")
-
-        # 文脈解析（感情解析結果の判定）
-        if sentiment < -0.3:
-            sentiment_label = "否定的"
-            warnings.append("文脈解析: 攻撃的または否定的な表現が含まれています。")
-        elif sentiment > 0.3:
-            sentiment_label = "肯定的"
-        else:
-            sentiment_label = "中立的"
-
-        # キャッシュに結果を保存
-        search_cache[query] = {"sentiment": sentiment_label, "warnings": warnings}
-
-    # レスポンスを返す
+    # JSONレスポンスに感情解析結果も追加する
     return jsonify({
         "query": query,
-        "sentiment": search_cache[query]["sentiment"],
-        "warnings": search_cache[query]["warnings"],
-        "note": "この検索結果は必ずしも正確とは限りません。必要に応じて専門家にご相談ください。"
+        "offensive": bool(detected_offensive),
+        "detected_words": detected_offensive,
+        "sentiment": sentiment_label,
+        "message": "攻撃的な内容が含まれています。" if detected_offensive else "攻撃的な内容は含まれていません。"
     })
 
 @app.route("/terms")
