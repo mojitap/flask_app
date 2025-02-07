@@ -40,23 +40,28 @@ class User(UserMixin):
 def load_user(user_id):
     return User(user_id)
 
-# OAuth設定
+# OAuthの初期化
 oauth = OAuth(app)
+
+# Googleの設定
 oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"}
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+    client_kwargs={"scope": "openid email profile"},
 )
+
+# Twitter OAuth 設定
 oauth.register(
     name="twitter",
     client_id=os.getenv("TWITTER_CLIENT_ID"),
     client_secret=os.getenv("TWITTER_CLIENT_SECRET"),
-    authorize_url="https://twitter.com/i/oauth2/authorize",
-    access_token_url="https://api.twitter.com/2/oauth2/token",
-    api_base_url="https://api.twitter.com/2/",
-    client_kwargs={"scope": "tweet.read users.read offline.access"}
+    request_token_url="https://api.twitter.com/oauth/request_token",
+    access_token_url="https://api.twitter.com/oauth/access_token",
+    authorize_url="https://api.twitter.com/oauth/authorize",
+    api_base_url="https://api.twitter.com/1.1/",
 )
 
 # 攻撃的な単語リストをロード
@@ -82,7 +87,7 @@ def login_google():
 @app.route("/authorize/google")
 def authorize_google():
     token = oauth.google.authorize_access_token()
-    user_info = oauth.google.get("userinfo").json()
+    user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
     user = User(id=user_info["email"])
     login_user(user)
     return redirect("/")
