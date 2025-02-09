@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
 from routes import main, auth  # Blueprintをインポート
+from authlib.integrations.flask_client import OAuth
 import os
 from models.user import db  # 既存の `db` 定義を使用
 
@@ -15,11 +16,17 @@ app.config['JSON_AS_ASCII'] = False
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 
 # データベース設定
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")  # local.dbに変更
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # データベース初期化
 db.init_app(app)
+
+# OAuth クライアント初期化
+oauth = OAuth(app)
+
+# Twitter用のクライアント登録
+oauth.init_app(app)  # 必須ステップ
 
 # Flask-Login設定
 login_manager = LoginManager()
