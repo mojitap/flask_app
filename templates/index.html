@@ -68,6 +68,46 @@
               padding: 8px 16px;
           }
       }
+
+      /* 追加されたCSS部分 */
+      .search-box {
+          width: 90%; /* 初期値は画面幅の90%に設定 */
+          max-width: 600px; /* 最大幅は600px */
+          min-height: 100px; /* 最小高さは100px */
+          padding: 10px;
+          font-size: 16px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          resize: none; /* サイズ変更を無効化 */
+      }
+
+      .search-button {
+          display: inline-block;
+          margin-top: 10px;
+          padding: 10px 20px;
+          font-size: 16px;
+          color: #fff;
+          background-color: #007bff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      .search-button:hover {
+          background-color: #0056b3;
+      }
+
+      /* スマートフォン向け */
+      @media (max-width: 600px) {
+          .search-box {
+              font-size: 14px;
+          }
+
+          .search-button {
+              font-size: 14px;
+              padding: 8px 16px;
+          }
+      }
   </style>
 </head>
 <script src="{{ url_for('static', filename='js/detector.js') }}"></script>
