@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 from routes import main, auth  # Blueprintをインポート
 import os
+from models.user import db  # 既存の `db` 定義を使用
 
 # 環境変数の読み込み
 load_dotenv()
@@ -14,9 +15,11 @@ app.config['JSON_AS_ASCII'] = False
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 
 # データベース設定
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///database.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")  # local.dbに変更
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
+
+# データベース初期化
+db.init_app(app)
 
 # Flask-Login設定
 login_manager = LoginManager()
@@ -31,7 +34,7 @@ app.register_blueprint(auth, url_prefix="/auth")  # 認証用のBlueprint
 if __name__ == "__main__":
     with app.app_context():
         try:
-            db.create_all()
+            db.create_all()  # テーブル作成
             print("データベースの初期化が完了しました。")
         except Exception as e:
             print(f"データベースの初期化中にエラーが発生しました: {e}")
