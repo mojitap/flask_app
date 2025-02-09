@@ -1,21 +1,39 @@
-from flask import Blueprint, redirect, url_for, request, session
-from flask_login import login_user, logout_user
+from flask import Blueprint, redirect, url_for, session
 from authlib.integrations.flask_client import OAuth
-from app import app  # Flaskインスタンスを利用
-from models.user import User
 
 auth = Blueprint("auth", __name__)
-oauth = OAuth(app)
+oauth = OAuth()
 
-# Googleの設定
+# Google OAuth クライアントを登録
 oauth.register(
-    name='google',
-    client_id=os.getenv('GOOGLE_CLIENT_ID'),
-    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'}
+    name="google",
+    client_id="あなたのGoogleクライアントID",
+    client_secret="あなたのGoogleクライアントシークレット",
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+    api_base_url="https://www.googleapis.com/oauth2/v1/",
+    client_kwargs={
+        "scope": "openid email profile",
+        "token_endpoint_auth_method": "client_secret_post",
+    },
 )
 
+# Twitter OAuth クライアントを登録
+oauth.register(
+    name="twitter",
+    client_id="あなたのTwitterクライアントID",
+    client_secret="あなたのTwitterクライアントシークレット",
+    request_token_url="https://api.twitter.com/oauth/request_token",
+    access_token_url="https://api.twitter.com/oauth/access_token",
+    authorize_url="https://api.twitter.com/oauth/authenticate",
+    api_base_url="https://api.twitter.com/2/",
+    client_kwargs={
+        "scope": "tweet.read users.read offline.access",
+        "token_endpoint_auth_method": "client_secret_post",
+    },
+)
+
+# Googleログイン
 @auth.route("/login/google")
 def login_google():
     redirect_uri = url_for("auth.authorize_google", _external=True)
@@ -24,13 +42,25 @@ def login_google():
 @auth.route("/authorize/google")
 def authorize_google():
     token = oauth.google.authorize_access_token()
-    user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
-    user = User.get_or_create(user_info["email"])
-    login_user(user)
-    return redirect("/")
+    user_info = oauth.google.get("userinfo").json()
+    session["user"] = user_info  # ユーザー情報をセッションに保存
+    return redirect(url_for("main.index"))
 
+# Twitterログイン
+@auth.route("/login/twitter")
+def login_twitter():
+    redirect_uri = url_for("auth.authorize_twitter", _external=True)
+    return oauth.twitter.authorize_redirect(redirect_uri)
+
+@auth.route("/authorize/twitter")
+def authorize_twitter():
+    token = oauth.twitter.authorize_access_token()
+    user_info = oauth.twitter.get("2/users/me").json()  # Twitter API 2.0を使用
+    session["user"] = user_info  # ユーザー情報をセッションに保存
+    return redirect(url_for("main.index"))
+
+# ログアウト
 @auth.route("/logout")
 def logout():
-    logout_user()
-    session.clear()
-    return redirect("/")
+    session.pop("user", None)
+    return redirect(url_for("main.index"))
