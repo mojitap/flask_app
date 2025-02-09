@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from routes import main, auth  # Blueprintをインポート
 from authlib.integrations.flask_client import OAuth
 import os
-from models.user import db  # 既存の `db` 定義を使用
+from models.user import db, User
 
 # 環境変数の読み込み
 load_dotenv()
@@ -25,13 +25,15 @@ db.init_app(app)
 # OAuth クライアント初期化
 oauth = OAuth(app)
 
-# Twitter用のクライアント登録
-oauth.init_app(app)  # 必須ステップ
-
 # Flask-Login設定
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "auth.login"  # 認証用のルートを指定
+
+@login_manager.user_loader
+def load_user(user_id):
+    """ユーザーIDからユーザーをロードする関数"""
+    return User.query.get(int(user_id))  # user_idでDBからユーザーを取得
 
 # Blueprint登録
 app.register_blueprint(main)
@@ -42,6 +44,8 @@ if __name__ == "__main__":
     with app.app_context():
         try:
             db.create_all()  # テーブル作成
+            from models.user import create_sample_user
+            create_sample_user()  # サンプルユーザー作成
             print("データベースの初期化が完了しました。")
         except Exception as e:
             print(f"データベースの初期化中にエラーが発生しました: {e}")
