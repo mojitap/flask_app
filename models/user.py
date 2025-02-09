@@ -1,10 +1,12 @@
+# models/user.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.String(255), primary_key=True)  # id を文字列型に変更
+    __tablename__ = 'user'  # テーブル名を明示
+    id = db.Column(db.String(255), primary_key=True)  # この例では ID としてメールやTwitterのIDを利用
     email = db.Column(db.String(255), unique=True, nullable=False)
 
 def create_sample_user():
