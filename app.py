@@ -6,6 +6,9 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 from routes import main, auth  # Blueprintをインポート
 
+# 環境変数の読み込み
+load_dotenv()
+
 # Flask アプリケーションの設定
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -28,11 +31,11 @@ login_manager.login_view = "login_google"
 app.register_blueprint(main)  # メインのルート
 app.register_blueprint(auth)  # 認証用ルート
 
-# 環境変数の読み込み
-load_dotenv()
-
 # アプリケーションの起動
 if __name__ == "__main__":
     with app.app_context():
+        # 必要に応じてデータベースのテーブルを作成
         db.create_all()
+
+    # アプリケーションを起動
     app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
