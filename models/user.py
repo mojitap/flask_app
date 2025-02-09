@@ -3,13 +3,12 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model, UserMixin):
-    __tablename__ = "users"
+class User(UserMixin, db.Model):
+    id = db.Column(db.String(255), primary_key=True)  # id を文字列型に変更
+    email = db.Column(db.String(255), unique=True, nullable=False)
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), nullable=False, unique=True)
-    email = db.Column(db.String(120), nullable=False, unique=True)
-    password = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self):
-        return f"<User {self.username}>"
+def create_sample_user():
+    if not User.query.filter_by(email="sample@example.com").first():
+        user = User(id="1", email="sample@example.com")
+        db.session.add(user)
+        db.session.commit()
