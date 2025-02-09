@@ -64,24 +64,44 @@ def login_google():
 def authorize_google():
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
-    user = User(id=user_info["email"])
+    user = User(id=user_info["email"], email=user_info["email"])
+    db.session.add(user)
+    db.session.commit()
     login_user(user)
     return redirect("/")
 
 @app.route('/login/twitter')
 def login_twitter():
-    twitter = oauth.twitter.create_client()
-    redirect_uri = url_for('authorize_twitter', _external=True)
-    return twitter.authorize_redirect(redirect_uri)
+    twitter = OAuth1Session(
+        client_key=os.getenv('TWITTER_API_KEY'),
+        client_secret=os.getenv('TWITTER_API_SECRET'),
+        callback_uri=url_for('authorize_twitter', _external=True)
+    )
+    request_token_url = "https://api.twitter.com/oauth/request_token"
+    response = twitter.fetch_request_token(request_token_url)
+    oauth_token = response.get('oauth_token')
+    redirect_url = f"https://api.twitter.com/oauth/authorize?oauth_token={oauth_token}"
+    return redirect(redirect_url)
 
 @app.route('/authorize/twitter')
 def authorize_twitter():
-    twitter = oauth.twitter.create_client()
-    token = twitter.authorize_access_token()
-    user_info = twitter.get('account/verify_credentials.json').json()
-    user = User(id=user_info['id_str'])
+    twitter = OAuth1Session(
+        client_key=os.getenv('TWITTER_API_KEY'),
+        client_secret=os.getenv('TWITTER_API_SECRET'),
+        resource_owner_key=request.args.get('oauth_token'),
+        verifier=request.args.get('oauth_verifier')
+    )
+    access_token_url = "https://api.twitter.com/oauth/access_token"
+    tokens = twitter.fetch_access_token(access_token_url)
+
+    # ユーザー情報を取得
+    user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
+    user_info = twitter.get(user_info_url).json()
+
+    # ユーザー情報を処理
+    user = User(id=user_info['id_str'], email=user_info.get('email', ''))
     login_user(user)
-    return redirect('/')
+    return redirect("/")
 
 # Blueprint登録
 app.register_blueprint(main)
