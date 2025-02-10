@@ -1,12 +1,12 @@
 # models/user.py
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from extensions import db  # extensions.py から db をインポートする
 
-db = SQLAlchemy()
+# db = SQLAlchemy()  <- この行を削除します
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'  # テーブル名を明示
-    id = db.Column(db.String(255), primary_key=True)  # この例では ID としてメールやTwitterのIDを利用
+    __tablename__ = 'user'
+    id = db.Column(db.String(255), primary_key=True)  # ここではメールアドレスや Twitter の id などを利用
     email = db.Column(db.String(255), unique=True, nullable=False)
 
 def create_sample_user():
