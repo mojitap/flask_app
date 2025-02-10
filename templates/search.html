@@ -9,9 +9,9 @@
     <h1>検索ページ</h1>
     {% if current_user.is_authenticated %}
         <p>ログイン中のユーザー: {{ current_user.username }}</p>
-        <form method="POST" action="{{ url_for('search') }}">
-            <input type="text" name="query" placeholder="検索キーワードを入力してください" required>
-            <button type="submit">検索</button>
+        <form method="POST" action="/quick_check">
+            <textarea name="text" placeholder="ここにテキストを入力してください"></textarea>
+            <button class="btn" type="submit">チェックする</button>
         </form>
         {% if error %}
         <div class="error" style="color: red; margin-top: 10px;">{{ error }}</div>
