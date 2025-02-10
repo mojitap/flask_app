@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db  # extensions.py から db をインポート
 from flask_login import LoginManager, login_user
-from requests_oauthlib import OAuth1Session  # Twitter 認証で使用
+from requests_oauthlib import OAuth1Session
 from dotenv import load_dotenv
 from routes import main, auth
 from authlib.integrations.flask_client import OAuth
 import os
 import json
-from models.user import db, User
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
+from models.user import User
 
 # 環境変数の読み込み
 load_dotenv()
@@ -16,7 +18,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # データベース初期化
@@ -55,6 +57,7 @@ def login_google():
     redirect_uri = url_for("authorize_google", _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
+# Google 認証ルートの例
 @app.route("/authorize/google")
 def authorize_google():
     token = oauth.google.authorize_access_token()
@@ -89,6 +92,7 @@ def authorize_twitter():
     oauth_verifier = request.args.get('oauth_verifier')
     if not oauth_verifier:
         return "Error: OAuth verifier is missing.", 400
+    
     twitter = OAuth1Session(
         client_key=os.getenv('TWITTER_API_KEY'),
         client_secret=os.getenv('TWITTER_API_SECRET'),
@@ -97,30 +101,65 @@ def authorize_twitter():
     )
     access_token_url = "https://api.twitter.com/oauth/access_token"
     tokens = twitter.fetch_access_token(access_token_url)
+    
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url).json()
-    twitter_id = user_info['id_str']
-    # 既にユーザーが存在するかチェック（ここでは Twitter の id をそのままユーザーIDとして利用）
+    twitter_id = user_info.get('id_str')
+    if not twitter_id:
+        return "Error: Unable to retrieve Twitter user ID", 400
+    
+    # メールアドレスはTwitter認証では取得できない場合があるので、ダミーのメールアドレスを設定する
+    email = user_info.get('email')
+    if not email:
+        email = f"{twitter_id}@twitter.com"
+    
+    # 既にユーザーが存在するかチェック（TwitterのIDをプライマリキーとして利用）
     user = User.query.get(twitter_id)
     if not user:
-        user = User(id=twitter_id, email=user_info.get('email', ''))
+        user = User(id=twitter_id, email=email)
         db.session.add(user)
         db.session.commit()
     login_user(user)
     return redirect("/")
 
+def update_offensive_words():
+    from models.search_history import SearchHistory
+    # 10回以上検索されたクエリを取得
+    popular_queries = SearchHistory.query.filter(SearchHistory.count >= 10).all()
+    # popular_queries の各クエリを offensive_words に追加する処理を実装する
+    # 例：すでに offensive_words にないクエリを追加し、ファイルに保存する
+    # （ここは具体的なファイル操作のコードに置き換えてください）
+    print("Offensive words updated based on popular queries.")
+
+scheduler = BackgroundScheduler()
+# ここでは1日1回（24時間ごと）実行する例です
+scheduler.add_job(func=update_offensive_words, trigger="interval", hours=24)
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
+
 # Blueprint 登録
 app.register_blueprint(main)
 app.register_blueprint(auth, url_prefix="/auth")
 
-# offensive_words.json の読み込み
-JSON_PATH = os.path.join(os.path.dirname(__file__), "data", "offensive_words.json")
-with open(JSON_PATH, "r", encoding="utf-8") as f:
-    data = json.load(f)
-    offensive_words = data.get("categories", {}).get("insults", [])
-
-# Flask の設定に offensive_words を登録
-app.config['OFFENSIVE_WORDS'] = offensive_words
+# app.py
+JSON_PATH = os.path.join(app.root_path, "data", "offensive_words.json")
+try:
+    with open(JSON_PATH, "r", encoding="utf-8") as f:
+        offensive_words = json.load(f)
+    app.config["OFFENSIVE_WORDS"] = offensive_words
+except FileNotFoundError:
+    app.logger.error(f"{JSON_PATH} が見つかりませんでした。")
+    app.config["OFFENSIVE_WORDS"] = []
+app.config["OFFENSIVE_WORDS"] = offensive_words
+    for category in data.get("categories", {}).values():
+        if isinstance(category, dict):
+            for sublist in category.values():
+                if isinstance(sublist, list):
+                    offensive_words.extend(sublist)
+        elif isinstance(category, list):
+            offensive_words.extend(category)
+    # アプリ設定に登録
+    app.config['OFFENSIVE_WORDS'] = offensive_words
 
 # 利用規約ページのルート
 @app.route("/terms")
