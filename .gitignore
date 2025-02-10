@@ -45,3 +45,9 @@ node_modules/
 
 # 🐳 Docker関連（Dockerファイルのキャッシュを無視）
 Docker.dmg
+
+# SQLite データベースファイル
+local.db
+
+# 🚫 surnames_split フォルダを無視
+surnames_split/
