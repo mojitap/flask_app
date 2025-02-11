@@ -1,4 +1,5 @@
-from app import db
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 # models/search_history.py
 from extensions import db
 
