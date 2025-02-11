@@ -14,12 +14,27 @@ from models.user import User
 # 環境変数の読み込み
 load_dotenv()
 
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
+@app.route("/")
+def home():
+    print("✅ / にアクセスされました")  # デバッグ用
+    return render_template("index.html")
+
 # Flask アプリケーションの設定
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
+
 app.config['JSON_AS_ASCII'] = False
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# ✅ `/` ルートをここに移動！
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 # データベース初期化
 db.init_app(app)
