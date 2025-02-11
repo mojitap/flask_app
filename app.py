@@ -14,15 +14,6 @@ from models.user import User
 # 環境変数の読み込み
 load_dotenv()
 
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory('static', filename)
-
-@app.route("/")
-def home():
-    print("✅ / にアクセスされました")  # デバッグ用
-    return render_template("index.html")
-
 # Flask アプリケーションの設定
 app = Flask(__name__, static_folder="static")
 
@@ -31,16 +22,15 @@ app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ✅ `/` ルートをここに移動！
+# ✅ **ルートを適切な位置に移動**
 @app.route("/")
 def home():
-    return render_template("index.html")
-
-# データベース初期化
-db.init_app(app)
+    print("✅ / にアクセスされました")  # デバッグ用
+    return render_template("index.html")  # ✅ ここで index.html を正しくレンダリング
 
 # OAuth クライアント初期化
 oauth = OAuth(app)
+
 # Google OAuth 登録
 oauth.register(
     name='google',
@@ -49,6 +39,7 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 )
+
 # Twitter OAuth 登録
 oauth.register(
     name='twitter',
@@ -66,6 +57,11 @@ login_manager.login_view = "auth.login"
 def load_user(user_id):
     return User.query.get(user_id)
 
+# 静的ファイルの配信ルート
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
 # Google 認証ルート
 @app.route("/login/google")
 def login_google():
@@ -78,7 +74,6 @@ def authorize_google():
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
     email = user_info["email"]
-    # 既にユーザーが存在するかチェック
     user = User.query.get(email)
     if not user:
         user = User(id=email, email=email)
@@ -123,12 +118,7 @@ def authorize_twitter():
     if not twitter_id:
         return "Error: Unable to retrieve Twitter user ID", 400
     
-    # メールアドレスはTwitter認証では取得できない場合があるので、ダミーのメールアドレスを設定する
-    email = user_info.get('email')
-    if not email:
-        email = f"{twitter_id}@twitter.com"
-    
-    # 既にユーザーが存在するかチェック（TwitterのIDをプライマリキーとして利用）
+    email = user_info.get('email', f"{twitter_id}@twitter.com")
     user = User.query.get(twitter_id)
     if not user:
         user = User(id=twitter_id, email=email)
@@ -139,15 +129,10 @@ def authorize_twitter():
 
 def update_offensive_words():
     from models.search_history import SearchHistory
-    # 10回以上検索されたクエリを取得
     popular_queries = SearchHistory.query.filter(SearchHistory.count >= 10).all()
-    # popular_queries の各クエリを offensive_words に追加する処理を実装する
-    # 例：すでに offensive_words にないクエリを追加し、ファイルに保存する
-    # （ここは具体的なファイル操作のコードに置き換えてください）
     print("Offensive words updated based on popular queries.")
 
 scheduler = BackgroundScheduler()
-# ここでは1日1回（24時間ごと）実行する例です
 scheduler.add_job(func=update_offensive_words, trigger="interval", hours=24)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
@@ -156,7 +141,7 @@ atexit.register(lambda: scheduler.shutdown())
 app.register_blueprint(main)
 app.register_blueprint(auth, url_prefix="/auth")
 
-# app.py
+# データ読み込み
 JSON_PATH = os.path.join(app.root_path, "data", "offensive_words.json")
 try:
     with open(JSON_PATH, "r", encoding="utf-8") as f:
@@ -165,16 +150,6 @@ try:
 except FileNotFoundError:
     app.logger.error(f"{JSON_PATH} が見つかりませんでした。")
     app.config["OFFENSIVE_WORDS"] = []
-app.config["OFFENSIVE_WORDS"] = offensive_words
-    for category in data.get("categories", {}).values():
-        if isinstance(category, dict):
-            for sublist in category.values():
-                if isinstance(sublist, list):
-                    offensive_words.extend(sublist)
-        elif isinstance(category, list):
-            offensive_words.extend(category)
-    # アプリ設定に登録
-    app.config['OFFENSIVE_WORDS'] = offensive_words
 
 # 利用規約ページのルート
 @app.route("/terms")
@@ -188,7 +163,9 @@ def show_terms():
         app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-# テーブル作成（モジュールインポート時に必ず実行する）
+# データベース初期化
+db.init_app(app)
+
 with app.app_context():
     db.create_all()
 
