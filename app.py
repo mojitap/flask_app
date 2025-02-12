@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_from_directory
 from extensions import db  # extensions.py から db をインポート
 from flask_login import LoginManager, login_user
-from requests_oauthlib import OAuth1Session, requests
+from requests_oauthlib import OAuth1Session
 from dotenv import load_dotenv
 from routes import main, auth
 from authlib.integrations.flask_client import OAuth
@@ -17,33 +17,11 @@ load_dotenv()
 # Flask アプリケーションの設定
 app = Flask(__name__, static_folder="static")
 
-app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-RECAPTCHA_SECRET_KEY = os.getenv("RECAPTCHA_SECRET_KEY")
-TALLY_FORM_URL = os.getenv("TALLY_FORM_URL")
-
-@app.route("/")
-def index():
-    return render_template("recaptcha.html", site_key=os.getenv("RECAPTCHA_SITE_KEY"))
-
-@app.route("/verify", methods=["POST"])
-def verify():
-    recaptcha_response = request.form["g-recaptcha-response"]
-    data = {
-        "secret": RECAPTCHA_SECRET_KEY,
-        "response": recaptcha_response
-    }
-    r = requests.post("https://www.google.com/recaptcha/api/siteverify", data=data)
-    result = r.json()
-    
-    if result["success"]:
-        return redirect(TALLY_FORM_URL)
-    else:
-        return "認証に失敗しました。もう一度試してください。"
-        
 # ✅ **ルートを適切な位置に移動**
 @app.route("/")
 def home():
