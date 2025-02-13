@@ -1,44 +1,34 @@
+# routes/main.py
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # ✅ `flask_app` を Python パスに追加
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
-from models.text_evaluation import evaluate_text  # ← ここで 'models' が見つかるようになる！
-from models.search_history import SearchHistory
+from ..models.search_history import SearchHistory
+from ..models.text_evaluation import evaluate_text
 
 print("✅ main.py が読み込まれました！")
 
-main = Blueprint('main', __name__)
+main = Blueprint("main", __name__)
 
 @main.route("/")
 def home():
     print("✅ / にアクセスされました")
     return render_template("index.html")
 
-# 使用例
-def contains_surname(text, surnames):
-    for surname in surnames:
-        if surname in text:
-            return True, surname  # ✅ 関数内にあるからOK
-    return False, None  # ここも関数内に入れる
-    
 @main.route("/quick_check", methods=["POST"])
-@login_required
+@login_required  # 認証不要なら外す
 def quick_check():
     query = request.form.get("text", "").strip()
     if not query:
         return "<h2>エラー: 検索クエリが空です。</h2>", 400
 
-    # 検索履歴の更新
+    # 検索履歴を保存など
     SearchHistory.add_or_increment(query)
-    
-    # 苗字チェックは evaluate_text に統合されている
-    offensive_words = current_app.config.get("OFFENSIVE_WORDS", [])
-    result, detail = evaluate_text(query, offensive_words)
-    return render_template("result.html", query=query, result=result, detail=detail)
-    
-    # その他の評価
-    offensive_words = current_app.config.get("OFFENSIVE_WORDS", [])
-    result, detail = evaluate_text(query, offensive_words)
+
+    # 辞書を取得
+    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    result, detail = evaluate_text(query, offensive_dict)
+
     return render_template("result.html", query=query, result=result, detail=detail)
