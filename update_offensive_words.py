@@ -8,7 +8,7 @@ def load_surnames():
     """surnames_split/ フォルダ内の人名リストを読み込む"""
     surnames = set()
     for filename in os.listdir(SURNAMES_FOLDER):
-        if filename.endswith(".txt"):  # .txt ファイルのみ処理
+        if filename.endswith(".json"):  # .json ファイルを対象にする
             with open(os.path.join(SURNAMES_FOLDER, filename), "r", encoding="utf-8") as f:
                 for line in f:
                     surnames.add(line.strip())  # 空白を除去してセットに追加
@@ -27,9 +27,12 @@ def update_offensive_words():
     surnames = load_surnames()
 
     # 統合（重複チェックあり）
+    if "names" not in offensive_words:
+    offensive_words["names"] = []  # "names" キーがない場合、追加
+
     for name in surnames:
-        if name not in offensive_words:
-            offensive_words.append(name)
+        if name not in offensive_words["names"]:
+            offensive_words["names"].append(name)
 
     # 更新したデータを書き込み
     with open(JSON_PATH, "w", encoding="utf-8") as f:
