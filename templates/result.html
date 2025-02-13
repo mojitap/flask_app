@@ -1,9 +1,10 @@
+<!-- templates/result.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>検索結果</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
     <header>
@@ -14,14 +15,13 @@
         </nav>
     </header>
     <main>
-        <h2>検索結果</h2>
-        <p><strong>クエリ:</strong> {{ query }}</p>
-        <p><strong>評価:</strong> {{ result }}</p>
-        <!-- 感情分析の結果は表示しない -->
-        <!-- {% if sentiment_label %}
-            <p><strong>感情分析:</strong> {{ sentiment_label }}</p>
-        {% endif %} -->
-        <a href="/" class="button">戻る</a>
+        <h3>検索結果</h3>
+        <p>クエリ: {{ query }}</p>
+        <p>評価: {{ result }}</p>
+        {% if detail %}
+            <p>詳細: {{ detail }}</p>
+        {% endif %}
+        <a href="/">戻る</a>
     </main>
     <footer>
         <p>© 2025 MojiTap</p>
