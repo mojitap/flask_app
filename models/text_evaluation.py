@@ -45,8 +45,8 @@ def check_partial_match(text, words, threshold=75):
 
 def detect_personal_accusation(text):
     """対象となる代名詞 + 犯罪組織に関連する語句の組み合わせを検出"""
-    pattern = re.compile(r"(お前|おまえ|コイツ|アイツ)\s*.*?(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織)")
-    return bool(pattern.search(text))
+    pronouns = r"(お前|こいつ|この人|あなた|アナタ|このひと|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
+    crime_words = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン|マネーロンダリング)"
 
 def evaluate_text(text, offensive_words):
     """
