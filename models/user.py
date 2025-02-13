@@ -1,6 +1,6 @@
 # models/user.py
 from flask_login import UserMixin
-from extensions import db  # extensions.py から db をインポートする
+from ..extensions import db
 
 # db = SQLAlchemy()  <- この行を削除します
 
