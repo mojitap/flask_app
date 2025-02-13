@@ -5,31 +5,34 @@ SURNAMES_FOLDER = os.path.join(os.path.dirname(__file__), "surnames_split")
 JSON_PATH = os.path.join(os.path.dirname(__file__), "data", "offensive_words.json")
 
 def load_surnames():
-    """surnames_split/ フォルダ内の人名リストを読み込む"""
     surnames = set()
     for filename in os.listdir(SURNAMES_FOLDER):
-        if filename.endswith(".json"):  # .json ファイルを対象にする
+        if filename.endswith(".json"):
             with open(os.path.join(SURNAMES_FOLDER, filename), "r", encoding="utf-8") as f:
-                for line in f:
-                    surnames.add(line.strip())  # 空白を除去してセットに追加
+                data_list = json.load(f)  # JSON配列をロード
+                for name in data_list:
+                    # 不要な見出し "な行" などが入っていれば除外する処理をする
+                    if "行" in name:
+                        continue
+                    surnames.add(name.strip())
     return list(surnames)
 
 def update_offensive_words():
-    """offensive_words.json に surnames_split のデータを統合する"""
     # 既存の offensive_words を読み込む
     try:
         with open(JSON_PATH, "r", encoding="utf-8") as f:
             offensive_words = json.load(f)
     except FileNotFoundError:
-        offensive_words = []  # ファイルがなければ新規作成
+        offensive_words = {"categories": {}, "names": []}
 
     # 人名データを取得
-    surnames = load_surnames()
+    surnames = load_surnames()  # あ行、か行…わ行 すべて読み込む
 
-    # 統合（重複チェックあり）
+    # "names" キーがなければ作る
     if "names" not in offensive_words:
-    offensive_words["names"] = []  # "names" キーがない場合、追加
+        offensive_words["names"] = []
 
+    # surnames を "names" に追加（重複チェック）
     for name in surnames:
         if name not in offensive_words["names"]:
             offensive_words["names"].append(name)
