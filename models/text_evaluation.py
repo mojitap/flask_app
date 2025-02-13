@@ -1,3 +1,4 @@
+# text_evaluation.py
 import os
 import json
 import re
@@ -7,29 +8,25 @@ from spacy.lang.ja import Japanese
 from rapidfuzz import fuzz
 import jaconv
 
-# あなたの環境で苗字をロードする関数
-from load_surnames import load_surnames
+# あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて書き換えてください）
+from ..load_surnames import load_surnames
 
+# 簡易キャッシュ（メモリに保存）: テキスト → 判定結果
+_eval_cache = {}
 
-# ==============================
-# 簡易キャッシュ（メモリに保存）
-# ==============================
-_eval_cache = {}  # { "入力テキスト": "判定結果" }
-
-# ==============================
-# SpaCy の日本語モデルをロード
-# ==============================
+# SpaCy の日本語モデルをロード（軽量モデル使用）
 nlp = Japanese()
-
 
 def load_offensive_dict(json_path="offensive_words.json"):
     """
     `offensive_words.json` を辞書としてロード。
-    例:
     {
       "categories": {
         "insults": [...],
         "defamation": [...],
+        "harassment": [...],
+        "threats": [...],
+        ...
       },
       "names": [...]
     }
@@ -41,46 +38,52 @@ def load_offensive_dict(json_path="offensive_words.json"):
         data = json.load(f)
     return data
 
-
 def flatten_offensive_words(offensive_dict):
     """
-    "categories" 下のリスト + "names" リストを全て合体し、
-    単純な1次元リストとして返す。
+    "categories" 下のリスト + "names" リストを全て合体し、単純な1次元リストとして返す。
+    例:
+      {
+        "categories": {
+          "insults": [...],
+          "defamation": [...],
+          ...
+        },
+        "names": [...]
+      }
     """
     all_words = []
 
+    # categories のすべてのリストを合体
     categories = offensive_dict.get("categories", {})
-    for cat_name, word_list in categories.items():
+    for _, word_list in categories.items():
         all_words.extend(word_list)
 
-    if "names" in offensive_dict:
-        all_words.extend(offensive_dict["names"])
+    # "names" も合体したい場合（オフェンシブ扱いするなら）:
+    # if "names" in offensive_dict:
+    #     all_words.extend(offensive_dict["names"])
 
     return all_words
 
-
 def normalize_text(text):
     """
-    全角→半角、カタカナ→ひらがな、などの正規化。
+    全角→半角、カタカナ→ひらがな に変換
     """
     text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
-    text = jaconv.kata2hira(text)
-    return text
-
+    return jaconv.kata2hira(text)
 
 def tokenize_and_lemmatize(text):
-    """
-    形態素解析してトークンの原形リストを返す。
-    """
     doc = nlp(text)
     return [token.lemma_ for token in doc]
 
+def check_keywords_via_token(text, keywords):
+    tokens = tokenize_and_lemmatize(text)
+    return any(kw in tokens for kw in keywords)
 
-def check_partial_match(text, word_list, threshold=75):
+def check_partial_match(text, word_list, threshold=80):
     """
-    文字列ベースの部分一致チェック。
-    - 完全に含まれていれば score=100
-    - fuzzy マッチングが threshold 以上ならヒット
+    文字列ベースの部分一致チェック:
+      - 完全に含まれていれば score=100
+      - fuzzy(partial_ratio) >= threshold => マッチとみなす
     """
     for w in word_list:
         if w in text:
@@ -90,115 +93,100 @@ def check_partial_match(text, word_list, threshold=75):
             return True, w, score
     return False, None, None
 
-
-def check_keywords_via_token(text, keywords):
-    """
-    形態素解析で分割したトークン列に keywords が含まれているか判定。
-    """
-    tokens = tokenize_and_lemmatize(text)
-    return any(kw in tokens for kw in keywords)
-
-
 def detect_personal_accusation(text):
-    """
-    対象となる代名詞 + 犯罪組織に関連する語句の同時出現を検出。
-    例: 「お前、詐欺グループとつながってるんじゃないか」
-    """
-    pronouns_pattern = r"(お前|こいつ|この人|あなた|アナタ|このひと|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
-    crime_words_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン|マネーロンダリング)"
-
-    # 正規化してから正規表現で検索
+    pronouns_pattern = r"(お前|こいつ|この人|あなた|アナタ|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
+    crime_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン)"
     norm = normalize_text(text)
-    pattern = rf"{pronouns_pattern}.*{crime_words_pattern}|{crime_words_pattern}.*{pronouns_pattern}"
-    # 代名詞→犯罪ワード or 犯罪ワード→代名詞 の順で出現するパターン
-    if re.search(pattern, norm):
-        return True
-    return False
-
+    pattern = rf"{pronouns_pattern}.*{crime_pattern}|{crime_pattern}.*{pronouns_pattern}"
+    return re.search(pattern, norm) is not None
 
 def evaluate_text(text, offensive_dict):
     """
-    メインのテキスト評価関数
+    (判定ラベル, 詳細文字列) を返す
     """
-
-    # ===== キャッシュチェック =====
-    # 同じテキストなら即返却
     if text in _eval_cache:
         return _eval_cache[text]
 
-    # 1) 正規化
-    normalized_text = normalize_text(text)
+    normalized = normalize_text(text)
+    all_offensive = flatten_offensive_words(offensive_dict)
 
-    # 2) オフェンシブワードをフラットリスト化
-    all_offensive_words = flatten_offensive_words(offensive_dict)
+    judgement = "問題ありません"
+    detail = ""
 
-    # 3) 部分一致チェック（文字列ベース）
+    # (1) 部分一致でオフェンシブワード
     found_words = []
-    for w in all_offensive_words:
-        match, matched_word, score = check_partial_match(normalized_text, [w])
-        if match:
-            found_words.append(matched_word)
+    match, w, score = check_partial_match(normalized, all_offensive, threshold=80)
+    if match:
+        found_words.append((w, score))
 
-    # 4) 人名（苗字）チェック
-    surnames = load_surnames()  # あなたの既存実装が読み込む想定
-    found_surnames = [sn for sn in surnames if sn in normalized_text]
+    # (2) 苗字チェック
+    surnames = load_surnames()
+    found_surnames = [sn for sn in surnames if sn in normalized]
 
-    # 5) detect_personal_accusation のチェック
+    # (3) 個人攻撃 + 犯罪組織
     if detect_personal_accusation(text):
-        # 代名詞 + 犯罪組織 があった場合の専用判定を入れてもいい
-        # ここでは例示的に返すだけ
-        _eval_cache[text] = "⚠️ 個人攻撃や犯罪組織関連の表現が含まれている可能性があります"
-        return _eval_cache[text]
+        judgement = "⚠️ 個人攻撃 + 犯罪組織関連の表現あり"
+        detail = "detect_personal_accusation が True"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
 
-    # 6) 人名 + オフェンシブワード の組み合わせ
+    # (4) 人名あり + オフェンシブワード
     if found_words and found_surnames:
-        result = "⚠️ この文章には問題のある表現と特定の苗字が含まれています"
-        _eval_cache[text] = result
-        return result
+        judgement = "⚠️ 人名 + オフェンシブワード"
+        detail_list = [f"('{fw}',score={sc})" for (fw,sc) in found_words]
+        detail = f"苗字={found_surnames}, words={detail_list}"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
 
-    # 7) 形態素解析で暴力・ハラスメント・脅迫などを軽くチェック
-    violence_keywords = ["殺す", "死ぬ", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
-    if check_keywords_via_token(normalized_text, violence_keywords):
-        _eval_cache[text] = "⚠️ 暴力的な表現が含まれています"
-        return _eval_cache[text]
-
-    harassment_keywords = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
-    if check_keywords_via_token(normalized_text, harassment_keywords):
-        _eval_cache[text] = "⚠️ いじめ・ハラスメントの可能性があります"
-        return _eval_cache[text]
-
-    threat_keywords = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
-    if check_keywords_via_token(normalized_text, threat_keywords):
-        _eval_cache[text] = "⚠️ 脅迫・犯罪関連の表現が含まれています"
-        return _eval_cache[text]
-
-    # 8) 完全一致 or 部分一致で「一部の表現が問題の可能性」 
-    #   => 形態素解析ベースではなく文字列ベースで実施
-    #   => 例として "もし何かしらの単語がヒットしたら" という簡易チェック
+    # (5) オフェンシブだけ
     if found_words:
-        result = "⚠️ 一部の表現が問題となる可能性があります"
-        _eval_cache[text] = result
-        return result
+        judgement = "⚠️ 一部の表現が問題の可能性"
+        detail_list = [f"('{fw}',score={sc})" for (fw,sc) in found_words]
+        detail = f"words={detail_list}"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
 
-    # 何も当てはまらない → 問題なし
-    _eval_cache[text] = "問題ありません"
-    return _eval_cache[text]
+    # (6) 暴力表現の例
+    violence_keywords = ["殺す","死ね","殴る","蹴る","刺す","轢く","焼く","爆破"]
+    if check_keywords_via_token(normalized, violence_keywords):
+        judgement = "⚠️ 暴力的表現あり"
+        detail = f"tokens in {violence_keywords}"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
 
+    # (7) いじめ/ハラスメントの例
+    harassment_kws = ["お前消えろ","存在価値ない","いらない人間","死んだほうがいい","社会のゴミ"]
+    if check_keywords_via_token(normalized, harassment_kws):
+        judgement = "⚠️ ハラスメント表現あり"
+        detail = f"tokens in {harassment_kws}"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
 
+    # (8) 脅迫など
+    threat_kws = ["晒す","特定する","ぶっ壊す","復讐する","燃やす","呪う","報復する"]
+    if check_keywords_via_token(normalized, threat_kws):
+        judgement = "⚠️ 脅迫表現あり"
+        detail = f"tokens in {threat_kws}"
+        _eval_cache[text] = (judgement, detail)
+        return judgement, detail
+
+    # 何も当てはまらなければ「問題なし」
+    _eval_cache[text] = (judgement, detail)
+    return judgement, detail
+
+# テスト用サンプル
 if __name__ == "__main__":
-    # テスト例
     offensive_dict = load_offensive_dict("offensive_words.json")
 
-    test_inputs = [
-        "山下ってブスだよな",
-        "あいつは過去に補導されたことあるらしい",
-        "お前は詐欺グループとつながってるんだろ？",
-        "黙れクズ",
-        "何も問題のない文章です",
+    tests = [
+        "山下ってブスだよな",          # 人名+侮辱 => 問題あり
+        "山下は政治家",                # 人名のみ => 問題なし
+        "ブスだな",                    # 人名なし+オフェンシブ => 問題あり
+        "死ね",                        # 暴力的(形態素チェック) => 問題あり
+        "お前は詐欺グループとつながってる",  # 個人攻撃+犯罪組織 => 問題あり
+        "普通の文章です"               # 問題なし
     ]
 
-    for ti in test_inputs:
-        print(f"入力: {ti}")
-        result = evaluate_text(ti, offensive_dict)
-        print(f"判定: {result}")
-        print("----")
+    for t in tests:
+        res = evaluate_text(t, offensive_dict)
+        print(f"入力: {t} => 判定: {res}")
