@@ -3,6 +3,8 @@ import os
 import json
 import re
 
+from collections import OrderedDict  # ✅ キャッシュ管理用
+from functools import lru_cache
 import spacy
 from spacy.lang.ja import Japanese
 from rapidfuzz import fuzz
@@ -11,11 +13,15 @@ import jaconv
 # あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて書き換えてください）
 from ..load_surnames import load_surnames
 
+# 形態素解析のキャッシュ
+nlp = spacy.load("ja_core_news_sm")  # ✅ 事前にロード（1回だけ）
+@lru_cache(maxsize=1000)
+def cached_tokenize(text):
+    doc = nlp(text)  # 🚀 すでにロード済みの `nlp` を使う
+    return [token.lemma_ for token in doc]
+
 # 簡易キャッシュ（メモリに保存）: テキスト → 判定結果
 _eval_cache = {}
-
-# SpaCy の日本語モデルをロード（軽量モデル使用）
-nlp = Japanese()
 
 def load_offensive_dict(json_path="offensive_words.json"):
     """
@@ -72,13 +78,13 @@ def normalize_text(text):
     return jaconv.kata2hira(text)
 
 def tokenize_and_lemmatize(text):
-    doc = nlp(text)
-    return [token.lemma_ for token in doc]
+    return cached_tokenize(text)  # ✅ キャッシュされた関数を直接使う
 
 def check_keywords_via_token(text, keywords):
     tokens = tokenize_and_lemmatize(text)
-    return any(kw in tokens for kw in keywords)
+    return any(kw in tokens for kw in keywords)  # ✅ `cached_tokenize()` の結果を使う
 
+@lru_cache(maxsize=1000)  # ✅ 1000件までキャッシュ
 def check_partial_match(text, word_list, threshold=80):
     """
     文字列ベースの部分一致チェック:
@@ -86,9 +92,9 @@ def check_partial_match(text, word_list, threshold=80):
       - fuzzy(partial_ratio) >= threshold => マッチとみなす
     """
     for w in word_list:
-        if w in text:
+        if w in text:  # 完全一致なら即マッチ
             return True, w, 100
-        score = fuzz.partial_ratio(w, text)
+        score = fuzz.ratio(w, text)  # ✅ より正確なスコアを計算
         if score >= threshold:
             return True, w, score
     return False, None, None
@@ -106,6 +112,9 @@ def evaluate_text(text, offensive_dict):
     """
     if text in _eval_cache:
         return _eval_cache[text]
+
+    if len(_eval_cache) > 1000:  # ✅ キャッシュサイズ制限
+        _eval_cache.popitem(last=False)  # FIFO（古いものから削除）
 
     normalized = normalize_text(text)
     all_offensive = flatten_offensive_words(offensive_dict)
