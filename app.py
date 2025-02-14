@@ -1,45 +1,53 @@
 import os
 import json
-import requests  # ❗️ `requests` を適切にインポート
-import atexit
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+import requests
+from flask import Flask, render_template, redirect, url_for, send_from_directory, session
 from flask_login import LoginManager, login_user
 from authlib.integrations.flask_client import OAuth
-from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
-# 相対インポート例（flask_appパッケージ配下である想定）
-from .extensions import db
-from .routes import main, auth
-from .models.user import User
+# 相対インポート
+from extensions import db
+from routes.main import main
+from routes.auth import auth
+from models.user import User
 
 load_dotenv()
 
+# Flask アプリケーションのセットアップ
 app = Flask(__name__, static_folder="static")
-
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "instance", "local.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/local.db"
 app.config["JSON_AS_ASCII"] = False
 
+# データベースの初期化
 db.init_app(app)
 
+# ユーザーログイン管理の設定
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "auth.login"
+login_manager.login_view = "auth.login"  # ログインが必要な場合、auth.login に飛ばす
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
 
-# OAuth (Google, Twitter) 初期化
+# OAuth 初期化
 oauth = OAuth(app)
+
+with app.app_context():
+    oauth.init_app(app)  # app が完全に初期化された後に設定
+    db.create_all()      # DB作成（初回のみ）
+
+    # OAuth インスタンスを app.config に登録
+    # → auth.py 内で使うため
+    app.config["OAUTH_INSTANCE"] = oauth
 
 # --- Dropbox からファイルをダウンロードする関数 ---
 def download_file(url, local_path):
     """Dropbox の公開 URL からファイルをダウンロード"""
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)  # ❗️ ディレクトリがない場合は作成
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
     response = requests.get(url, stream=True)
     if response.status_code == 200:
         with open(local_path, "wb") as f:
@@ -49,28 +57,30 @@ def download_file(url, local_path):
     else:
         print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
 
-# --- DBテーブルの作成 & Dropbox から `offensive_words.json` をロード ---
-with app.app_context():
-    db.create_all()  # ❗️ DB 作成
+# --- Blueprint の登録 ---
+app.register_blueprint(main)
+app.register_blueprint(auth)
+# ※ auth に関するすべてのルートは auth.py に書いてあるので、ここで追加のルート定義は不要
 
-    # Dropbox の URL から `offensive_words.json` をダウンロード
-    dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
-    local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
+# --- Dropbox から offensive_words.json をダウンロード ---
+dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
+local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
 
-    if dropbox_offensive_words_url:
-        download_file(dropbox_offensive_words_url, local_offensive_words_path)
+if dropbox_offensive_words_url:
+    download_file(dropbox_offensive_words_url, local_offensive_words_path)
 
-    # `offensive_words.json` のロード
-    try:
-        with open(local_offensive_words_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        app.config["OFFENSIVE_WORDS"] = data
-        print("✅ `offensive_words.json` をロードしました")
-    except FileNotFoundError:
-        app.logger.error(f"{local_offensive_words_path} が見つかりません。")
-        app.config["OFFENSIVE_WORDS"] = {}
+# offensive_words.json のロード
+try:
+    with open(local_offensive_words_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    app.config["OFFENSIVE_WORDS"] = data
+    print("✅ `offensive_words.json` をロードしました")
+except FileNotFoundError:
+    app.logger.error(f"{local_offensive_words_path} が見つかりません。")
+    app.config["OFFENSIVE_WORDS"] = {}
 
-# --- Google OAuth ---
+# --- Google OAuth の登録 ---
+# ※ ルートの定義は auth.py に移動しているので、ここでは OAuth の登録だけ行います
 oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
@@ -79,25 +89,24 @@ oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
-@app.route("/login/google")
+@auth.route("/login/google")
 def login_google():
-    redirect_uri = url_for("authorize_google", _external=True)
+    """Googleログイン処理"""
+    oauth = current_app.config["OAUTH_INSTANCE"]  # ✅ `app.py` から OAuth インスタンスを取得
+    redirect_uri = url_for("auth.authorize_google", _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
-@app.route("/authorize/google")
+@auth.route("/authorize/google")
 def authorize_google():
+    """Google認証処理"""
+    oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
-    email = user_info["email"]
-    user = User.query.get(email)
-    if not user:
-        user = User(id=email, email=email)
-        db.session.add(user)
-        db.session.commit()
-    login_user(user)
-    return redirect("/")
+    session["user"] = user_info  # ✅ 認証情報をセッションに保存
+    return redirect(url_for("main.home"))
 
-# --- Twitter OAuth ---
+# --- Twitter OAuth の登録 ---
+# ※ 必要ならここで登録する（auth.py で Twitter の処理が使えるようにするため）
 oauth.register(
     name="twitter",
     client_id=os.getenv("TWITTER_API_KEY"),
@@ -122,8 +131,8 @@ def login_twitter():
 def authorize_twitter():
     oauth_token = request.args.get("oauth_token")
     oauth_verifier = request.args.get("oauth_verifier")
-    if not oauth_verifier:
-        return "Error: OAuth verifier is missing.", 400
+    if not oauth_token or not oauth_verifier:
+        return "Error: Missing OAuth parameters", 400
 
     twitter = OAuth1Session(
         client_key=os.getenv("TWITTER_API_KEY"),
