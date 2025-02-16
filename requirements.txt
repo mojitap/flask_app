@@ -18,3 +18,6 @@ requests>=2.25,<3.0
 # OAuth library
 authlib==1.4.1
 APScheduler==3.9.1
+
+# PostgreSQL 接続用
+psycopg2-binary
