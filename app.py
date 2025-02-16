@@ -12,17 +12,25 @@ from flask_app.extensions import db
 from flask_app.routes.main import main
 from flask_app.routes.auth import auth
 from flask_app.models.user import User
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 load_dotenv()
 
-# Flask アプリケーションのセットアップ
+# データベースのセットアップ
 app = Flask(__name__, static_folder="static")
+db = SQLAlchemy()  # ❌ ここではバインドしない
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(app.root_path, "instance", "local.db")
+
+# 本番環境では PostgreSQL、本番用 DB がない場合は SQLite
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///" + os.path.join(app.root_path, "instance", "local.db"))
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
+app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)  # ✅ DEBUGを明示的に設定
 
 # データベースの初期化
-db.init_app(app)
+db.init_app(app)  # ✅ ここでFlaskにバインド
+migrate = Migrate(app, db)  # Flask-Migrate を登録
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
@@ -37,8 +45,6 @@ def load_user(user_id):
 oauth = OAuth(app)
 with app.app_context():
     oauth.init_app(app)
-    db.create_all()
-    # OAuth インスタンスを app.config に登録（auth.py で利用するため）
     app.config["OAUTH_INSTANCE"] = oauth
 
 # --- Dropbox からファイルをダウンロードする関数 ---
