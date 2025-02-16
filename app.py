@@ -105,6 +105,3 @@ def show_terms():
     except FileNotFoundError:
         app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
