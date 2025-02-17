@@ -23,7 +23,7 @@ db = SQLAlchemy(app)  # ✅ ここでバインド
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
 
 # 本番環境では PostgreSQL、本番用 DB がない場合は SQLite
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/local.db"  # ✅ SQLite に固定
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)  # ✅ DEBUGを明示的に設定
