@@ -3,7 +3,7 @@ from flask_login import login_user
 from requests_oauthlib import OAuth1Session
 import os
 from models import User  # ✅ `models/__init__.py` で `User` をインポートしているため
-from flask_app.extensions import db  # DB操作用
+from extensions import db
 
 auth = Blueprint("auth", __name__)
 
