@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 # models/search_history.py
-from ..extensions import db
+from extensions import db  # ✅
 
 class SearchHistory(db.Model):
     __tablename__ = 'search_history'
