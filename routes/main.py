@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
 from models.search_history import SearchHistory
-from ..models.text_evaluation import evaluate_text
+from models.text_evaluation import evaluate_text  # ✅ 絶対インポートに変更
 
 print("✅ main.py が読み込まれました！")
 
