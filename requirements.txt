@@ -13,6 +13,7 @@ spacy>=3.6.0,<3.7.0
 rapidfuzz==3.1.1
 numpy==1.23.5  # NumPy のバージョンを固定
 thinc==8.1.10  # Thinc のバージョンを Spacy 3.6 系に合わせる
+jaconv==0.3.4  # ✅ jaconv を追加
 
 # HTTP requests
 requests>=2.25,<3.0
