@@ -11,7 +11,7 @@ from rapidfuzz import fuzz
 import jaconv
 
 # あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて調整してください）
-from ..load_surnames import load_surnames
+from .load_surnames import load_surnames
 
 # 形態素解析のキャッシュ
 nlp = spacy.load("ja_core_news_sm")  # 事前にロード（1回だけ）
