@@ -28,8 +28,14 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)  # ✅ DEBUGを明示的に設定
 
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)  # ← これが Flask-Migrate の設定
+
+# モデルのインポート
+from models.search_history import SearchHistory
+
 with app.app_context():
-    db.create_all()  # ✅ SQLite用のテーブルを自動作成（Flask-Migrate なし）
+    
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
