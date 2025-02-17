@@ -25,3 +25,5 @@ APScheduler==3.9.1
 
 # PostgreSQL 接続用
 psycopg2-binary
+
+Flask-Migrate==4.1.0
