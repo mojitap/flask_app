@@ -16,17 +16,16 @@ def login_google():
 
 @auth.route("/authorize/google")
 def authorize_google():
-    """Google認証処理"""
     oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
 
-    # ここでメールアドレス等でユーザーを検索・作成します
+    # Google の 'sub' を id として利用する
+    google_id = user_info.get("sub")
     email = user_info.get("email")
     user = User.query.filter_by(email=email).first()
     if not user:
-        # ここは必要に応じて適切な属性でユーザーを作成
-        user = User(email=email)
+        user = User(id=google_id, email=email)
         db.session.add(user)
         db.session.commit()
 
@@ -48,7 +47,6 @@ def login_twitter():
 
 @auth.route("/authorize/twitter")
 def authorize_twitter():
-    """Twitter認証処理"""
     oauth_token = request.args.get("oauth_token")
     oauth_verifier = request.args.get("oauth_verifier")
     if not oauth_token or not oauth_verifier:
@@ -66,12 +64,12 @@ def authorize_twitter():
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
     twitter_id = user_info.get("id_str")
-    email = user_info.get("email", f"{twitter_id}@twitter.com")
+    # Twitterではメールが取得できない場合が多いため、仮のメールアドレスを作成
+    email = user_info.get("email", f"{twitter_id}@example.com")
 
-    # ユーザーを検索・作成
     user = User.query.filter_by(email=email).first()
     if not user:
-        user = User(email=email)
+        user = User(id=twitter_id, email=email)
         db.session.add(user)
         db.session.commit()
 
