@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
 # インポート文の修正（flask_app. を削除）
-from extensions import db  # ✅ ルートにあるため
+from extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
@@ -17,30 +17,28 @@ from flask_migrate import Migrate
 
 load_dotenv()
 
-# データベースのセットアップ
+# Flask アプリケーションのセットアップ
 app = Flask(__name__, static_folder="static")
-db = SQLAlchemy(app)  # ✅ ここでバインド
-app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
 
-# 本番環境では PostgreSQL、本番用 DB がない場合は SQLite
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///instance/local.db")
+# ここで設定を行う
+app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
+# 環境変数の名前に合わせて必要なら "DATABASE_URL" に変更してください
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
-app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)  # ✅ DEBUGを明示的に設定
+app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)
 
+# SQLAlchemy の初期化（1回だけ）
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)  # ← これが Flask-Migrate の設定
-
-# モデルのインポート
-from models.search_history import SearchHistory
+migrate = Migrate(app, db)
 
 with app.app_context():
-    db.create_all()  # ✅ 必要な処理を追加
-    
+    db.create_all()  # SQLite 用のテーブルを自動作成
+
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "auth.login"  # ※ 必要なら、専用のログイン画面を定義
+login_manager.login_view = "auth.login"
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -66,7 +64,6 @@ def download_file(url, local_path):
 # --- Blueprint の登録 ---
 app.register_blueprint(main)
 app.register_blueprint(auth)
-# ※ 認証関連のルートはすべて routes/auth.py に記述しています
 
 # --- Dropbox から offensive_words.json をダウンロード ---
 dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
@@ -109,7 +106,6 @@ def static_files(filename):
 def robots():
     return send_from_directory(app.static_folder, "robots.txt")
 
-
 @app.route("/terms")
 def show_terms():
     terms_path = os.path.join(app.root_path, "terms.txt")
@@ -121,6 +117,5 @@ def show_terms():
         app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-# ✅ Flask アプリを直接実行できるようにする
 if __name__ == "__main__":
     app.run(debug=True)
