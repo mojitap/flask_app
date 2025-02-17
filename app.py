@@ -7,12 +7,11 @@ from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
-# インポート文の修正（flask_app. を削除）
+# extensions.py 内の db を使う（すでに SQLAlchemy() で作成されている）
 from extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 load_dotenv()
@@ -20,20 +19,19 @@ load_dotenv()
 # Flask アプリケーションのセットアップ
 app = Flask(__name__, static_folder="static")
 
-# ここで設定を行う
+# 設定を行う
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-# 環境変数の名前に合わせて必要なら "DATABASE_URL" に変更してください
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)
 
-# SQLAlchemy の初期化（1回だけ）
-db = SQLAlchemy(app)
+# extensions.py 内の db をアプリにバインド
+db.init_app(app)
 migrate = Migrate(app, db)
 
 with app.app_context():
-    db.create_all()  # SQLite 用のテーブルを自動作成
+    db.create_all()  # テーブル自動作成
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
