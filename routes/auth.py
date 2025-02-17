@@ -1,13 +1,16 @@
 from flask import Blueprint, redirect, url_for, session, current_app, request
+from flask_login import login_user
 from requests_oauthlib import OAuth1Session
 import os
+from models.user import User  # ユーザーモデルをインポート
+from flask_app.extensions import db  # DB操作用
 
 auth = Blueprint("auth", __name__)
 
 @auth.route("/login/google")
 def login_google():
     """Googleログイン処理"""
-    oauth = current_app.config["OAUTH_INSTANCE"]  # ✅ `app.py` から OAuth インスタンスを取得
+    oauth = current_app.config["OAUTH_INSTANCE"]
     redirect_uri = url_for("auth.authorize_google", _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
@@ -17,7 +20,17 @@ def authorize_google():
     oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
-    session["user"] = user_info  # ✅ 認証情報をセッションに保存
+
+    # ここでメールアドレス等でユーザーを検索・作成します
+    email = user_info.get("email")
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # ここは必要に応じて適切な属性でユーザーを作成
+        user = User(email=email)
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
     return redirect(url_for("main.home"))
 
 @auth.route("/login/twitter")
@@ -38,7 +51,6 @@ def authorize_twitter():
     """Twitter認証処理"""
     oauth_token = request.args.get("oauth_token")
     oauth_verifier = request.args.get("oauth_verifier")
-
     if not oauth_token or not oauth_verifier:
         return "Error: Missing OAuth parameters", 400
 
@@ -51,12 +63,17 @@ def authorize_twitter():
     access_token_url = "https://api.twitter.com/oauth/access_token"
     tokens = twitter.fetch_access_token(access_token_url)
 
-    # ✅ 追加: ユーザー情報を取得して保存
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
-    
     twitter_id = user_info.get("id_str")
     email = user_info.get("email", f"{twitter_id}@twitter.com")
-    session["user"] = {"id": twitter_id, "email": email}
 
+    # ユーザーを検索・作成
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(email=email)
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
     return redirect(url_for("main.home"))
