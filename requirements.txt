@@ -11,6 +11,8 @@ gunicorn==23.0.0
 textblob==0.19.0
 spacy>=3.6.0,<3.7.0
 rapidfuzz==3.1.1
+numpy==1.23.5  # NumPy のバージョンを固定
+thinc==8.1.10  # Thinc のバージョンを Spacy 3.6 系に合わせる
 
 # HTTP requests
 requests>=2.25,<3.0
