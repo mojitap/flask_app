@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
 # インポート文の修正（flask_app. を削除）
-from extensions import db
+from extensions import db  # ✅ ルートにあるため
 from routes.main import main
 from routes.auth import auth
 from models.user import User
