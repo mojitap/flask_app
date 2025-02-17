@@ -9,6 +9,7 @@ gunicorn==23.0.0
 
 # Text processing and machine learning
 spacy>=3.6.0,<3.7.0
+ja-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/ja_core_news_sm-3.8.0/ja_core_news_sm-3.8.0.tar.gz
 rapidfuzz==3.1.1
 numpy==1.23.5  # NumPy のバージョンを固定
 thinc==8.1.10  # Thinc のバージョンを Spacy 3.6 系に合わせる
