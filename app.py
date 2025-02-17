@@ -35,8 +35,8 @@ migrate = Migrate(app, db)  # ← これが Flask-Migrate の設定
 from models.search_history import SearchHistory
 
 with app.app_context():
+    db.create_all()  # ✅ 必要な処理を追加
     
-
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -104,6 +104,11 @@ oauth.register(
 @app.route("/static/<path:filename>")
 def static_files(filename):
     return send_from_directory("static", filename)
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory(app.static_folder, "robots.txt")
+
 
 @app.route("/terms")
 def show_terms():
