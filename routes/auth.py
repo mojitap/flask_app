@@ -16,13 +16,16 @@ def login_google():
 
 @auth.route("/authorize/google")
 def authorize_google():
+    """Google認証処理"""
     oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
 
-    # Google の 'sub' を id として利用する
+    # Google の 'sub' を一意なIDとして利用
     google_id = user_info.get("sub")
     email = user_info.get("email")
+
+    # ユーザー検索。email で検索していますが、主キーとしては google_id を使う
     user = User.query.filter_by(email=email).first()
     if not user:
         user = User(id=google_id, email=email)
