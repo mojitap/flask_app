@@ -1,6 +1,5 @@
-# routes/__init__.py
-
-from .auth import auth
+# flask_app/routes/__init__.py
 from .main import main
+from .auth import auth
 
 __all__ = ["main", "auth"]
