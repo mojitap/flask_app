@@ -50,6 +50,7 @@ def login_twitter():
 
 @auth.route("/authorize/twitter")
 def authorize_twitter():
+    """Twitter認証処理"""
     oauth_token = request.args.get("oauth_token")
     oauth_verifier = request.args.get("oauth_verifier")
     if not oauth_token or not oauth_verifier:
