@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
 # extensions.py 内の db を使う
-from extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
 from flask_migrate import Migrate
+from extensions import db
 
 load_dotenv()
 
@@ -25,12 +25,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///ins
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 
-# extensions.py 内の db をアプリにバインド
-db.init_app(app)
+# ✅ Flask-Migrate の初期化を最初に行う
+migrate = Migrate(app, db)
 
-# ✅ Flask のアプリコンテキストを明示的にプッシュ
-with app.app_context():
-    db.create_all()  # ✅ 初回のみ実行
+# ✅ db.init_app() をここで実行
+db.init_app(app)
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
@@ -113,8 +112,6 @@ def show_terms():
     except FileNotFoundError:
         app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
-
-migrate = Migrate(app, db)
 
 if __name__ == "__main__":
     app.run(debug=True)
