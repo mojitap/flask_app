@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy  # ✅ 追加
 from flask_migrate import Migrate  # ✅ 追加
 
 # extensions.py 内の db を使う
-from extensions import db
+from flask_app.extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
