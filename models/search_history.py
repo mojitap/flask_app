@@ -8,10 +8,10 @@ class SearchHistory(db.Model):
 
     @staticmethod
     def add_or_increment(query):
-        record = SearchHistory.query.filter_by(search_term=query).first()
+        record = SearchHistory.query.filter_by(query=query).first()
         if record:
             record.count += 1
         else:
-            record = SearchHistory(search_term=query, count=1)
+            record = SearchHistory(query=query, count=1)
             db.session.add(record)
         db.session.commit()
