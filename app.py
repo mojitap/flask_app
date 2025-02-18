@@ -6,14 +6,14 @@ from flask_login import LoginManager, login_user
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
-from flask_sqlalchemy import SQLAlchemy  # ✅ 追加
-from flask_migrate import Migrate  # ✅ 追加
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-# extensions.py 内の db を使う
+# --- ここが重要: "flask_app.extensions" とパッケージ名をつける ---
 from flask_app.extensions import db
-from routes.main import main
-from routes.auth import auth
-from models.user import User
+from flask_app.routes.main import main
+from flask_app.routes.auth import auth
+from flask_app.models.user import User
 
 load_dotenv()
 
