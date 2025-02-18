@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
 # extensions.py 内の db を使う
-from flask_app.extensions import db
+from extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
@@ -24,7 +24,6 @@ app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
-app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)
 
 # extensions.py 内の db をアプリにバインド
 db.init_app(app)
