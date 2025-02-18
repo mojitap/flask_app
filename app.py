@@ -6,13 +6,14 @@ from flask_login import LoginManager, login_user
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
+from flask_sqlalchemy import SQLAlchemy  # ✅ 追加
+from flask_migrate import Migrate  # ✅ 追加
 
 # extensions.py 内の db を使う
+from extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
-from flask_migrate import Migrate
-from extensions import db
 
 load_dotenv()
 
@@ -21,15 +22,15 @@ app = Flask(__name__, static_folder="static")
 
 # 設定を行う
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")  # ✅ os.getenv() のまま
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 
-# ✅ Flask-Migrate の初期化を最初に行う
-migrate = Migrate(app, db)
-
-# ✅ db.init_app() をここで実行
+# ✅ db.init_app() を先に実行
 db.init_app(app)
+
+# ✅ Flask-Migrate の初期化
+migrate = Migrate(app, db)
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
@@ -45,6 +46,10 @@ oauth = OAuth(app)
 oauth.init_app(app)
 app.config["OAUTH_INSTANCE"] = oauth
 
+# --- Blueprint の登録 ---
+app.register_blueprint(main)
+app.register_blueprint(auth)
+
 # --- Dropbox からファイルをダウンロードする関数 ---
 def download_file(url, local_path):
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -56,10 +61,6 @@ def download_file(url, local_path):
         print(f"✅ {local_path} をダウンロードしました")
     else:
         print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
-
-# --- Blueprint の登録 ---
-app.register_blueprint(main)
-app.register_blueprint(auth)
 
 # --- Dropbox から offensive_words.json をダウンロード ---
 dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
