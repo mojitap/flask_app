@@ -7,7 +7,7 @@ from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
-# extensions.py 内の db を使う（すでに SQLAlchemy() で作成されている）
+# extensions.py 内の db を使う
 from extensions import db
 from routes.main import main
 from routes.auth import auth
@@ -30,8 +30,9 @@ app.config["DEBUG"] = os.getenv("FLASK_DEBUG", False)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+# ✅ Flask のアプリコンテキストを明示的にプッシュ
 with app.app_context():
-    db.create_all()  # テーブル自動作成
+    db.create_all()  # ✅ 初回のみ実行
 
 # ユーザーログイン管理の設定
 login_manager = LoginManager()
