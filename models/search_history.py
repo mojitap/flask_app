@@ -8,7 +8,6 @@ class SearchHistory(db.Model):
 
     @staticmethod
     def add_or_increment(query_text):
-        # カラム名を 'query' に修正
         record = SearchHistory.query.filter_by(query=query_text).first()
         if record:
             record.count += 1
