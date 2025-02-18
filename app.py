@@ -27,7 +27,6 @@ app.config["JSON_AS_ASCII"] = False
 
 # extensions.py 内の db をアプリにバインド
 db.init_app(app)
-migrate = Migrate(app, db)
 
 # ✅ Flask のアプリコンテキストを明示的にプッシュ
 with app.app_context():
@@ -114,6 +113,8 @@ def show_terms():
     except FileNotFoundError:
         app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
         return render_template("terms.html", terms_content="利用規約は現在利用できません。")
+
+migrate = Migrate(app, db)
 
 if __name__ == "__main__":
     app.run(debug=True)
