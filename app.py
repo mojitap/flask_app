@@ -11,10 +11,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 # --- パッケージ内のモジュールを絶対インポート ---
-from flask_app.extensions import db
-from flask_app.routes.main import main
-from flask_app.routes.auth import auth
-from flask_app.models.user import User
+from extensions import db
+from routes.main import main
+from routes.auth import auth
+from models.user import User
 
 load_dotenv()
 
