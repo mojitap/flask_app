@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 
 # extensions.py 内の db を使う
-from extensions import db
+from flask_app.extensions import db
 from routes.main import main
 from routes.auth import auth
 from models.user import User
