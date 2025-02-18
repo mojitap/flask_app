@@ -1,15 +1,16 @@
+# flask_app/app.py
 import os
 import json
 import requests
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-# --- ここが重要: "flask_app.extensions" とパッケージ名をつける ---
+# --- パッケージ内のモジュールを絶対インポート ---
 from flask_app.extensions import db
 from flask_app.routes.main import main
 from flask_app.routes.auth import auth
@@ -17,25 +18,26 @@ from flask_app.models.user import User
 
 load_dotenv()
 
-# Flask アプリケーションのセットアップ
 app = Flask(__name__, static_folder="static")
 
-# 設定を行う
+# ここで Flask の設定をまとめて行う
 app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")  # ✅ os.getenv() のまま
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_AS_ASCII"] = False
 
-# ✅ db.init_app() を先に実行
+# SQLAlchemy + Migrate の初期化
 db.init_app(app)
-
-# ✅ Flask-Migrate の初期化
 migrate = Migrate(app, db)
 
-# ユーザーログイン管理の設定
+# Blueprint 登録
+app.register_blueprint(main)
+app.register_blueprint(auth)
+
+# Flask-Login 設定
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "auth.login"
+login_manager.login_view = "auth.login"  # 必要なら専用ログインページを
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -45,10 +47,6 @@ def load_user(user_id):
 oauth = OAuth(app)
 oauth.init_app(app)
 app.config["OAUTH_INSTANCE"] = oauth
-
-# --- Blueprint の登録 ---
-app.register_blueprint(main)
-app.register_blueprint(auth)
 
 # --- Dropbox からファイルをダウンロードする関数 ---
 def download_file(url, local_path):
