@@ -92,6 +92,11 @@ oauth.register(
     request_token_params={"scope": "read write"}
 )
 
+# --- メインページのルート ---
+@app.route("/")
+def home():
+    return render_template("index.html")  # ✅ `index.html` を表示
+    
 # --- 静的ファイル & 利用規約ページ ---
 @app.route("/static/<path:filename>")
 def static_files(filename):
