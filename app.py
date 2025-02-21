@@ -1,8 +1,7 @@
-# flask_app/app.py
 import os
 import json
 import requests
-from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
+from flask import Flask, render_template, redirect, url_for, send_from_directory, session
 from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
@@ -10,107 +9,85 @@ from requests_oauthlib import OAuth1Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-# --- パッケージ内のモジュールを絶対インポート ---
-from extensions import db
+# --- 拡張機能のインポート ---
+from extensions import db  # ✅ `db = SQLAlchemy()` は `extensions.py` に移動
 from routes.main import main
 from routes.auth import auth
 from models.user import User
 
-load_dotenv()
+# --- Flask アプリの作成 ---
+def create_app():
+    load_dotenv()  # ✅ 正しいインデント
+    app = Flask(__name__, static_folder="static")  # ✅ 正しいインデント
 
-app = Flask(__name__, static_folder="static")
+    # ここで Flask の設定をまとめて行う
+    app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["JSON_AS_ASCII"] = False
 
-# ここで Flask の設定をまとめて行う
-app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["JSON_AS_ASCII"] = False
+    # --- SQLAlchemy + Migrate の初期化 ---
+    db.init_app(app)
+    migrate = Migrate(app, db)
 
-# SQLAlchemy + Migrate の初期化
-db.init_app(app)
-migrate = Migrate(app, db)
+    # --- Flask-Login 設定 ---
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
 
-# Blueprint 登録
-app.register_blueprint(main)
-app.register_blueprint(auth)
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(user_id)
 
-# Flask-Login 設定
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "auth.login"  # 必要なら専用ログインページを
+    # --- Blueprint の登録 ---
+    app.register_blueprint(main)
+    app.register_blueprint(auth)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
+    # --- OAuth 初期化 ---
+    oauth = OAuth(app)
+    oauth.init_app(app)
+    app.config["OAUTH_INSTANCE"] = oauth
 
-# OAuth 初期化
-oauth = OAuth(app)
-oauth.init_app(app)
-app.config["OAUTH_INSTANCE"] = oauth
+    oauth.register(
+        name="google",
+        client_id=os.getenv("GOOGLE_CLIENT_ID"),
+        client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"}
+    )
 
-# --- Dropbox からファイルをダウンロードする関数 ---
-def download_file(url, local_path):
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    response = requests.get(url, stream=True)
-    if response.status_code == 200:
-        with open(local_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        print(f"✅ {local_path} をダウンロードしました")
-    else:
-        print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
+    oauth.register(
+        name="twitter",
+        client_id=os.getenv("TWITTER_API_KEY"),
+        client_secret=os.getenv("TWITTER_API_SECRET"),
+        request_token_params={"scope": "read write"}
+    )
 
-# --- Dropbox から offensive_words.json をダウンロード ---
-dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
-local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
-if dropbox_offensive_words_url:
-    download_file(dropbox_offensive_words_url, local_offensive_words_path)
+    # --- メインページのルート ---
+    @app.route("/")
+    def home():
+        return render_template("index.html")
 
-# offensive_words.json のロード
-try:
-    with open(local_offensive_words_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    app.config["OFFENSIVE_WORDS"] = data
-    print("✅ `offensive_words.json` をロードしました")
-except FileNotFoundError:
-    app.logger.error(f"{local_offensive_words_path} が見つかりません。")
-    app.config["OFFENSIVE_WORDS"] = {}
+    # --- 静的ファイル & 利用規約ページ ---
+    @app.route("/static/<path:filename>")
+    def static_files(filename):
+        return send_from_directory("static", filename)
 
-# --- OAuth 登録 ---
-oauth.register(
-    name="google",
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"}
-)
+    @app.route("/robots.txt")
+    def robots():
+        return send_from_directory(app.static_folder, "robots.txt")
 
-oauth.register(
-    name="twitter",
-    client_id=os.getenv("TWITTER_API_KEY"),
-    client_secret=os.getenv("TWITTER_API_SECRET"),
-    request_token_params={"scope": "read write"}
-)
+    @app.route("/terms")
+    def show_terms():
+        terms_path = os.path.join(app.root_path, "terms.txt")
+        try:
+            with open(terms_path, "r", encoding="utf-8") as f:
+                terms_content = f.read()
+            return render_template("terms.html", terms_content=terms_content)
+        except FileNotFoundError:
+            app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
+            return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-# --- 静的ファイル & 利用規約ページ ---
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    return send_from_directory("static", filename)
+    return app  # ✅ `app` を返す
 
-@app.route("/robots.txt")
-def robots():
-    return send_from_directory(app.static_folder, "robots.txt")
-
-@app.route("/terms")
-def show_terms():
-    terms_path = os.path.join(app.root_path, "terms.txt")
-    try:
-        with open(terms_path, "r", encoding="utf-8") as f:
-            terms_content = f.read()
-        return render_template("terms.html", terms_content=terms_content)
-    except FileNotFoundError:
-        app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
-        return render_template("terms.html", terms_content="利用規約は現在利用できません。")
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    app = create_app()
