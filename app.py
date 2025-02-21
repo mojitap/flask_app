@@ -34,6 +34,11 @@ migrate = Migrate(app, db)
 app.register_blueprint(main)
 app.register_blueprint(auth)
 
+# --- メインページのルート ---
+@app.route("/")
+def home():
+    return render_template("index.html")  # ✅ `index.html` を表示
+
 # Flask-Login 設定
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -92,11 +97,6 @@ oauth.register(
     request_token_params={"scope": "read write"}
 )
 
-# --- メインページのルート ---
-@app.route("/")
-def home():
-    return render_template("index.html")  # ✅ `index.html` を表示
-    
 # --- 静的ファイル & 利用規約ページ ---
 @app.route("/static/<path:filename>")
 def static_files(filename):
