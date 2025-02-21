@@ -9,7 +9,7 @@ class SearchHistory(db.Model):
     @classmethod
     def add_or_increment(cls, query_text):
         """検索履歴を追加 or カウント増加"""
-        record = cls.query.filter(cls.query == query_text).first()  # ✅ filter_by → filter に修正
+        record = cls.query.filter(cls.search_query == query_text).first()
         if record:
             record.count += 1
         else:
