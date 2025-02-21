@@ -1,16 +1,18 @@
 from extensions import db
 
 class SearchHistory(db.Model):
-    __tablename__ = 'search_history'
+    __tablename__ = "search_history"
     id = db.Column(db.Integer, primary_key=True)
-    query = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ 修正後
+    query = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ 修正済み
+    count = db.Column(db.Integer, default=1)  # ✅ デフォルト値追加
 
-    @staticmethod
-    def add_or_increment(query_text):
-        record = SearchHistory.query.filter_by(query=query_text).first()  # ✅ 変更
+    @classmethod
+    def add_or_increment(cls, query_text):
+        """検索履歴を追加 or カウント増加"""
+        record = cls.query.filter(cls.query == query_text).first()  # ✅ filter_by → filter に修正
         if record:
             record.count += 1
         else:
-            record = SearchHistory(query=query_text, count=1)
+            record = cls(query=query_text, count=1)
             db.session.add(record)
         db.session.commit()
