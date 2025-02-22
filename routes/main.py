@@ -1,4 +1,3 @@
-# routes/main.py
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
@@ -6,11 +5,27 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
 from models.search_history import SearchHistory
-from models.text_evaluation import evaluate_text  # ✅ 絶対インポートに変更
+from models.text_evaluation import evaluate_text
+from sqlalchemy import text
+from extensions import db
 
 print("✅ main.py が読み込まれました！")
 
+# 先に Blueprint を定義
 main = Blueprint("main", __name__)
+
+# カラム一覧を表示するデバッグ用ルート
+@main.route("/debug/columns")
+def debug_columns():
+    rows = db.session.execute(text("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'search_history'
+    """)).fetchall()
+    print("=== search_history のカラム一覧 ===")
+    for r in rows:
+        print(r[0])
+    return "OK"
 
 @main.route("/")
 def home():
@@ -18,7 +33,7 @@ def home():
     return render_template("index.html")
 
 @main.route("/quick_check", methods=["POST"])
-@login_required  # 認証不要なら外す
+@login_required  # 認証不要なら外す場合は削除
 def quick_check():
     query = request.form.get("text", "").strip()
     if not query:
