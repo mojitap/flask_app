@@ -1,4 +1,3 @@
-# app.py
 import os
 import json
 import requests
@@ -27,11 +26,10 @@ def rename_column_if_needed():
         print("✅ カラム 'search_term' を 'search_query' にリネームしました！")
     except Exception as e:
         print("⚠️ カラムリネームでエラーが発生しました:", e)
-        # 既にリネーム済みの場合などはエラーになるが、問題なければスルー
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-
+    
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
@@ -60,7 +58,7 @@ def create_app():
     oauth.init_app(app)
     app.config["OAUTH_INSTANCE"] = oauth
 
-    # アプリ起動時に1回だけ、search_historyカラムをリネーム
+    # アプリ起動時に1回だけ、search_historyのカラムをリネーム
     with app.app_context():
         rename_column_if_needed()
 
@@ -129,9 +127,7 @@ def create_app():
 
     return app
 
-# ↑ここで create_app() 関数終わり
+app = create_app()
 
 if __name__ == "__main__":
-    # 実行時に create_app() でアプリを作り、run() する
-    my_app = create_app()
-    my_app.run(debug=True)
+    app.run(debug=True)
