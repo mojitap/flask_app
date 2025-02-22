@@ -67,17 +67,13 @@ def authorize_twitter():
 
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
-    
-    print(f"✅ Twitter認証成功！取得データ: {user_info}")  # 👈 ここで取得データをログに出力
-    
-    twitter_id = user_info.get("id_str")
-    email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ Twitterはメールが取得できない可能性があるので、仮のメールを作成
 
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        user = User(id=twitter_id, email=email)
-        db.session.add(user)
-        db.session.commit()  # ✅ ここでDBに保存
+    twitter_id = user_info.get("id_str")  # ✅ TwitterのID
+    email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ メール取得できない場合は仮のアドレス
+    profile_image_url = user_info.get("profile_image_url_https")  # ✅ TwitterのアイコンURL
+
+    # ✅ ユーザーの作成・取得
+    user = User.get_or_create(id=twitter_id, email=email, auth_type="twitter", profile_image_url=profile_image_url)
 
     login_user(user)
     return redirect(url_for("main.home"))
