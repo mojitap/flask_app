@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+from sqlalchemy import text
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
@@ -18,13 +19,15 @@ load_dotenv()
 
 def rename_column_if_needed():
     try:
-        db.session.execute("""
+        # text(...) を使って「これはテキストSQL」と明示
+        db.session.execute(text("""
             ALTER TABLE search_history
             RENAME COLUMN search_term TO search_query
-        """)
+        """))
         db.session.commit()
         print("✅ カラム 'search_term' を 'search_query' にリネームしました！")
     except Exception as e:
+        # 既にリネーム済みの場合などで失敗しても、ここはスルーしてOK
         print("⚠️ カラムリネームでエラーが発生しました:", e)
 
 def create_app():
