@@ -18,8 +18,8 @@ def create_app():
     load_dotenv()
 
     # デバッグ用（環境変数が正しく設定されているか確認）
-    print(f"TWITTER_API_KEY: {os.getenv('TWITTER_API_KEY')}")
-    print(f"TWITTER_API_SECRET: {os.getenv('TWITTER_API_SECRET')}")
+    print(f"✅ TWITTER_API_KEY: {os.getenv('TWITTER_API_KEY')}")
+    print(f"✅ TWITTER_API_SECRET: {os.getenv('TWITTER_API_SECRET')}")
 
     # アプリの設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
