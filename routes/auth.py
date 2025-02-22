@@ -68,6 +68,8 @@ def authorize_twitter():
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
     
+    print(f"✅ Twitter認証成功！取得データ: {user_info}")  # 👈 ここで取得データをログに出力
+    
     twitter_id = user_info.get("id_str")
     email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ Twitterはメールが取得できない可能性があるので、仮のメールを作成
 
