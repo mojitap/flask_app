@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-from sqlalchemy import text
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
@@ -16,19 +15,6 @@ from routes.auth import auth
 from models.user import User
 
 load_dotenv()
-
-def rename_column_if_needed():
-    try:
-        # text(...) を使って「これはテキストSQL」と明示
-        db.session.execute(text("""
-            ALTER TABLE search_history
-            RENAME COLUMN search_term TO search_query
-        """))
-        db.session.commit()
-        print("✅ カラム 'search_term' を 'search_query' にリネームしました！")
-    except Exception as e:
-        # 既にリネーム済みの場合などで失敗しても、ここはスルーしてOK
-        print("⚠️ カラムリネームでエラーが発生しました:", e)
 
 def create_app():
     app = Flask(__name__, static_folder="static")
@@ -60,10 +46,6 @@ def create_app():
     oauth = OAuth(app)
     oauth.init_app(app)
     app.config["OAUTH_INSTANCE"] = oauth
-
-    # アプリ起動時に1回だけ、search_historyのカラムをリネーム
-    with app.app_context():
-        rename_column_if_needed()
 
     # --- Dropbox からファイルをダウンロードする関数 ---
     def download_file(url, local_path):
