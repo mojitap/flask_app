@@ -2,10 +2,11 @@ from flask_login import UserMixin
 from extensions import db
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'  # ✅ テーブル名を明示的に指定
-    __table_args__ = {'extend_existing': True}  # ✅ 既存テーブルの拡張を許可
+    __tablename__ = "user"
+    __table_args__ = {"extend_existing": True}
 
-    id = db.Column(db.Integer, primary_key=True)
+    # OAuthで取得するIDが文字列なので、Stringで定義
+    id = db.Column(db.String(255), primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
 
 def create_sample_user():
