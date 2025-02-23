@@ -106,7 +106,7 @@ def create_app():
     def robots():
         return send_from_directory(app.static_folder, "robots.txt")
 
-    # 利用規約をファイル読み込みして表示
+    # ---- (A) 利用規約の表示 ----
     @app.route("/terms")
     def show_terms():
         terms_path = os.path.join(app.root_path, "terms.txt")
@@ -115,13 +115,28 @@ def create_app():
                 terms_content = f.read()
             return render_template("terms.html", terms_content=terms_content)
         except FileNotFoundError:
-            app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
+            current_app.logger.error(f"{terms_path} が見つかりません。")
             return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
-    # プライバシーポリシーは固定HTMLを返す想定
+    # ---- (B) プライバシーポリシーの表示 ----
     @app.route("/privacy")
     def show_privacy():
-        return render_template("privacy.html")
+        privacy_path = os.path.join(app.root_path, "privacy.txt")
+        try:
+            with open(privacy_path, "r", encoding="utf-8") as f:
+                privacy_content = f.read()
+            return render_template("privacy.html", privacy_content=privacy_content)
+        except FileNotFoundError:
+            current_app.logger.error(f"{privacy_path} が見つかりません。")
+            return render_template("privacy.html", privacy_content="プライバシーポリシーは現在利用できません。")
+
+    @app.route("/static/<path:filename>")
+    def static_files(filename):
+        return send_from_directory(app.static_folder, filename)
+
+    @app.route("/robots.txt")
+    def robots():
+        return send_from_directory(app.static_folder, "robots.txt")
 
     return app
 
