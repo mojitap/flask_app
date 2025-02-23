@@ -117,6 +117,10 @@ def create_app():
             app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
             return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
+    @app.route("/privacy")
+    def show_privacy():
+        return render_template("privacy.html")
+
     return app
 
 app = create_app()
