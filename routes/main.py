@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
 from models.search_history import SearchHistory
-from models.text_evaluation import evaluate_text
+from models.text_evaluation import evaluate_text, load_whitelist
 from sqlalchemy import text
 from extensions import db
 
@@ -32,18 +32,23 @@ def home():
     print("✅ / にアクセスされました")
     return render_template("index.html")
 
+whitelist = load_whitelist("data/whitelist.json")
+
 @main.route("/quick_check", methods=["POST"])
-@login_required  # 認証不要なら外す場合は削除
+@login_required
 def quick_check():
     query = request.form.get("text", "").strip()
     if not query:
         return "<h2>エラー: 検索クエリが空です。</h2>", 400
 
-    # 検索履歴を保存など
+    # Render.com でダウンロード/ロード済みの辞書を取得
+    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    
+    # ホワイトリスト対応で判定する
+    judgement, detail = evaluate_text(query, offensive_dict, whitelist=whitelist)
+
+    # 検索履歴を保存
     SearchHistory.add_or_increment(query)
 
-    # 辞書を取得
-    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
-    result, detail = evaluate_text(query, offensive_dict)
-
-    return render_template("result.html", query=query, result=result, detail=detail)
+    # テンプレートに渡す変数は judgement, detail でよい
+    return render_template("result.html", query=query, result=judgement, detail=detail)
