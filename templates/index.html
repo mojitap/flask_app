@@ -41,18 +41,19 @@
         display: block;
         width: 80%;
         max-width: 300px;
-        margin: 10px auto;
+        margin: 10px auto;        /* ボタン間に縦方向の余白を入れる */
         padding: 10px 20px;
         font-size: 1rem;
         text-align: center;
-        color: #fff;
+        color: #fff;              /* 白文字 */
+        background-color: #007BFF; /* 濃いめの青 */
         border: none;
         border-radius: 5px;
         cursor: pointer;
         text-decoration: none; /* aタグの場合の下線を消す */
       }
       .btn:hover {
-          opacity: 0.9;
+        background-color: #0056b3;
       }
       footer {
           margin-top: 20px;
@@ -144,13 +145,15 @@
     {% else %}
       <!-- 未ログイン: ログイン誘導 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <a href="/login/google" class="btn login-google">Login with Google</a>
-      <a href="/login/twitter" class="btn login-twitter">Login with (X)旧Twitter</a>
-
+      <a href="/login/google" class="btn">Login with Google</a>
+      <a href="/login/twitter" class="btn">Login with (X)旧Twitter</a>
+      .login-buttons {
+        margin-bottom: 30px; /* 2つのログインボタンの下に余白を入れたい場合 */
+　　　}
       <!-- ここに利用規約・プライバシーポリシーへのリンクを追加 -->
       <nav>
-        <a href="/terms" class="btn link-terms">利用規約</a>
-        <a href="/privacy" class="btn link-privacy">プライバシーポリシー</a>
+        <a href="/terms" class="btn">利用規約</a>
+        <a href="/privacy" class="btn">プライバシーポリシー</a>
       </nav>
     {% endif %}
 
