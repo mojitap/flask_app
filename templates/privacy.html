@@ -1,16 +1,57 @@
-<!-- templates/privacy.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-　<meta charset="UTF-8">
-　<title>プライバシーポリシー</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プライバシーポリシー</title>
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f9f9f9;
+        padding: 20px;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+    }
+    p {
+        line-height: 1.6;
+        color: #555;
+    }
+    a {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        color: #007BFF;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .back-btn {
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    .back-btn:hover {
+        background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-　<h1>プライバシーポリシー</h1>
-
-　<p>
-    Mojitap（以下「本サービス」といいます）を運営する個人または団体（以下「当方」といいます）は、...（以下略）
-
+  <div class="container">
+    <h1>プライバシーポリシー</h1>
+    <p>
 Mojitap（以下「本サービス」といいます）を運営する個人または団体（以下「当方」といいます）は、本サービスの利用者（以下「ユーザー」といいます）の個人情報を適切に取り扱うため、以下のとおりプライバシーポリシー（以下「本ポリシー」といいます）を定めます。本サービスをご利用いただくにあたり、本ポリシーに同意したものとみなします。
 
 第1条（総則）
@@ -86,16 +127,12 @@ Mojitap（以下「本サービス」といいます）を運営する個人ま�
 ユーザーが本サービスを利用する場合、本ポリシーに同意したものとみなされます。
 
 最終改定日：2025年2月24日
-　</p>
+    </p>
 
-  <p>
-    <a href="/terms">利用規約</a> もあわせてご確認ください。
-  </p>
-
-  <hr>
-  <nav>
-    <a href="/">トップページに戻る</a> |
-    <a href="/terms">利用規約</a>
-  </nav>
+    <p>
+      <a href="/terms">利用規約</a> もあわせてご確認ください。
+    </p>
+    <button class="back-btn" onclick="window.history.back()">戻る</button>
+  </div>
 </body>
 </html>
