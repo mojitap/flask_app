@@ -24,6 +24,7 @@ def authorize_google():
     # Google の 'sub' を一意なIDとして利用
     google_id = user_info.get("sub")
     email = user_info.get("email")
+    name = user_info.get("name")  # ✅ Google のアカウント名
 
     # ✅ ユーザーがDBに存在するかチェック
     user = User.query.filter_by(email=email).first()
@@ -67,16 +68,16 @@ def authorize_twitter():
 
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
-
+    
     twitter_id = user_info.get("id_str")
-    email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ メール取得できない場合は仮のメール
-    profile_image_url = user_info.get("profile_image_url_https")
+    email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ Twitterはメールが取得できない可能性があるので、仮のメールを作成
+    name = user_info.get("name")  # ✅ Twitter のアカウント名
 
-    # ✅ ユーザーの作成・取得
-    user = User.get_or_create(id=twitter_id, email=email, auth_type="twitter", profile_image_url=profile_image_url)
-
-    print(f"✅ Twitter情報: {user}")  # デバッグ用にログ出力
-    db.session.commit()
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(id=twitter_id, email=email)
+        db.session.add(user)
+        db.session.commit()  # ✅ ここでDBに保存
 
     login_user(user)
     return redirect(url_for("main.home"))
