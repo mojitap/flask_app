@@ -26,7 +26,7 @@
         h1 {
             text-align: center;
         }
-        p {
+        p, pre {
             line-height: 1.6;
             color: #555;
         }
@@ -39,7 +39,7 @@
         a:hover {
             text-decoration: underline;
         }
-        button {
+        .back-btn {
             padding: 10px 20px;
             background-color: #007BFF;
             color: #fff;
@@ -48,7 +48,7 @@
             cursor: pointer;
             margin-top: 20px;
         }
-        button:hover {
+        .back-btn:hover {
             background-color: #0056b3;
         }
     </style>
@@ -56,8 +56,13 @@
 <body>
     <div class="container">
         <h1>利用規約</h1>
+        <!-- ここに読み込んだ利用規約を表示 -->
         <pre>{{ terms_content }}</pre>
-        <button onclick="window.history.back()">戻る</button>
+
+        <p>
+          <a href="/privacy">プライバシーポリシー</a> もあわせてご確認ください。
+        </p>
+        <button class="back-btn" onclick="window.history.back()">戻る</button>
     </div>
 </body>
 </html>
