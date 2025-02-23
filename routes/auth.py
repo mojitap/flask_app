@@ -21,17 +21,20 @@ def authorize_google():
     token = oauth.google.authorize_access_token()
     user_info = oauth.google.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
 
-    # Google の 'sub' を一意なIDとして利用
     google_id = user_info.get("sub")
     email = user_info.get("email")
+    google_name = user_info.get("name")  # <= ここが表示名
 
-    # ✅ ユーザーがDBに存在するかチェック
     user = User.query.filter_by(email=email).first()
     if not user:
-        user = User(id=google_id, email=email)
+        # 新規ユーザー: display_name にセット
+        user = User(id=google_id, email=email, display_name=google_name)
         db.session.add(user)
-        db.session.commit()
+    else:
+        # 既存ユーザーでも、最新の名前を上書きしたいなら
+        user.display_name = google_name
 
+    db.session.commit()
     login_user(user)
     return redirect(url_for("main.home"))
 
@@ -67,15 +70,20 @@ def authorize_twitter():
 
     user_info_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
-    
+
     twitter_id = user_info.get("id_str")
-    email = user_info.get("email", f"{twitter_id}@example.com")  # ✅ Twitterはメールが取得できない可能性があるので、仮のメールを作成
+    # 公式にメールを取得できない場合があるので、取れなかったら仮のメールを作成
+    twitter_email = user_info.get("email", f"{twitter_id}@example.com")
+    twitter_name = user_info.get("name")  # <= ここがTwitter表示名
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=twitter_email).first()
     if not user:
-        user = User(id=twitter_id, email=email)
+        # 新規ユーザー: display_name にセット
+        user = User(id=twitter_id, email=twitter_email, display_name=twitter_name)
         db.session.add(user)
-        db.session.commit()  # ✅ ここでDBに保存
+    else:
+        user.display_name = twitter_name
 
+    db.session.commit()
     login_user(user)
     return redirect(url_for("main.home"))
