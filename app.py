@@ -106,6 +106,7 @@ def create_app():
     def robots():
         return send_from_directory(app.static_folder, "robots.txt")
 
+    # 利用規約をファイル読み込みして表示
     @app.route("/terms")
     def show_terms():
         terms_path = os.path.join(app.root_path, "terms.txt")
@@ -117,6 +118,7 @@ def create_app():
             app.logger.error(f"利用規約ファイルが見つかりません: {terms_path}")
             return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
+    # プライバシーポリシーは固定HTMLを返す想定
     @app.route("/privacy")
     def show_privacy():
         return render_template("privacy.html")
