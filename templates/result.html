@@ -1,17 +1,30 @@
 <!-- templates/result.html -->
-{% extends "base.html" %}
-
-<!-- タイトルを差し替えたい場合だけ block title を上書き -->
-{% block title %}
-検索結果 - MojiTap
-{% endblock %}
-
-{% block content %}
-<h3>検索結果</h3>
-<p>クエリ: {{ query }}</p>
-<p>評価: {{ result }}</p>
-{% if detail %}
-    <p>詳細: {{ detail }}</p>
-{% endif %}
-<a href="/">戻る</a>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <title>検索結果</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+    <header>
+        <h1>MojiTap</h1>
+        <nav>
+            <a href="/">ホーム</a>
+            <a href="/terms">利用規約</a>
+        </nav>
+    </header>
+    <main>
+        <h3>検索結果</h3>
+        <p>クエリ: {{ query }}</p>
+        <p>評価: {{ result }}</p>
+        {% if detail %}
+            <p>詳細: {{ detail }}</p>
+        {% endif %}
+        <a href="/">戻る</a>
+    </main>
+    <footer>
+        <p>© 2025 MojiTap</p>
+    </footer>
+</body>
+</html>
