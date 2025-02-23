@@ -1,68 +1,57 @@
+<!-- templates/terms.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>利用規約</title>
-    <style>
-        pre {
-            white-space: pre-wrap;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-        }
-        p, pre {
-            line-height: 1.6;
-            color: #555;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #007BFF;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .back-btn {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .back-btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>利用規約</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    pre {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: #555;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>利用規約</h1>
-        <!-- ここに読み込んだ利用規約を表示 -->
-        <pre>{{ terms_content }}</pre>
-
-        <p>
-          <a href="/privacy">プライバシーポリシー</a> もあわせてご確認ください。
-        </p>
-        <button class="back-btn" onclick="window.history.back()">戻る</button>
-    </div>
+  <div class="container">
+    <h1>利用規約</h1>
+    <pre>{{ terms_content }}</pre>
+    <a href="/" class="back-btn">トップページに戻る</a>
+    <p style="margin-top: 20px;">
+      <a href="/privacy">プライバシーポリシー</a> もあわせてご確認ください。
+    </p>
+  </div>
 </body>
 </html>
