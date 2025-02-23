@@ -44,7 +44,7 @@ def load_offensive_dict(json_path="offensive_words.json"):
         data = json.load(f)
     return data
 
-def load_whitelist(json_path="whitelist.json"):
+def load_whitelist(json_path="data/whitelist.json"):
     """
     whitelist.json を読み込んで set(...) を返す。
     形式: ["ありえない", "誤検出しがち", ...]
@@ -80,7 +80,7 @@ def check_keywords_via_token(text, keywords):
     tokens = tokenize_and_lemmatize(text)
     return any(kw in tokens for kw in keywords)
 
-def fuzzy_match_keywords(text, keywords, threshold=80):
+def fuzzy_match_keywords(text, keywords, threshold=90):
     """
     text 内に、keywords のいずれかが部分一致または類似度スコアが threshold 以上で存在するか判定
     """
