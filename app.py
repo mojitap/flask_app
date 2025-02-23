@@ -130,10 +130,6 @@ def create_app():
             current_app.logger.error(f"{privacy_path} が見つかりません。")
             return render_template("privacy.html", privacy_content="プライバシーポリシーは現在利用できません。")
 
-    @app.route("/robots.txt")
-    def robots():
-        return send_from_directory(app.static_folder, "robots.txt")
-
     return app
 
 app = create_app()
