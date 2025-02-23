@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
 from models.search_history import SearchHistory
-from models.text_evaluation import load_whitelist
+from models.text_evaluation import evaluate_text, load_whitelist
 from sqlalchemy import text
 from extensions import db
 
@@ -47,8 +47,7 @@ def quick_check():
     # ホワイトリスト対応で判定する
     judgement, detail = evaluate_text(query, offensive_dict, whitelist=whitelist)
 
-    # 検索履歴を保存
+    # 検索履歴を保存など
     SearchHistory.add_or_increment(query)
 
-    # テンプレートに渡す変数は judgement, detail でよい
     return render_template("result.html", query=query, result=judgement, detail=detail)
