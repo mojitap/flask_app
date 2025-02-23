@@ -44,6 +44,18 @@ def load_offensive_dict(json_path="offensive_words.json"):
         data = json.load(f)
     return data
 
+def load_whitelist(json_path="whitelist.json"):
+    """
+    whitelist.json を読み込んで set(...) を返す。
+    形式: ["ありえない", "誤検出しがち", ...]
+    """
+    if not os.path.exists(json_path):
+        print(f"⚠️ {json_path} が見つかりません。ホワイトリストは空です。")
+        return set()
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return set(data)
+    
 def flatten_offensive_words(offensive_dict):
     """
     offensive_words.json の "categories" 内のリストを全て合体して、1次元リストとして返す。
@@ -100,10 +112,10 @@ def detect_personal_accusation(text):
     pattern = rf"{pronouns_pattern}.*{crime_pattern}|{crime_pattern}.*{pronouns_pattern}"
     return re.search(pattern, norm) is not None
 
-def evaluate_text(text, offensive_dict):
-    """
-    入力テキストに対する (判定ラベル, 詳細文字列) を返す
-    """
+def evaluate_text(text, offensive_dict, whitelist=None):
+    if whitelist is None:
+        whitelist = set()
+
     if text in _eval_cache:
         return _eval_cache[text]
     if len(_eval_cache) > 1000:
@@ -119,7 +131,10 @@ def evaluate_text(text, offensive_dict):
     found_words = []
     match, w, score = check_partial_match(normalized, tuple(all_offensive), threshold=80)
     if match:
-        found_words.append((w, score))
+        if w in whitelist:
+            print(f"✅ ホワイトリスト入りなので除外: {w}")
+        else:
+            found_words.append((w, score))
 
     # (2) 苗字チェック
     surnames = load_surnames()
