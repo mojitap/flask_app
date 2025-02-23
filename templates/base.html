@@ -1,9 +1,13 @@
+<!-- templates/base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
+    <meta charset="UTF-8" />
+    <!-- スマホ画面に対応させるなら viewport を設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- タイトルは継承先で上書きできるようにしておく -->
     <title>{% block title %}MojiTap{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
     <header>
@@ -14,6 +18,7 @@
         </nav>
     </header>
     <main>
+        <!-- ここに継承先で表示したい中身を差し込む -->
         {% block content %}{% endblock %}
     </main>
     <footer>
