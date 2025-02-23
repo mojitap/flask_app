@@ -61,9 +61,16 @@ def create_app():
 
     # Dropboxファイルダウンロード
     dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
+    dropbox_whitelist_url       = os.getenv("DROPBOX_WHITELIST_URL")
+
     local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
+    local_whitelist_path       = os.path.join(app.root_path, "data", "whitelist.json")
+
     if dropbox_offensive_words_url:
         download_file(dropbox_offensive_words_url, local_offensive_words_path)
+
+    if dropbox_whitelist_url:
+        download_file(dropbox_whitelist_url, local_whitelist_path)
 
     # offensive_words.json のロード
     try:
