@@ -1,4 +1,3 @@
-<!-- templates/result.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -9,10 +8,6 @@
 <body>
     <header>
         <h1>MojiTap</h1>
-        <nav>
-            <a href="/">ホーム</a>
-            <a href="/terms">利用規約</a>
-        </nav>
     </header>
     <main>
         <h3>検索結果</h3>
@@ -21,8 +16,14 @@
         {% if detail %}
             <p>詳細: {{ detail }}</p>
         {% endif %}
-        <a href="/">戻る</a>
+        <a href="/">トップページに戻る</a>
     </main>
+
+    <nav>
+      <a href="/terms">利用規約</a> |
+      <a href="/privacy">プライバシーポリシー</a>
+    </nav>
+
     <footer>
         <p>© 2025 MojiTap</p>
     </footer>
