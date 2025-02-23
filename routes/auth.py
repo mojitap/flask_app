@@ -72,9 +72,9 @@ def authorize_twitter():
     user_info = twitter.get(user_info_url, params={"include_email": "true"}).json()
 
     twitter_id = user_info.get("id_str")
-    # 公式にメールを取得できない場合があるので、取れなかったら仮のメールを作成
     twitter_email = user_info.get("email", f"{twitter_id}@example.com")
-    twitter_name = user_info.get("name")  # <= ここがTwitter表示名
+    twitter_name = user_info.get("name")            # 例: "Taro"
+    twitter_screen_name = user_info.get("screen_name")  # 例: "taro_zzz"
 
     user = User.query.filter_by(email=twitter_email).first()
     if not user:
@@ -82,7 +82,7 @@ def authorize_twitter():
         user = User(id=twitter_id, email=twitter_email, display_name=twitter_name)
         db.session.add(user)
     else:
-        user.display_name = twitter_name
+    user.display_name = f"{twitter_name} (@{twitter_screen_name})"
 
     db.session.commit()
     login_user(user)
