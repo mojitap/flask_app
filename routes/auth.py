@@ -82,7 +82,7 @@ def authorize_twitter():
         user = User(id=twitter_id, email=twitter_email, display_name=twitter_name)
         db.session.add(user)
     else:
-    user.display_name = f"{twitter_name} (@{twitter_screen_name})"
+        user.display_name = f"{twitter_name} (@{twitter_screen_name})"
 
     db.session.commit()
     login_user(user)
