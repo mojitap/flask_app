@@ -94,7 +94,7 @@ def authorize_twitter():
     else:
         user.display_name = f"{twitter_name} (@{twitter_screen_name})"
         user.provider = "twitter"
-        user.twitter_screen_name = twitter_screen_nam
+        user.twitter_screen_name = twitter_screen_name
 
     db.session.commit()
     login_user(user)
