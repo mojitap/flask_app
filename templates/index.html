@@ -5,141 +5,121 @@
   <meta charset="UTF-8" />
   <title>Mojitap</title>
   <style>
-      body {
-          font-family: 'Arial', sans-serif;
-          background-color: #f9f9f9;
-          padding: 20px;
-          margin: 0;
-      }
-      .container {
-          max-width: 600px; /* サイズを調整 */
-          margin: 0 auto;
-          background: #ffffff;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          text-align: center;
-      }
-      .logo {
-          max-width: 200px; /* ロゴサイズを制限 */
-          width: 100%;
-          height: auto; /* アスペクト比を保持 */
-          margin-bottom: 40px;
-      }
-      h1 {
-          text-align: center;
-          font-size: 2rem; /* タイトルサイズ */
-          color: #333;
-      }
-      p {
-          font-size: 1rem;
-          color: #555;
-          margin-bottom: 20px;
-      }
-      .btn {
-          display: block;
-          width: 80%; /* ボタンの幅を小さく調整 */
-          max-width: 300px;
-          margin: 10px auto;
-          padding: 10px 20px;
-          font-size: 1rem;
-          text-align: center;
-          color: #fff;
-          background-color: #007BFF;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          text-decoration: none;
-      }
-      .btn:hover {
-          background-color: #0056b3;
-      }
-      footer {
-          margin-top: 20px;
-          font-size: 0.9rem;
-          color: #aaa;
-          text-align: center;
-      }
+    /* ここでは CSS を埋め込んでいますが、別ファイルにしてもOK */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px; 
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .logo {
+      max-width: 200px; 
+      width: 100%;
+      height: auto;
+      /* 余白を減らしたければ以下のmarginを小さく */
+      margin-bottom: 20px; /* 例: 40px -> 20pxに */
+    }
+    h1 {
+      font-size: 2rem;
+      color: #333;
+      margin: 0 0 20px; 
+    }
+    .description {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: block;
+      width: 80%; 
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 1rem;
+      text-align: center;
+      color: #fff;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
 
-      /* 検索ボックスのスタイル */
-      .search-box {
-          width: 100%; /* 親要素に応じて幅を調整 */
-          max-width: 600px; /* 最大幅 */
-          min-height: 100px; /* 高さ */
-          padding: 12px; /* 内側の余白 */
-          font-size: 16px; /* 適切なフォントサイズ */
-          border: 1px solid #ccc;
-          border-radius: 5px;
-          resize: vertical; /* 縦方向のサイズ変更を許可 */
-          box-sizing: border-box; /* パディング込みでサイズ計算 */
-          margin: 10px auto; /* 中央揃え */
-          display: block; /* ブロック要素にする */
-      }
+    /* 検索ボックス */
+    .search-box {
+      width: 100%;
+      max-width: 600px;
+      min-height: 100px;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: vertical;
+      box-sizing: border-box;
+      margin: 10px auto;
+      display: block;
+    }
 
-      .search-button {
-          display: block;
-          margin: 10px auto;
-          padding: 10px 20px;
-          font-size: 16px;
-          color: #fff;
-          background-color: #007bff;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          text-align: center;
-          width: 100%; /* ボタンの幅を全幅に */
-          max-width: 300px; /* 最大幅を指定 */
-      }
+    /* ボタンを .btn と共通化 */
+    .search-button {
+      /* .btn と同じようにしてもOK。下記は共通クラスにしても良い */
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 1rem;
+      text-align: center;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 80%;
+      max-width: 300px;
+      text-decoration: none;
+    }
+    .search-button:hover {
+      background-color: #0056b3;
+    }
 
-      .search-button:hover {
-          background-color: #0056b3;
-      }
-
-      /* スマートフォン向けの調整 */
-      @media (max-width: 768px) {
-          .search-box {
-              font-size: 14px; /* フォントサイズを縮小 */
-              min-height: 80px; /* 高さを縮小 */
-              padding: 10px; /* パディングを調整 */
-          }
-
-          .search-button {
-              font-size: 14px; /* ボタンフォントサイズを縮小 */
-              padding: 8px 16px; /* パディングを縮小 */
-          }
-      }
-
-      @media (max-width: 480px) {
-          .search-box {
-              font-size: 12px; /* スマホ用にさらに縮小 */
-              min-height: 60px; /* 高さを縮小 */
-          }
-
-          .search-button {
-              font-size: 12px;
-              padding: 6px 12px;
-          }
-      }
+    footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
   </style>
 </head>
-<script src="{{ url_for('static', filename='js/detector.js') }}"></script>
 <body>
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+    <h1>Moji Tap</h1>
     <div class="description">
-      <p>相手に向けた言葉や、相手からの発言が、示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。</p>
+      相手に向けた言葉や、相手からの発言が、示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
     </div>
 
     {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済み: 検索フォーム -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
+        <!-- チェックボタンを「.search-button」または「.btn」で統一 -->
         <button type="submit" class="search-button">チェックする</button>
       </form>
       <!-- お問い合わせフォームのボタン -->
       <div class="inquiry">
         <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-        <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn contact">お問い合わせフォーム</a>
+        <!-- 同じクラス .btn を使うか、.search-button と同じでもOK -->
+        <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn">お問い合わせフォーム</a>
       </div>
     {% else %}
       <!-- 未ログイン: ログイン誘導 -->
