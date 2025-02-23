@@ -38,22 +38,21 @@
           margin-bottom: 20px;
       }
       .btn {
-          display: block;
-          width: 80%; /* ボタンの幅を小さく調整 */
-          max-width: 300px;
-          margin: 10px auto;
-          padding: 10px 20px;
-          font-size: 1rem;
-          text-align: center;
-          color: #fff;
-          background-color: #007BFF;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          text-decoration: none;
+        display: block;
+        width: 80%;
+        max-width: 300px;
+        margin: 10px auto;
+        padding: 10px 20px;
+        font-size: 1rem;
+        text-align: center;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none; /* aタグの場合の下線を消す */
       }
       .btn:hover {
-          background-color: #0056b3;
+          opacity: 0.9;
       }
       footer {
           margin-top: 20px;
@@ -145,13 +144,13 @@
     {% else %}
       <!-- 未ログイン: ログイン誘導 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <a href="/login/google" class="btn">Login with Google</a>
-      <a href="/login/twitter" class="btn">Login with Twitter</a>
+      <a href="/login/google" class="btn login-google">Login with Google</a>
+      <a href="/login/twitter" class="btn login-twitter">Login with (X)旧Twitter</a>
 
       <!-- ここに利用規約・プライバシーポリシーへのリンクを追加 -->
       <nav>
-        <a href="/terms" class="btn">利用規約</a>
-        <a href="/privacy" class="btn">プライバシーポリシー</a>
+        <a href="/terms" class="btn link-terms">利用規約</a>
+        <a href="/privacy" class="btn link-privacy">プライバシーポリシー</a>
       </nav>
     {% endif %}
 
