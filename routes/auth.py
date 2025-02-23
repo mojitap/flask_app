@@ -27,12 +27,17 @@ def authorize_google():
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        # 新規ユーザー: display_name にセット
-        user = User(id=google_id, email=email, display_name=google_name)
+        user = User(
+            id=google_id, 
+            email=email, 
+            display_name=google_name,
+            provider="google"
+        )
         db.session.add(user)
     else:
         # 既存ユーザーでも、最新の名前を上書きしたいなら
         user.display_name = google_name
+        user.provider = "google"
 
     db.session.commit()
     login_user(user)
@@ -78,11 +83,18 @@ def authorize_twitter():
 
     user = User.query.filter_by(email=twitter_email).first()
     if not user:
-        # 新規ユーザー: display_name にセット
-        user = User(id=twitter_id, email=twitter_email, display_name=twitter_name)
+        user = User(
+            id=twitter_id, 
+            email=twitter_email, 
+            display_name=f"{twitter_name} (@{twitter_screen_name})",
+            provider="twitter",
+            twitter_screen_name=twitter_screen_name
+        )
         db.session.add(user)
     else:
         user.display_name = f"{twitter_name} (@{twitter_screen_name})"
+        user.provider = "twitter"
+        user.twitter_screen_name = twitter_screen_nam
 
     db.session.commit()
     login_user(user)
