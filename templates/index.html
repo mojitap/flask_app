@@ -12,7 +12,7 @@
           margin: 0;
       }
       .container {
-          max-width: 600px; /* サイズを調整 */
+          max-width: 600px;
           margin: 0 auto;
           background: #ffffff;
           padding: 20px;
@@ -21,15 +21,15 @@
           text-align: center;
       }
       .logo {
-          max-width: 200px; /* ロゴサイズを制限 */
+          max-width: 200px;
           width: 100%;
-          height: auto; /* アスペクト比を保持 */
+          height: auto;
           margin-top: 20px;
           margin-bottom: 20px;
       }
       h1 {
           text-align: center;
-          font-size: 2rem; /* タイトルサイズ */
+          font-size: 2rem;
           color: #333;
       }
       p {
@@ -41,19 +41,45 @@
       /* =======================================
          ボタンのベーススタイル
          ======================================= */
+      /* もともと .btn に指定していた「大きめ」スタイルを
+         .search-button に適用（チェックボタン用） */
+      .search-button {
+          display: block;
+          margin: 10px auto;
+          padding: 10px 20px;
+          font-size: 16px;
+          color: #fff;
+          background-color: #007bff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          text-align: center;
+          width: 100%; /* 幅いっぱい */
+          max-width: 300px;
+      }
+      .search-button:hover {
+          background-color: #0056b3;
+      }
+
+      /* もともと .search-button に指定していた「少し小さめ」スタイルを
+         .btn に適用（規約・プライバシー・問い合わせ用） */
       .btn {
-        display: block;
-        text-align: center;
-        text-decoration: none;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        color: #fff;              /* 文字色: 白 */
-        background-color: #007BFF;/* 背景色: 濃いめの青 */
-        margin: 0 auto;          /* 中央寄せ */
+          display: block;
+          width: 80%;           /* 幅80% */
+          max-width: 300px;
+          margin: 10px auto;
+          padding: 10px 20px;
+          font-size: 1rem;
+          text-align: center;
+          color: #fff;
+          background-color: #007BFF;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          text-decoration: none;
       }
       .btn:hover {
-        background-color: #0056b3;
+          background-color: #0056b3;
       }
 
       /* =======================================
@@ -107,25 +133,8 @@
           margin: 10px auto;
           display: block;
       }
-      .search-button {
-          display: block;
-          margin: 10px auto;
-          padding: 10px 20px;
-          font-size: 16px;
-          color: #fff;
-          background-color: #007bff;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          text-align: center;
-          width: 100%;
-          max-width: 300px;
-      }
-      .search-button:hover {
-          background-color: #0056b3;
-      }
 
-      /* スマートフォン向けの調整 */
+      /* スマホ向けのフォント縮小など */
       @media (max-width: 768px) {
           .search-box {
               font-size: 14px;
@@ -149,51 +158,40 @@
       }
   </style>
 </head>
-<script src="{{ url_for('static', filename='js/detector.js') }}"></script>
 <body>
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
-
     <div class="description">
       「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ------------------------------------------
-           (A) ログイン済みの場合
-           ------------------------------------------ -->
+      <!-- ログイン済み: 検索フォーム -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
+        <!-- チェックボタンは .search-button（大きめスタイル） -->
         <button type="submit" class="search-button">チェックする</button>
       </form>
 
+      <!-- お問い合わせフォームボタンは .btn（小さめスタイル） -->
       <div class="inquiry">
         <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-        <!-- お問い合わせフォーム (小さめにしたいなら btn-policy とかでもOK) -->
-        <a href="https://forms.gle/..." target="_blank" class="btn btn-policy">お問い合わせフォーム</a>
-
-        <!-- 利用規約 / プライバシーポリシー も同じくらい小さめにしたい -->
-        <a href="/terms" class="btn btn-policy">利用規約</a>
-        <a href="/privacy" class="btn btn-policy">プライバシーポリシー</a>
+        <a href="https://forms.gle/..." target="_blank" class="btn contact">お問い合わせフォーム</a>
+        <!-- 利用規約・プライバシーポリシーをここでも表示したいなら、同じ .btn でOK -->
+        <a href="/terms" class="btn">利用規約</a>
+        <a href="/privacy" class="btn">プライバシーポリシー</a>
       </div>
-
     {% else %}
-      <!-- ------------------------------------------
-           (B) 未ログインの場合
-           ------------------------------------------ -->
+      <!-- 未ログイン: ログイン誘導 -->
       <p>この機能を使うにはログインが必要です。</p>
 
-      <!-- ログインボタン群 -->
-      <div class="login-buttons">
-        <a href="/login/google" class="btn btn-login">Login with Google</a>
-        <a href="/login/twitter" class="btn btn-login">Login with Twitter</a>
-      </div>
+      <!-- ログインボタンは .search-button（大きめスタイル） -->
+      <a href="/login/google" class="search-button">Login with Google</a>
+      <a href="/login/twitter" class="search-button">Login with Twitter</a>
 
-      <!-- 利用規約＆プライバシーポリシー: 小さめボタン -->
-      <div class="policy-links">
-        <a href="/terms" class="btn btn-policy">利用規約</a>
-        <a href="/privacy" class="btn btn-policy">プライバシーポリシー</a>
-      </div>
+      <!-- 利用規約＆プライバシーポリシー用の小さめボタン (.btn) -->
+      <a href="/terms" class="btn">利用規約</a>
+      <a href="/privacy" class="btn">プライバシーポリシー</a>
     {% endif %}
 
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
