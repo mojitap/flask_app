@@ -32,21 +32,22 @@
       color: #555;
     }
 
-    /* ---------- 大きいボタン（ログイン・チェック） ---------- */
-    .btn-big {
-      display: block;
-      margin: 10px auto;
-      padding: 12px 20px;
-      font-size: 1rem;
-      color: #fff;
-      background-color: #007BFF;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      text-decoration: none;
-      max-width: 300px;
+    /* ---------- 「チェックする」ボタンを大きめに ---------- */
+    .btn-check {
+        display: block;
+        margin: 12px auto;
+        padding: 14px 24px;  /* パディングを増やす */
+        font-size: 1.1rem;   /* フォントサイズを大きく */
+        font-weight: bold;   /* 文字を太くする */
+        color: #fff;
+        background-color: #007BFF;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        max-width: 320px;  /* 横幅を少し広げる */
     }
-    .btn-big:hover {
+    .btn-check:hover {
       background-color: #0056b3;
     }
 
@@ -137,7 +138,7 @@
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
         <!-- 「チェックする」はログインボタンと同じサイズ -->
-        <button type="submit" class="btn-big">チェックする</button>
+        <button type="submit" class="btn-check">チェックする</button>
       </form>
 
       <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
