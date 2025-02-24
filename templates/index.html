@@ -37,24 +37,55 @@
           color: #555;
           margin-bottom: 20px;
       }
+
+      /* =======================================
+         ボタンのベーススタイル
+         ======================================= */
       .btn {
         display: block;
-        width: 80%;
-        max-width: 300px;
-        margin: 10px auto;        /* ボタン間に縦方向の余白を入れる */
-        padding: 10px 20px;
-        font-size: 1rem;
         text-align: center;
-        color: #fff;              /* 白文字 */
-        background-color: #007BFF; /* 濃いめの青 */
+        text-decoration: none;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        text-decoration: none; /* aタグの場合の下線を消す */
+        color: #fff;              /* 文字色: 白 */
+        background-color: #007BFF;/* 背景色: 濃いめの青 */
+        margin: 0 auto;          /* 中央寄せ */
       }
       .btn:hover {
         background-color: #0056b3;
       }
+
+      /* =======================================
+         ログイン用ボタン: 大きめ
+         ======================================= */
+      .btn-login {
+        width: 80%;
+        max-width: 300px;
+        margin: 10px auto;   /* ボタン間の縦余白 */
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
+
+      /* =======================================
+         規約用ボタン: 小さめ
+         ======================================= */
+      .btn-policy {
+        width: 60%;
+        max-width: 200px;
+        margin: 5px auto;    /* ボタン間の縦余白 */
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      /* ボタン群コンテナの余白 */
+      .login-buttons {
+        margin-bottom: 20px; /* ログインボタン群の下に余白 */
+      }
+      .policy-links {
+        margin-top: 20px;    /* 規約ボタン群の上に余白 */
+      }
+
       footer {
           margin-top: 20px;
           font-size: 0.9rem;
@@ -64,19 +95,18 @@
 
       /* 検索ボックスのスタイル */
       .search-box {
-          width: 100%; /* 親要素に応じて幅を調整 */
-          max-width: 600px; /* 最大幅 */
-          min-height: 100px; /* 高さ */
-          padding: 12px; /* 内側の余白 */
-          font-size: 16px; /* 適切なフォントサイズ */
+          width: 100%;
+          max-width: 600px;
+          min-height: 100px;
+          padding: 12px;
+          font-size: 16px;
           border: 1px solid #ccc;
           border-radius: 5px;
-          resize: vertical; /* 縦方向のサイズ変更を許可 */
-          box-sizing: border-box; /* パディング込みでサイズ計算 */
-          margin: 10px auto; /* 中央揃え */
-          display: block; /* ブロック要素にする */
+          resize: vertical;
+          box-sizing: border-box;
+          margin: 10px auto;
+          display: block;
       }
-
       .search-button {
           display: block;
           margin: 10px auto;
@@ -88,10 +118,9 @@
           border-radius: 5px;
           cursor: pointer;
           text-align: center;
-          width: 100%; /* ボタンの幅を全幅に */
-          max-width: 300px; /* 最大幅を指定 */
+          width: 100%;
+          max-width: 300px;
       }
-
       .search-button:hover {
           background-color: #0056b3;
       }
@@ -99,23 +128,20 @@
       /* スマートフォン向けの調整 */
       @media (max-width: 768px) {
           .search-box {
-              font-size: 14px; /* フォントサイズを縮小 */
-              min-height: 80px; /* 高さを縮小 */
-              padding: 10px; /* パディングを調整 */
+              font-size: 14px;
+              min-height: 80px;
+              padding: 10px;
           }
-
           .search-button {
-              font-size: 14px; /* ボタンフォントサイズを縮小 */
-              padding: 8px 16px; /* パディングを縮小 */
+              font-size: 14px;
+              padding: 8px 16px;
           }
       }
-
       @media (max-width: 480px) {
           .search-box {
-              font-size: 12px; /* スマホ用にさらに縮小 */
-              min-height: 60px; /* 高さを縮小 */
+              font-size: 12px;
+              min-height: 60px;
           }
-
           .search-button {
               font-size: 12px;
               padding: 6px 12px;
@@ -140,7 +166,7 @@
       <!-- お問い合わせフォームのボタン -->
       <div class="inquiry">
         <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-        <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn contact">お問い合わせフォーム</a>
+        <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn btn-login">お問い合わせフォーム</a>
       </div>
     {% else %}
       <!-- 未ログイン: ログイン誘導 -->
@@ -148,12 +174,12 @@
 
       <!-- ログインボタン群 -->
       <div class="login-buttons">
-        <a href="/login/google" class="btn">Login with Google</a>
-        <a href="/login/twitter" class="btn">Login with Twitter</a>
+        <a href="/login/google" class="btn btn-login">Login with Google</a>
+        <a href="/login/twitter" class="btn btn-login">Login with Twitter</a>
       </div>
 
+      <!-- 規約リンクボタン群 -->
       <div class="policy-links">
-        <!-- 利用規約＆プライバシーポリシー用の少し小さめボタン -->
         <a href="/terms" class="btn btn-policy">利用規約</a>
         <a href="/privacy" class="btn btn-policy">プライバシーポリシー</a>
       </div>
