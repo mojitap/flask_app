@@ -143,17 +143,17 @@
         <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn contact">お問い合わせフォーム</a>
       </div>
     {% else %}
-      <!-- 未ログイン: ログイン誘導 -->
-      <p>この機能を使うにはログインが必要です。</p>
-      <a href="/login/google" class="btn">Login with Google</a>
-      <a href="/login/twitter" class="btn">Login with (X)旧Twitter</a>
-      
-      <!-- ここに利用規約・プライバシーポリシーへのリンクを追加 -->
-      <nav>
+      <!-- ログインボタン群 -->
+      <div class="login-buttons">
+        <a href="/login/google" class="btn">Login with Google</a>
+        <a href="/login/twitter" class="btn">Login with Twitter</a>
+      </div>
+
+      <!-- 規約ボタン群 -->
+      <div class="policy-links">
         <a href="/terms" class="btn">利用規約</a>
         <a href="/privacy" class="btn">プライバシーポリシー</a>
-      </nav>
-      
+      </div>
     {% endif %}
 
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
