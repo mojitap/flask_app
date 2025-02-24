@@ -1,9 +1,92 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-    <title>検索結果</title>
-    <link rel="stylesheet" href="/static/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mojitap - 検索結果</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+            text-align: center;  /* 🔹 中央揃え */
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .query {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .result-text {
+            font-size: 1.2rem;
+            color: red;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .detail {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* ボタンのデザイン */
+        .btn {
+            display: block;
+            margin: 10px auto;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 80%;
+            max-width: 300px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* 小さいボタン */
+        .btn-small {
+            display: block;
+            margin: 5px auto;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            max-width: 200px;
+        }
+        .btn-small:hover {
+            background-color: #0056b3;
+        }
+
+        /* フッター */
+        footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
     <header>
