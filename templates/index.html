@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta charset="UTF-8" />
   <title>Mojitap</title>
   <style>
     body {
@@ -32,45 +32,43 @@
       color: #555;
     }
 
-    /* ▼▼▼ 大きいボタン用: メイン操作 ▼▼▼ */
+    /* ---------- 大きいボタン（メイン操作） ---------- */
     .btn-big {
       display: block;
       margin: 10px auto;
       padding: 10px 20px;
       font-size: 1rem;
-      text-align: center;
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      max-width: 300px; /* 幅の上限 */
+      max-width: 300px;
     }
     .btn-big:hover {
       background-color: #0056b3;
     }
 
-    /* ▼▼▼ 小さいボタン用: 補助リンク ▼▼▼ */
+    /* ---------- 小さいボタン（補助リンク） ---------- */
     .btn-small {
       display: block;
-      margin: 6px auto;    /* ボタン間の余白を少し小さめ */
+      margin: 6px auto;
       padding: 8px 16px;
       font-size: 0.9rem;
-      text-align: center;
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      max-width: 200px; /* 幅の上限を小さめに */
+      max-width: 200px;
     }
     .btn-small:hover {
       background-color: #0056b3;
     }
 
-    /* ▼▼▼ テキストエリア (検索ボックス) ▼▼▼ */
+    /* ---------- テキストエリア（検索ボックス） ---------- */
     .search-box {
       width: 100%;
       max-width: 600px;
@@ -85,7 +83,6 @@
       display: block;
     }
 
-    /* ▼▼▼ フッター ▼▼▼ */
     footer {
       margin-top: 20px;
       font-size: 0.9rem;
@@ -93,7 +90,7 @@
       text-align: center;
     }
 
-    /* ▼▼▼ スマホ向けに少しだけ調整 ▼▼▼ */
+    /* ---------- スマホ向け調整 ---------- */
     @media (max-width: 768px) {
       .search-box {
         font-size: 14px;
@@ -120,35 +117,34 @@
 <body>
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+
     <div class="description">
       「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ▼▼▼ ログイン済みの場合 ▼▼▼ -->
+      <!-- ログイン済みの場合 -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
         <!-- 「チェックする」は大きめボタン -->
         <button type="submit" class="btn-big">チェックする</button>
       </form>
 
-      <div class="inquiry">
-        <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-        <!-- お問い合わせフォーム: 小さいボタン -->
-        <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
-        <!-- 利用規約・プライバシーも小さいボタンで並べる -->
-        <a href="/terms" class="btn-small">利用規約</a>
-        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-      </div>
+      <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      <!-- お問い合わせフォーム: 小さいボタン -->
+      <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
+      <!-- 利用規約・プライバシー も小さいボタンで表示 -->
+      <a href="/terms" class="btn-small">利用規約</a>
+      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
 
     {% else %}
-      <!-- ▼▼▼ 未ログインの場合 ▼▼▼ -->
+      <!-- 未ログインの場合 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <!-- ログインボタンは大きめ -->
+      <!-- ログインボタン: 大きめ -->
       <a href="/login/google" class="btn-big">Login with Google</a>
       <a href="/login/twitter" class="btn-big">Login with Twitter</a>
 
-      <!-- 利用規約＆プライバシーポリシー: 小さいボタン -->
+      <!-- 利用規約・プライバシーポリシー: 小さいボタン -->
       <a href="/terms" class="btn-small">利用規約</a>
       <a href="/privacy" class="btn-small">プライバシーポリシー</a>
     {% endif %}
