@@ -32,7 +32,7 @@
       color: #555;
     }
 
-    /* ---------- 大きいボタン（メイン操作） ---------- */
+    /* ---------- 大きいボタン（ログイン・チェック） ---------- */
     .btn-big {
       display: block;
       margin: 10px auto;
@@ -54,7 +54,7 @@
     .btn-small {
       display: block;
       margin: 6px auto;
-      padding: 8px 16px;
+      padding: 6px 14px;
       font-size: 0.8rem;  /* 文字サイズを小さく */
       color: #fff;
       background-color: #007BFF;
@@ -136,7 +136,7 @@
       <!-- ログイン済みの場合 -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- 「チェックする」は大きめボタン -->
+        <!-- 「チェックする」はログインボタンと同じサイズ -->
         <button type="submit" class="btn-big">チェックする</button>
       </form>
 
