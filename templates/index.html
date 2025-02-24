@@ -31,44 +31,40 @@
       margin-bottom: 20px;
       color: #555;
     }
-
-    /* ---------- 「チェックする」ボタンを大きめに ---------- */
-    .btn-check {
-        display: block;
-        margin: 12px auto;
-        padding: 14px 24px;  /* パディングを増やす */
-        font-size: 1.1rem;   /* フォントサイズを大きく */
-        font-weight: bold;   /* 文字を太くする */
-        color: #fff;
-        background-color: #007BFF;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        text-decoration: none;
-        max-width: 320px;  /* 横幅を少し広げる */
-    }
-    .btn-check:hover {
-      background-color: #0056b3;
-    }
-
-    /* ---------- 小さいボタン（補助リンク） ---------- */
-    .btn-small {
+    /* ---------- 大きいボタン（メイン操作） ---------- */
+    .btn-big {
       display: block;
-      margin: 6px auto;
-      padding: 6px 14px;
-      font-size: 0.8rem;  /* 文字サイズを小さく */
+      margin: 10px auto;
+      padding: 12px 24px;
+      font-size: 1rem;
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      max-width: 180px;  /* ボタンの幅を狭く */
+      text-align: center;
+      max-width: 300px;
+    }
+    .btn-big:hover {
+      background-color: #0056b3;
+    }
+    /* ---------- 小さいボタン（補助リンク） ---------- */
+    .btn-small {
+      display: inline-block;
+      margin: 5px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      color: #fff;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
     }
     .btn-small:hover {
       background-color: #0056b3;
     }
-
     /* ---------- テキストエリア（検索ボックス） ---------- */
     .search-box {
       width: 100%;
@@ -83,14 +79,12 @@
       margin: 10px auto;
       display: block;
     }
-
     footer {
       margin-top: 20px;
       font-size: 0.9rem;
       color: #aaa;
       text-align: center;
     }
-
     /* ---------- スマホ向け調整 ---------- */
     @media (max-width: 768px) {
       .search-box {
@@ -100,12 +94,11 @@
       }
       .btn-big {
         font-size: 14px;
-        padding: 10px 16px;
+        padding: 10px 18px;
       }
       .btn-small {
-        font-size: 0.7rem;
-        padding: 6px 12px;
-        max-width: 150px;
+        font-size: 0.8rem;
+        padding: 6px 10px;
       }
     }
     @media (max-width: 480px) {
@@ -115,12 +108,11 @@
       }
       .btn-big {
         font-size: 12px;
-        padding: 8px 12px;
+        padding: 8px 16px;
       }
       .btn-small {
         font-size: 0.7rem;
-        padding: 5px 10px;
-        max-width: 130px;
+        padding: 5px 8px;
       }
     }
   </style>
@@ -134,30 +126,29 @@
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済みの場合 -->
+      <!-- ログイン済みの場合：検索フォーム -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- 「チェックする」はログインボタンと同じサイズ -->
-        <button type="submit" class="btn-check">チェックする</button>
+        <!-- 検索ボタンは大きく -->
+        <button type="submit" class="btn-big">チェックする</button>
       </form>
-
-      <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-      <!-- お問い合わせフォーム: 小さいボタン -->
-      <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
-      <!-- 利用規約・プライバシー も小さいボタンで表示 -->
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-
+      <!-- 補助リンクは小さいボタン -->
+      <div style="margin-top: 10px;">
+        <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
+        <a href="/terms" class="btn-small">利用規約</a>
+        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
+      </div>
     {% else %}
-      <!-- 未ログインの場合 -->
+      <!-- 未ログインの場合：ログイン誘導 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <!-- ログインボタン: 大きめ -->
+      <!-- ログインボタンは大きく -->
       <a href="/login/google" class="btn-big">Login with Google</a>
-      <a href="/login/twitter" class="btn-big">Login with (X) 旧Twitter</a>
-
-      <!-- 利用規約・プライバシーポリシー: 小さいボタン -->
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
+      <a href="/login/twitter" class="btn-big">Login with Twitter</a>
+      <!-- 補助リンクは小さいボタン -->
+      <div style="margin-top: 10px;">
+        <a href="/terms" class="btn-small">利用規約</a>
+        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
+      </div>
     {% endif %}
 
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
