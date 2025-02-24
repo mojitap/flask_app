@@ -36,7 +36,7 @@
     .btn-big {
       display: block;
       margin: 10px auto;
-      padding: 10px 20px;
+      padding: 12px 20px;
       font-size: 1rem;
       color: #fff;
       background-color: #007BFF;
@@ -55,14 +55,14 @@
       display: block;
       margin: 6px auto;
       padding: 8px 16px;
-      font-size: 0.9rem;
+      font-size: 0.8rem;  /* 文字サイズを小さく */
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      max-width: 200px;
+      max-width: 180px;  /* ボタンの幅を狭く */
     }
     .btn-small:hover {
       background-color: #0056b3;
@@ -99,7 +99,12 @@
       }
       .btn-big {
         font-size: 14px;
-        padding: 8px 16px;
+        padding: 10px 16px;
+      }
+      .btn-small {
+        font-size: 0.7rem;
+        padding: 6px 12px;
+        max-width: 150px;
       }
     }
     @media (max-width: 480px) {
@@ -109,7 +114,12 @@
       }
       .btn-big {
         font-size: 12px;
-        padding: 6px 12px;
+        padding: 8px 12px;
+      }
+      .btn-small {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        max-width: 130px;
       }
     }
   </style>
