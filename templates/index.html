@@ -1,133 +1,164 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mojitap</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f9f9f9;
-      padding: 20px;
-      margin: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    .logo {
-      max-width: 200px;
-      width: 100%;
-      height: auto;
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-    .description {
-      margin-bottom: 20px;
-      color: #555;
-    }
-
-    /* ---------- 大きいボタン（メイン操作） ---------- */
-    .btn-big {
-      display: block;
-      margin: 10px auto;
-      padding: 14px 24px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #fff;
-      background-color: #007BFF;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      text-decoration: none;
-      max-width: 320px;
-    }
-    .btn-big:hover {
-      background-color: #0056b3;
-    }
-
-    /* ---------- 小さいボタン（補助リンク） ---------- */
-    .btn-small {
-      display: block;
-      margin: 6px auto;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      color: #fff;
-      background-color: #007BFF;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      text-decoration: none;
-      max-width: 180px;
-    }
-    .btn-small:hover {
-      background-color: #0056b3;
-    }
-
-    /* ---------- テキストエリア（検索ボックス） ---------- */
-    .search-box {
-      width: 100%;
-      max-width: 600px;
-      min-height: 100px;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      resize: vertical;
-      box-sizing: border-box;
-      margin: 10px auto;
-      display: block;
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      color: #aaa;
-      text-align: center;
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mojitap</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            max-width: 200px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .description {
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .btn-big {
+            display: block;
+            margin: 10px auto;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            max-width: 300px;
+        }
+        .btn-big:hover {
+            background-color: #0056b3;
+        }
+        .btn-small {
+            display: block;
+            margin: 5px auto;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            max-width: 200px;
+        }
+        .btn-small:hover {
+            background-color: #0056b3;
+        }
+        .btn-red {
+            background-color: #dc3545;
+        }
+        .btn-red:hover {
+            background-color: #b02a37;
+        }
+        .btn-green {
+            background-color: #28a745;
+        }
+        .btn-green:hover {
+            background-color: #1e7e34;
+        }
+        .search-box {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100px;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            box-sizing: border-box;
+            margin: 10px auto;
+        }
+        .share-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .qr-code {
+            max-width: 200px;
+            margin: 10px auto;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+    <div class="container">
+        <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+        <div class="description">
+            「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
+        </div>
 
-    <div class="description">
-      「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
+        {% if current_user and current_user.is_authenticated %}
+            <form method="POST" action="/quick_check">
+                <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
+                <button type="submit" class="btn-big">チェックする</button>
+            </form>
+        {% else %}
+            <p>この機能を使うにはログインが必要です。</p>
+            <a href="/login/google" class="btn-big">Login with Google</a>
+            <a href="/login/twitter" class="btn-big">Login with Twitter</a>
+        {% endif %}
+
+        <!-- 共有ボタン -->
+        <button onclick="toggleShare()" class="btn-small btn-green">友達に教える</button>
+
+        <!-- 共有セクション（クリックで開閉） -->
+        <div class="share-container" id="shareSection">
+            <h3>MojiTap を友達に教える</h3>
+            <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
+            <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com" target="_blank" class="btn-small">LINEでシェア</a>
+            <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com" class="btn-small">メールで送る</a>
+            <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com" target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com" target="_blank" class="btn-small">Facebookでシェア</a>
+            <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
+        </div>
+
+        <!-- お問い合わせ・規約 -->
+        <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+        <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small btn-red">お問い合わせフォーム</a>
+        <a href="/terms" class="btn-small">利用規約</a>
+        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
     </div>
 
-    {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済みの場合 -->
-      <form method="POST" action="/quick_check">
-        <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- 「チェックする」はさらに大きめボタン -->
-        <button type="submit" class="btn-big">チェックする</button>
-      </form>
-
-      <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-      <!-- お問い合わせフォーム: さらに小さく -->
-      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-
-    {% else %}
-      <!-- 未ログインの場合 -->
-      <p>この機能を使うにはログインが必要です。</p>
-      <!-- ログインボタン: 大きめ -->
-      <a href="/login/google" class="btn-big">Login with Google</a>
-      <a href="/login/twitter" class="btn-big">Login with Twitter</a>
-
-      <!-- 利用規約・プライバシーポリシー: 小さいボタン -->
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-    {% endif %}
-
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
-  </div>
+
+    <script>
+    function toggleShare() {
+        var shareSection = document.getElementById("shareSection");
+        if (shareSection.style.display === "none") {
+            shareSection.style.display = "block";
+        } else {
+            shareSection.style.display = "none";
+        }
+    }
+
+    function copyToClipboard() {
+        navigator.clipboard.writeText("https://mojitap.com").then(function() {
+            alert("リンクがコピーされました！");
+        }, function(err) {
+            alert("コピーに失敗しました");
+        });
+    }
+    </script>
 </body>
 </html>
