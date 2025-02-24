@@ -107,7 +107,7 @@ def check_partial_match(text, word_list, threshold=80):
 
 def detect_personal_accusation(text):
     pronouns_pattern = r"(お前|こいつ|この人|あなた|アナタ|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
-    crime_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン)"
+    crime_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン|闇バイト|ヤミバイト)"
     norm = normalize_text(text)
     pattern = rf"{pronouns_pattern}.*{crime_pattern}|{crime_pattern}.*{pronouns_pattern}"
     return re.search(pattern, norm) is not None
