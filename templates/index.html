@@ -128,7 +128,7 @@
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
     <div class="description">
-      相手に向けた言葉や、相手からの発言が、示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
+      「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
     </div>
 
     {% if current_user and current_user.is_authenticated %}
@@ -143,6 +143,9 @@
         <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn contact">お問い合わせフォーム</a>
       </div>
     {% else %}
+      <!-- 未ログイン: ログイン誘導 -->
+      <p>この機能を使うにはログインが必要です。</p>
+
       <!-- ログインボタン群 -->
       <div class="login-buttons">
         <a href="/login/google" class="btn">Login with Google</a>
