@@ -156,35 +156,40 @@
     <div class="description">
       「相手に向けた言葉」や「相手からの発言」が示談や裁判などの法的トラブルに発展するリスクがあるかどうかを簡易チェックできるツールです。
     </div>
+  　　{% else %}
+    　　<!-- 未ログイン: ログイン誘導 -->
+    　　<p>この機能を使うにはログインが必要です。</p>
+    　
+    　　<!-- ログインボタン群: 大きめ -->
+    　　<div class="login-buttons">
+    　　<a href="/login/google" class="btn btn-primary">Login with Google</a>
+    　　<a href="/login/twitter" class="btn btn-primary">Login with Twitter</a>
+    </div>
 
-    {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済み: 検索フォーム -->
-      <form method="POST" action="/quick_check">
-        <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <button type="submit" class="search-button">チェックする</button>
-      </form>
-      <!-- お問い合わせフォームのボタン -->
-      <div class="inquiry">
-        <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-        <!-- ここで .btn-contact を使う -->
-        <a href="https://forms.gle/..." target="_blank" class="btn btn-contact">お問い合わせフォーム</a>
-      </div>
-    {% else %}
-      <!-- 未ログイン: ログイン誘導 -->
-      <p>この機能を使うにはログインが必要です。</p>
+    　　<!-- 利用規約＆プライバシーポリシー: 小さめ -->
+    　　<div class="policy-links">
+    　　<a href="/terms" class="btn btn-secondary">利用規約</a>
+    　　<a href="/privacy" class="btn btn-secondary">プライバシーポリシー</a>
+    </div>
+  　　{% endif %}
+      
+  　　{% if current_user and current_user.is_authenticated %}
+    　　<!-- ログイン済み: 検索フォーム + 小さめの各種リンク -->
+    　　<form method="POST" action="/quick_check">
+      　　<textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
+      　　<!-- チェックするボタン: 大きめ -->
+      　　<button type="submit" class="btn btn-primary search-button">チェックする</button>
+    　　</form>
 
-      <!-- ログインボタン群 -->
-      <div class="login-buttons">
-        <a href="/login/google" class="btn btn-login">Login with Google</a>
-        <a href="/login/twitter" class="btn btn-login">Login with Twitter</a>
-      </div>
-
-      <!-- 規約リンクボタン群 -->
-      <div class="policy-links">
-        <a href="/terms" class="btn btn-policy">利用規約</a>
-        <a href="/privacy" class="btn btn-policy">プライバシーポリシー</a>
-      </div>
-    {% endif %}
+    　　<div class="inquiry">
+      　　<p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      　　<!-- お問い合わせフォーム + 利用規約/プライバシーポリシー: 小さめ -->
+      　　<a href="https://forms.gle/..." target="_blank" class="btn btn-secondary">お問い合わせフォーム</a>
+      　　<br><!-- 余白のための改行やCSSマージンなどお好みで -->
+      　　<a href="/terms" class="btn btn-secondary">利用規約</a>
+      　　<a href="/privacy" class="btn btn-secondary">プライバシーポリシー</a>
+    　　</div>
+  　　{% endif %}
 
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
   </div>
