@@ -31,40 +31,44 @@
       margin-bottom: 20px;
       color: #555;
     }
+
     /* ---------- 大きいボタン（メイン操作） ---------- */
     .btn-big {
       display: block;
       margin: 10px auto;
-      padding: 12px 24px;
-      font-size: 1rem;
+      padding: 14px 24px;
+      font-size: 1.2rem;
+      font-weight: bold;
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      text-align: center;
-      max-width: 300px;
+      max-width: 320px;
     }
     .btn-big:hover {
       background-color: #0056b3;
     }
+
     /* ---------- 小さいボタン（補助リンク） ---------- */
     .btn-small {
-      display: inline-block;
-      margin: 5px;
-      padding: 8px 14px;
-      font-size: 0.9rem;
+      display: block;
+      margin: 6px auto;
+      padding: 6px 12px;
+      font-size: 0.8rem;
       color: #fff;
       background-color: #007BFF;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
+      max-width: 180px;
     }
     .btn-small:hover {
       background-color: #0056b3;
     }
+
     /* ---------- テキストエリア（検索ボックス） ---------- */
     .search-box {
       width: 100%;
@@ -79,42 +83,14 @@
       margin: 10px auto;
       display: block;
     }
+
     footer {
       margin-top: 20px;
       font-size: 0.9rem;
       color: #aaa;
       text-align: center;
     }
-    /* ---------- スマホ向け調整 ---------- */
-    @media (max-width: 768px) {
-      .search-box {
-        font-size: 14px;
-        min-height: 80px;
-        padding: 10px;
-      }
-      .btn-big {
-        font-size: 14px;
-        padding: 10px 18px;
-      }
-      .btn-small {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-      }
-    }
-    @media (max-width: 480px) {
-      .search-box {
-        font-size: 12px;
-        min-height: 60px;
-      }
-      .btn-big {
-        font-size: 12px;
-        padding: 8px 16px;
-      }
-      .btn-small {
-        font-size: 0.7rem;
-        padding: 5px 8px;
-      }
-    }
+
   </style>
 </head>
 <body>
@@ -126,29 +102,29 @@
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済みの場合：検索フォーム -->
+      <!-- ログイン済みの場合 -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- 検索ボタンは大きく -->
+        <!-- 「チェックする」はさらに大きめボタン -->
         <button type="submit" class="btn-big">チェックする</button>
       </form>
-      <!-- 補助リンクは小さいボタン -->
-      <div style="margin-top: 10px;">
-        <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
-        <a href="/terms" class="btn-small">利用規約</a>
-        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-      </div>
+
+      <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      <!-- お問い合わせフォーム: さらに小さく -->
+      <a href="https://forms.gle/..." target="_blank" class="btn-small">お問い合わせフォーム</a>
+      <a href="/terms" class="btn-small">利用規約</a>
+      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
+
     {% else %}
-      <!-- 未ログインの場合：ログイン誘導 -->
+      <!-- 未ログインの場合 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <!-- ログインボタンは大きく -->
+      <!-- ログインボタン: 大きめ -->
       <a href="/login/google" class="btn-big">Login with Google</a>
       <a href="/login/twitter" class="btn-big">Login with Twitter</a>
-      <!-- 補助リンクは小さいボタン -->
-      <div style="margin-top: 10px;">
-        <a href="/terms" class="btn-small">利用規約</a>
-        <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-      </div>
+
+      <!-- 利用規約・プライバシーポリシー: 小さいボタン -->
+      <a href="/terms" class="btn-small">利用規約</a>
+      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
     {% endif %}
 
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
