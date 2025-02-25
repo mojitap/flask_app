@@ -109,6 +109,19 @@
         <button type="submit" class="btn-big">チェックする</button>
       </form>
 
+      <!-- プレミアム加入ボタン（すでに is_premium なら表示しない、など判定したければここに if文） -->
+    {% if not current_user.is_premium %}
+      <a href="/checkout" class="btn-big" style="background-color: #28a745;">
+        プレミアムプランに加入する
+      </a>
+    {% else %}
+      <form action="/cancel-subscription" method="POST">
+        <button type="submit" class="btn-small" style="background-color: #e55353;">
+          プレミアムを解約
+        </button>
+      </form>
+    {% endif %}
+
       <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
       <!-- お問い合わせフォーム: さらに小さく -->
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
