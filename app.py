@@ -18,6 +18,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
     
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
@@ -46,6 +47,33 @@ def create_app():
     oauth = OAuth(app)
     oauth.init_app(app)
     app.config["OAUTH_INSTANCE"] = oauth
+
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # シークレットキー
+
+    # ... DB init, login_manager, blueprint登録など ...
+
+    @app.route("/checkout")
+    @login_required
+    def checkout():
+        return render_template("checkout.html", stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY"))
+
+    @app.route("/create-checkout-session", methods=["POST"])
+    @login_required
+    def create_checkout_session():
+        # ここで stripe.checkout.Session.create(...) して JSON返す
+        ...
+
+    @app.route("/success")
+    @login_required
+    def success():
+        # current_user.is_premium = True
+        # db.session.commit()
+        return render_template("success.html")
+
+    @app.route("/cancel")
+    @login_required
+    def cancel():
+        return render_template("cancel.html")
 
     # --- Dropbox からファイルをダウンロードする関数 ---
     def download_file(url, local_path):
