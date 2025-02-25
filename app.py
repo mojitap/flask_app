@@ -178,6 +178,18 @@ def create_app():
             current_app.logger.error(f"{privacy_path} が見つかりません。")
             return render_template("privacy.html", privacy_content="プライバシーポリシーは現在利用できません。")
 
+    # ---- (C) 特定商取引法に基づく表記の表示 ----
+    @app.route("/tokushoho")
+    def show_tokushoho():
+        tokushoho_path = os.path.join(app.root_path, "tokushoho.txt")  # ここを実際の配置場所に合わせる
+        try:
+            with open(tokushoho_path, "r", encoding="utf-8") as f:
+                tokushoho_content = f.read()
+            return render_template("tokushoho.html", tokushoho_content=tokushoho_content)
+        except FileNotFoundError:
+            current_app.logger.error(f"{tokushoho_path} が見つかりません。")
+            return render_template("tokushoho.html", tokushoho_content="特定商取引法に基づく表記は現在利用できません。")
+ 
     return app
 
 app = create_app()
