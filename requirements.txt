@@ -27,3 +27,5 @@ APScheduler==3.9.1
 psycopg2-binary
 
 Flask-Migrate==4.1.0
+
+echo "stripe==11.6.0" >> requirements.txt
