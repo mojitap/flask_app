@@ -84,17 +84,21 @@
       display: block;
     }
 
+    /* 共有ブロックは最初非表示にするなら
+       .share-container { display: none; } を追加してもOK */
+
     footer {
       margin-top: 20px;
       font-size: 0.9rem;
       color: #aaa;
       text-align: center;
     }
-
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- ▲ ここで開いたコンテナは必ず最後に閉じる -->
+
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
     <div class="description">
@@ -110,17 +114,17 @@
       </form>
 
       <!-- プレミアム加入ボタン（すでに is_premium なら表示しない、など判定したければここに if文） -->
-    {% if not current_user.is_premium %}
-      <a href="/checkout" class="btn-big" style="background-color: #28a745;">
-        プレミアムプランに加入する
-      </a>
-    {% else %}
-      <form action="/cancel-subscription" method="POST">
-        <button type="submit" class="btn-small" style="background-color: #e55353;">
-          プレミアムを解約
-        </button>
-      </form>
-    {% endif %}
+      {% if not current_user.is_premium %}
+        <a href="/checkout" class="btn-big" style="background-color: #28a745;">
+          プレミアムプランに加入する
+        </a>
+      {% else %}
+        <form action="/cancel-subscription" method="POST">
+          <button type="submit" class="btn-small" style="background-color: #e55353;">
+            プレミアムを解約
+          </button>
+        </form>
+      {% endif %}
 
       <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
       <!-- お問い合わせフォーム: さらに小さく -->
@@ -142,21 +146,46 @@
       <a href="/tokushoho" class="btn-small">特定商取引法に基づく表記</a>
     {% endif %}
 
-      <!-- 共有ボタン -->
-      <button onclick="toggleShare()" class="btn-small btn-green">友達に教える</button>
+    <!-- 共有ボタン -->
+    <button onclick="toggleShare()" class="btn-small" style="background-color:#58b;">友達に教える</button>
 
     <!-- 共有セクション（クリックで開閉） -->
-    <div class="share-container" id="shareSection">
-    <h3>MojiTap を友達に教える</h3>
+    <div class="share-container" id="shareSection" style="display: none;">
+      <h3>MojiTap を友達に教える</h3>
       <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
-      <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com" target="_blank" class="btn-small">LINEでシェア</a>
-      <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com" class="btn-small">メールで送る</a>
-      <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com" target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com" target="_blank" class="btn-small">Facebookでシェア</a>
+      <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com"
+         target="_blank" class="btn-small">LINEでシェア</a>
+      <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com"
+         class="btn-small">メールで送る</a>
+      <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com"
+         target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com"
+         target="_blank" class="btn-small">Facebookでシェア</a>
       <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
     </div>
-    
-    <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
-  </div>
+
+  </div> <!-- ← ここでコンテナを閉じる！ -->
+
+  <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
+
+  <script>
+    function toggleShare() {
+      const shareSection = document.getElementById("shareSection");
+      // displayが "none" or "" なら "block" に、それ以外なら "none" に切り替え
+      if (!shareSection.style.display || shareSection.style.display === "none") {
+        shareSection.style.display = "block";
+      } else {
+        shareSection.style.display = "none";
+      }
+    }
+
+    function copyToClipboard() {
+      navigator.clipboard.writeText("https://mojitap.com").then(() => {
+        alert("リンクをコピーしました！");
+      }).catch(err => {
+        alert("コピーに失敗しました...");
+      });
+    }
+  </script>
 </body>
 </html>
