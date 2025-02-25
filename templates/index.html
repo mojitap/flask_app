@@ -32,44 +32,81 @@
       color: #555;
     }
 
-    /* ---------- 大きいボタン（メイン操作） ---------- */
+    /* ===============================
+       大きいボタン（メイン操作）
+       =============================== */
     .btn-big {
       display: block;
       margin: 10px auto;
       padding: 14px 24px;
       font-size: 1.2rem;
       font-weight: bold;
-      color: #fff;
-      background-color: #007BFF;
+      text-decoration: none;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      text-decoration: none;
       max-width: 320px;
+      text-align: center;
     }
     .btn-big:hover {
-      background-color: #0056b3;
+      opacity: 0.9;
     }
 
-    /* ---------- 小さいボタン（補助リンク） ---------- */
+    /* ▼ 1) プレミアムボタン（ゴールド系） */
+    .premium-btn {
+      background-color: #f0c14b; /* ゴールド系 */
+      color: #111;              /* 濃い文字色でコントラストを確保 */
+    }
+    .premium-btn:hover {
+      background-color: #d9a930; /* ホバー時に少し濃い金色 */
+      color: #111;
+    }
+
+    /* ▼ 2) チェックボタン or ログインボタン（青系） */
+    .main-btn {
+      background-color: #007BFF; /* デフォルト青 */
+      color: #fff;
+    }
+    .main-btn:hover {
+      background-color: #0056b3;
+      color: #fff;
+    }
+
+    /* ===============================
+       小さいボタン（補助リンク）
+       =============================== */
     .btn-small {
       display: block;
       margin: 6px auto;
       padding: 6px 12px;
       font-size: 0.8rem;
-      color: #fff;
-      background-color: #007BFF;
+      font-weight: bold;
+      text-decoration: none;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      text-decoration: none;
       max-width: 180px;
+      text-align: center;
+      color: #fff;
+      background-color: #007BFF;
     }
     .btn-small:hover {
       background-color: #0056b3;
     }
 
-    /* ---------- テキストエリア（検索ボックス） ---------- */
+    /* ▼ 3) シェアボタン（明るい水色系） */
+    .share-btn {
+      background-color: #00B8D9; /* 明るめのライトブルー */
+      color: #fff;
+    }
+    .share-btn:hover {
+      background-color: #00A0BE;
+      color: #fff;
+    }
+
+    /* ===============================
+       テキストエリア（検索ボックス）
+       =============================== */
     .search-box {
       width: 100%;
       max-width: 600px;
@@ -84,8 +121,16 @@
       display: block;
     }
 
-    /* 共有ブロックは最初非表示にするなら
-       .share-container { display: none; } を追加してもOK */
+    /* 共有セクションは最初非表示に */
+    .share-container {
+      display: none;
+    }
+    /* QRコードのサイズなどを調整したい場合 */
+    .qr-code {
+      max-width: 150px;
+      margin: 10px auto;
+      display: block;
+    }
 
     footer {
       margin-top: 20px;
@@ -97,8 +142,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- ▲ ここで開いたコンテナは必ず最後に閉じる -->
-
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
     <div class="description">
@@ -107,18 +150,19 @@
 
     {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済みの場合 -->
+
+      <!-- 検索フォーム -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- 「チェックする」はさらに大きめボタン -->
-        <button type="submit" class="btn-big">チェックする</button>
+        <!-- チェックボタン -->
+        <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
-      <!-- プレミアム加入ボタン（すでに is_premium なら表示しない、など判定したければここに if文） -->
+      <!-- プレミアム加入ボタン -->
       {% if not current_user.is_premium %}
-        <a href="/checkout" class="btn-big" style="background-color: #28a745;">
-          プレミアムプランに加入する
-        </a>
+        <a href="/checkout" class="btn-big premium-btn">プレミアムプランに加入する</a>
       {% else %}
+        <!-- 解約ボタン -->
         <form action="/cancel-subscription" method="POST">
           <button type="submit" class="btn-small" style="background-color: #e55353;">
             プレミアムを解約
@@ -127,7 +171,6 @@
       {% endif %}
 
       <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-      <!-- お問い合わせフォーム: さらに小さく -->
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
       <a href="/terms" class="btn-small">利用規約</a>
       <a href="/privacy" class="btn-small">プライバシーポリシー</a>
@@ -136,42 +179,38 @@
     {% else %}
       <!-- 未ログインの場合 -->
       <p>この機能を使うにはログインが必要です。</p>
-      <!-- ログインボタン: 大きめ -->
-      <a href="/login/google" class="btn-big">Login with Google</a>
-      <a href="/login/twitter" class="btn-big">Login with Twitter</a>
+      <a href="/login/google" class="btn-big main-btn">Login with Google</a>
+      <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
 
-      <!-- 利用規約・プライバシーポリシー: 小さいボタン -->
       <a href="/terms" class="btn-small">利用規約</a>
       <a href="/privacy" class="btn-small">プライバシーポリシー</a>
       <a href="/tokushoho" class="btn-small">特定商取引法に基づく表記</a>
     {% endif %}
 
-    <!-- 共有ボタン -->
-    <button onclick="toggleShare()" class="btn-small" style="background-color:#58b;">友達に教える</button>
+    <!-- シェアボタン -->
+    <button onclick="toggleShare()" class="btn-small share-btn">友達に教える</button>
 
-    <!-- 共有セクション（クリックで開閉） -->
-    <div class="share-container" id="shareSection" style="display: none;">
+    <!-- 共有セクション -->
+    <div class="share-container" id="shareSection">
       <h3>MojiTap を友達に教える</h3>
       <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
       <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com"
-         target="_blank" class="btn-small">LINEでシェア</a>
+         target="_blank" class="btn-small share-btn">LINEでシェア</a>
       <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com"
-         class="btn-small">メールで送る</a>
+         class="btn-small share-btn">メールで送る</a>
       <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com"
-         target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
+         target="_blank" class="btn-small share-btn">X（旧Twitter）でシェア</a>
       <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com"
-         target="_blank" class="btn-small">Facebookでシェア</a>
-      <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
+         target="_blank" class="btn-small share-btn">Facebookでシェア</a>
+      <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
     </div>
-
-  </div> <!-- ← ここでコンテナを閉じる！ -->
+  </div>
 
   <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
 
   <script>
     function toggleShare() {
       const shareSection = document.getElementById("shareSection");
-      // displayが "none" or "" なら "block" に、それ以外なら "none" に切り替え
       if (!shareSection.style.display || shareSection.style.display === "none") {
         shareSection.style.display = "block";
       } else {
