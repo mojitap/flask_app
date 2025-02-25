@@ -3,7 +3,7 @@ import json
 import requests
 import stripe
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
