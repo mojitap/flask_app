@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import stripe
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
@@ -16,6 +17,38 @@ from models.user import User
 
 load_dotenv()
 
+# 🔹 APIキーを設定
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+# 🔹 購入ページ
+@app.route("/checkout")
+def checkout():
+    return render_template("checkout.html", stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY"))
+
+# 🔹 Stripe決済を処理
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],  # クレジットカード決済
+            line_items=[{
+                "price_data": {
+                    "currency": "jpy",
+                    "product_data": {
+                        "name": "Mojitap プレミアムプラン"
+                    },
+                    "unit_amount": 50000  # 500円（Stripeは1円単位）
+                },
+                "quantity": 1,
+            }],
+            mode="subscription",  # 定期課金（サブスクの場合）
+            success_url="https://mojitap.com/success",  # 決済成功後のURL
+            cancel_url="https://mojitap.com/cancel",  # キャンセル時のURL
+        )
+        return jsonify({"id": session.id})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+        
 def create_app():
     app = Flask(__name__, static_folder="static")
     
