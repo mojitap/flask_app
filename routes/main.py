@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 
 from flask import Blueprint, render_template, request, current_app
 from flask_login import login_required
+from models.user import User
 from models.search_history import SearchHistory
 from models.text_evaluation import evaluate_text, load_whitelist
 from sqlalchemy import text
@@ -14,40 +15,33 @@ print("✅ main.py が読み込まれました！")
 # 先に Blueprint を定義
 main = Blueprint("main", __name__)
 
-# カラム一覧を表示するデバッグ用ルート
-@main.route("/debug/columns")
-def debug_columns():
-    rows = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'search_history'
-    """)).fetchall()
-    print("=== search_history のカラム一覧 ===")
-    for r in rows:
-        print(r[0])
-    return "OK"
+# ホワイトリストのロード
+whitelist = load_whitelist("data/whitelist.json")
+
+# 🔹 テキストのリスク判定関数
+def check_text_risk(text):
+    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    judgement, detail = evaluate_text(text, offensive_dict, whitelist=whitelist)
+    return judgement, detail
 
 @main.route("/")
 def home():
     print("✅ / にアクセスされました")
     return render_template("index.html")
 
-whitelist = load_whitelist("data/whitelist.json")
-
 @main.route("/quick_check", methods=["POST"])
-@login_required
+@login_required  # 🔹 ログイン必須
 def quick_check():
-    query = request.form.get("text", "").strip()
-    if not query:
-        return "<h2>エラー: 検索クエリが空です。</h2>", 400
+    if not current_user.is_premium:
+        flash("検索結果を表示するにはプレミアムプランに加入してください！")
+        return redirect(url_for("checkout"))  # 🔹 課金ページへリダイレクト
 
-    # Render.com でダウンロード/ロード済みの辞書を取得
-    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    text = request.form.get("text", "").strip()
     
-    # ホワイトリスト対応で判定する
-    judgement, detail = evaluate_text(query, offensive_dict, whitelist=whitelist)
+    # 🔹 ここで「テキストを分析する関数」を呼び出す
+    judgement, detail = check_text_risk(text)
 
-    # 検索履歴を保存など
-    SearchHistory.add_or_increment(query)
+    # 🔹 検索履歴を保存
+    SearchHistory.add_or_increment(text)
 
-    return render_template("result.html", query=query, result=judgement, detail=detail)
+    return render_template("result.html", query=text, result=judgement, detail=detail)
