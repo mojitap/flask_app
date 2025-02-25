@@ -37,17 +37,15 @@ whitelist = load_whitelist("data/whitelist.json")
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
-    query = request.form.get("text", "").strip()
-    if not query:
-        return "<h2>エラー: 検索クエリが空です。</h2>", 400
+    # 1) is_premium かどうか判定
+    if not current_user.is_premium:
+        flash("検索結果を見るにはプレミアムプランが必要です。")
+        return redirect(url_for("checkout"))
 
-    # Render.com でダウンロード/ロード済みの辞書を取得
-    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    # 2) (プレミアムユーザーだけが通る)
+    query = request.form.get("text", "")
     
-    # ホワイトリスト対応で判定する
-    judgement, detail = evaluate_text(query, offensive_dict, whitelist=whitelist)
-
-    # 検索履歴を保存など
-    SearchHistory.add_or_increment(query)
-
+    # 3) offensive_dict = current_app.config["OFFENSIVE_WORDS"] ...
+    #    judgement, detail = evaluate_text(query, ...)
+    #    SearchHistory.add_or_increment(query)
     return render_template("result.html", query=query, result=judgement, detail=detail)
