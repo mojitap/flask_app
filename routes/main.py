@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 
 from flask import Blueprint, render_template, request, current_app
-from flask_login import login_required
+from flask_login import login_required, current_user
 from models.search_history import SearchHistory
 from models.text_evaluation import evaluate_text, load_whitelist
 from sqlalchemy import text
@@ -37,15 +37,21 @@ whitelist = load_whitelist("data/whitelist.json")
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
-    # 1) is_premium かどうか判定
+    # 1) is_premium じゃなければ
     if not current_user.is_premium:
-        flash("検索結果を見るにはプレミアムプランが必要です。")
-        return redirect(url_for("checkout"))
+        flash("検索結果を見るにはプレミアムプランへの加入が必要です。")
+        return redirect(url_for("checkout"))  # ここが app.py の @app.route("/checkout") ならOK
 
     # 2) (プレミアムユーザーだけが通る)
     query = request.form.get("text", "")
-    
-    # 3) offensive_dict = current_app.config["OFFENSIVE_WORDS"] ...
-    #    judgement, detail = evaluate_text(query, ...)
-    #    SearchHistory.add_or_increment(query)
+
+    # (a) Render.com でダウンロード/ロード済みの辞書
+    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+
+    # (b) 評価する
+    judgement, detail = evaluate_text(query, offensive_dict)
+
+    # (c) 履歴を保存
+    SearchHistory.add_or_increment(query)
+
     return render_template("result.html", query=query, result=judgement, detail=detail)
