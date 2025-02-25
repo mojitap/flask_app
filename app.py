@@ -1,9 +1,8 @@
 import os
 import json
 import requests
-import stripe
-from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app, jsonify
-from flask_login import LoginManager, login_required, current_user
+from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
+from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
@@ -19,10 +18,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-
-    # 🔹 APIキーを設定
-    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
+    
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
@@ -86,7 +82,6 @@ def create_app():
         app.logger.error(f"{local_offensive_words_path} が見つかりません。")
         app.config["OFFENSIVE_WORDS"] = {}
 
-
     # OAuth登録
     oauth.register(
         name="google",
@@ -101,35 +96,6 @@ def create_app():
         client_secret=os.getenv("TWITTER_API_SECRET"),
         request_token_params={"scope": "read write"}
     )
-
-    # 🔹 購入ページ
-    @app.route("/checkout")
-    def checkout():
-        return render_template("checkout.html", stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY"))
-
-    # 🔹 Stripe決済を処理
-    @app.route("/create-checkout-session", methods=["POST"])
-    def create_checkout_session():
-        try:
-            session = stripe.checkout.Session.create(
-                payment_method_types=["card"],  # クレジットカード決済
-                line_items=[{
-                    "price_data": {
-                        "currency": "jpy",
-                        "product_data": {
-                            "name": "Mojitap プレミアムプラン"
-                        },
-                        "unit_amount": 50000  # 500円（Stripeは1円単位）
-                    },
-                    "quantity": 1,
-                }],
-                mode="subscription",  # 定期課金（サブスクの場合）
-                success_url="https://mojitap.com/success",  # 決済成功後のURL
-                cancel_url="https://mojitap.com/cancel",  # キャンセル時のURL
-            )
-            return jsonify({"id": session.id})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 400
 
     # 静的ファイル & 利用規約ページなどのルート
     @app.route("/static/<path:filename>")
@@ -166,7 +132,6 @@ def create_app():
 
     return app
 
-# ✅ 修正: `create_app()` を最後に呼び出し
 app = create_app()
 
 if __name__ == "__main__":
