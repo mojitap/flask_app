@@ -2,8 +2,8 @@ import os
 import json
 import requests
 import stripe
-from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
-from flask_login import LoginManager
+from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app, jsonify
+from flask_login import LoginManager, login_required, current_user
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
@@ -16,6 +16,9 @@ from routes.auth import auth
 from models.user import User
 
 load_dotenv()
+
+# ✅ ここで Flask アプリを定義（これがないとエラー）
+app = Flask(__name__, static_folder="static")
 
 # 🔹 APIキーを設定
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
@@ -48,8 +51,9 @@ def create_checkout_session():
         return jsonify({"id": session.id})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-        
+
 def create_app():
+    # ✅ ここでも Flask アプリを作成
     app = Flask(__name__, static_folder="static")
     
     # Flask設定
