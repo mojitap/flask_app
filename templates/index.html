@@ -142,16 +142,18 @@
       <a href="/tokushoho" class="btn-small">特定商取引法に基づく表記</a>
     {% endif %}
 
-            <!-- 共有セクション（ログイン前後どちらでも表示） -->
-        <div class="share-container">
-            <h3>MojiTap を友達に教える</h3>
-            <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
-            <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com" target="_blank" class="btn-small">LINEでシェア</a>
-            <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com" class="btn-small">メールで送る</a>
-            <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com" target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com" target="_blank" class="btn-small">Facebookでシェア</a>
-            <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
-        </div>
+      <!-- 共有ボタン -->
+      <button onclick="toggleShare()" class="btn-small btn-green">友達に教える</button>
+
+    <!-- 共有セクション（クリックで開閉） -->
+    <div class="share-container" id="shareSection">
+    <h3>MojiTap を友達に教える</h3>
+      <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
+      <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com" target="_blank" class="btn-small">LINEでシェア</a>
+      <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com" class="btn-small">メールで送る</a>
+      <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com" target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com" target="_blank" class="btn-small">Facebookでシェア</a>
+      <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
     </div>
     
     <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
