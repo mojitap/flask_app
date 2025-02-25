@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models.search_history import SearchHistory
 from models.text_evaluation import evaluate_text, load_whitelist
@@ -37,10 +37,9 @@ whitelist = load_whitelist("data/whitelist.json")
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
-    # 1) is_premium じゃなければ
     if not current_user.is_premium:
         flash("検索結果を見るにはプレミアムプランへの加入が必要です。")
-        return redirect(url_for("checkout"))  # ここが app.py の @app.route("/checkout") ならOK
+        return redirect(url_for("checkout"))
 
     # 2) (プレミアムユーザーだけが通る)
     query = request.form.get("text", "")
