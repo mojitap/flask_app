@@ -60,8 +60,16 @@ def create_app():
     @app.route("/create-checkout-session", methods=["POST"])
     @login_required
     def create_checkout_session():
-        # ここで stripe.checkout.Session.create(...) して JSON返す
-        ...
+        session = stripe.checkout.Session.create(
+            line_items=[{
+                "price": "price_1QwIQhP8wMOQp1FurzBAyZhx",
+                "quantity": 1
+            }],
+            mode="subscription",
+            success_url="https://mojitap.com/success",
+            cancel_url="https://mojitap.com/cancel"
+        )
+        return jsonify({"id": session.id})
 
     @app.route("/success")
     @login_required
@@ -74,6 +82,18 @@ def create_app():
     @login_required
     def cancel():
         return render_template("cancel.html")
+
+    @app.route("/cancel-subscription", methods=["POST"])
+    @login_required
+    def cancel_subscription():
+        # subscription_id を保存している場合は、Stripe上で削除
+        if current_user.stripe_subscription_id:
+            stripe.Subscription.delete(current_user.stripe_subscription_id)
+        # DB上でも is_premium=False
+        current_user.is_premium = False
+        db.session.commit()
+        flash("プレミアムプランを解約しました。")
+        return redirect(url_for("home"))  
 
     # --- Dropbox からファイルをダウンロードする関数 ---
     def download_file(url, local_path):
