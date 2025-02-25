@@ -12,7 +12,6 @@ class User(UserMixin, db.Model):
     display_name = db.Column(db.String(255))
     provider = db.Column(db.String(50))           # ← 追加
     twitter_screen_name = db.Column(db.String(255))  # ← 追加
-    is_premium = db.Column(db.Boolean, default=False)  # 🔹 課金ユーザーは True
 
     def __repr__(self):
         return f"<User id={self.id} email={self.email} display_name={self.display_name}>"
