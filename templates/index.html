@@ -2,33 +2,26 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Mojitap</title>
+  <!-- ▼ スマホ表示対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mojitap</title>
   <style>
-    /* ======== ベース設定 ======== */
+    /* ======== 全体のベース設定 ======== */
     body {
       margin: 0;
       font-family: 'Arial', sans-serif;
-      background-color: #f3f3f3; /* 薄いグレー */
+      background-color: #f3f3f3; 
       color: #111; 
     }
-    /* スマホでも文字が読みにくくならないよう、基本フォントサイズを調整 */
-    body {
-      font-size: 16px;
-      line-height: 1.5;
-    }
-
-    /* ======== コンテナ (白いカード) ======== */
     .container {
       max-width: 600px;
-      margin: 40px auto 80px auto; /* 上下に余白をとる */
+      margin: 40px auto 80px auto; /* 上40px, 下80px余白 */
       background: #fff;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
     }
-
     .logo {
       max-width: 200px;
       width: 100%;
@@ -36,14 +29,11 @@
       margin-top: 20px;
       margin-bottom: 20px;
     }
-
     .description {
       margin-bottom: 20px;
-      color: #555; 
+      color: #555;
       line-height: 1.6;
     }
-
-    /* ======== 大きいボタン（メイン操作） ======== */
     .btn-big {
       display: block;
       margin: 10px auto;
@@ -56,13 +46,10 @@
       cursor: pointer;
       max-width: 320px;
       text-align: center;
-      /* :hoverはopacity変化にしている例 */
     }
     .btn-big:hover {
       opacity: 0.9;
     }
-
-    /* プレミアムボタン (ゴールド系) */
     .premium-btn {
       background-color: #f0c14b;
       color: #111;
@@ -71,8 +58,6 @@
       background-color: #d9a930;
       color: #111;
     }
-
-    /* チェックボタン or ログインボタン (青系) */
     .main-btn {
       background-color: #007BFF;
       color: #fff;
@@ -81,8 +66,6 @@
       background-color: #0056b3;
       color: #fff;
     }
-
-    /* ======== 小さいボタン（補助リンク） ======== */
     .btn-small {
       display: block;
       margin: 6px auto;
@@ -101,8 +84,6 @@
     .btn-small:hover {
       background-color: #0056b3;
     }
-
-    /* シェアボタン (水色系) */
     .share-btn {
       background-color: #00B8D9;
       color: #fff;
@@ -111,8 +92,6 @@
       background-color: #00A0BE;
       color: #fff;
     }
-
-    /* ======== テキストエリア（検索） ======== */
     .search-box {
       width: 100%;
       max-width: 600px;
@@ -126,8 +105,6 @@
       margin: 10px auto;
       display: block;
     }
-
-    /* 共有セクションは最初非表示 */
     .share-container {
       display: none;
     }
@@ -136,21 +113,13 @@
       margin: 10px auto;
       display: block;
     }
-
-    /* ======== 下部リンクをグレー背景にしつつ、横並び or 改行 ======== */
     .footer-links {
       background-color: #f3f3f3;
       padding: 15px 0;
       text-align: center;
-
-      /* flex で横並び、画面が狭い時は自動で折り返し */
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px; /* リンク間の隙間 */
     }
-
     .footer-links a {
+      margin: 0 10px;
       color: #555;
       font-size: 0.9rem;
       text-decoration: none;
@@ -158,65 +127,99 @@
     .footer-links a:hover {
       text-decoration: underline;
     }
-
     .copyright {
-      margin-top: 10px;
+      margin-top: 20px;
       font-size: 0.8rem;
       color: #999;
       text-align: center;
-      padding-bottom: 20px; /* 下に少し余白 */
+      margin-bottom: 20px;
     }
-
-    /* ======== スマホ向けに微調整する例 (max-width: 480px) ======== */
     @media (max-width: 480px) {
-      body {
-        font-size: 15px; /* 文字を少しだけ小さく */
-      }
       .btn-big {
-        font-size: 1.0rem; /* ボタン文字を若干縮小 */
+        font-size: 1rem;
+        padding: 12px 18px;
       }
       .btn-small {
-        font-size: 0.75rem; /* 小ボタンも少し縮小 */
+        font-size: 0.75rem;
+        padding: 5px 10px;
       }
-      /* 下部リンクの各aを縦並びにするなら以下も可
-         .footer-links a {
-           display: block;
-         }
-      */
+      .search-box {
+        font-size: 14px;
+        padding: 10px;
+      }
+      .logo {
+        max-width: 160px;
+      }
+      .container {
+        margin-top: 20px;
+        margin-bottom: 40px;
+        padding: 15px;
+      }
+    }
+
+    /* ▼ 追加: アプリ内ブラウザ警告用スタイル */
+    .inapp-warning {
+      display: none; /* 初期は非表示 */
+      background-color: #ffe6e6;
+      color: #b00;
+      padding: 10px 15px;
+      margin: 0 auto;
+      text-align: center;
+      max-width: 600px;
+      font-size: 0.9rem;
+      border-radius: 5px;
+      border: 1px solid #f99;
+      margin-top: 10px;
+    }
+    .inapp-warning p {
+      margin: 0.5em 0;
+    }
+    .inapp-warning a {
+      color: #b00;
+      text-decoration: underline;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <!-- ▼ メインの白いカード部分 ▼ -->
+  <!-- ▼ 追加: アプリ内ブラウザ警告 -->
+  <div id="inAppWarning" class="inapp-warning">
+    <p>ご利用のブラウザでは、Google/Twitterログインがブロックされる可能性があります。</p>
+    <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
+    <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>Safariで開く</strong>)<br>
+    (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
+  </div>
+  <!-- ▲ 追加ここまで ▲ -->
+
+  <!-- ▼ 白いカード部分 ▼ -->
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
     <div class="description">
       <p>
         相手への発言や受けた言葉が、<br>
-        示談や裁判などの法的トラブルにつながる恐れを、<br>過去の例をもとに簡易チェックできるオンラインツールです。<br>
+        示談や裁判などの法的トラブルにつながる恐れを、<br>
+        過去の例をもとに簡易チェックできるオンラインツールです。<br>
         ビジネスから日常会話まで、<br>
         言葉に潜むリスクを早めに把握し、<br>
         より安心してコミュニケーションを行う一助としてご活用ください。
       </p>
       <p>
-        <small>※チェックリストのデータは定期的に更新しています。<br>
-        ※本ツールは専門家の法的判断に代わるものではありません。</small>
+        <small>
+          ※チェックリストのデータは定期的に更新しています。<br>
+          ※本ツールは専門家の法的判断に代わるものではありません。
+        </small>
       </p>
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済みユーザー -->
-
-      <!-- 検索フォーム -->
+      <!-- ログイン済み -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <!-- チェックするボタン (青系) -->
         <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
-      <!-- プレミアムプラン加入 or 解約ボタン -->
       {% if not current_user.is_premium %}
         <a href="/checkout" class="btn-big premium-btn">プレミアムプランに加入する</a>
       {% else %}
@@ -231,13 +234,13 @@
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
     {% else %}
-      <!-- 未ログインの場合 -->
+      <!-- 未ログイン -->
       <p>この機能を使うにはログインが必要です。</p>
       <a href="/login/google" class="btn-big main-btn">Login with Google</a>
       <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
     {% endif %}
 
-    <!-- 「友達に教える」ボタン -->
+    <!-- シェアボタン -->
     <button onclick="toggleShare()" class="btn-small share-btn" style="margin-top: 20px;">友達に教える</button>
 
     <!-- 共有セクション -->
@@ -255,15 +258,16 @@
       <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
     </div>
   </div>
-  <!-- ▲ containerここまで -->
+  <!-- ▲ 白いカードここまで ▲ -->
 
-  <!-- ▼ 下部リンク (背景グレー) ▼ -->
+  <!-- ▼ 下部リンク（背景グレー） ▼ -->
   <div class="footer-links">
     <a href="/terms">利用規約</a>
     <a href="/privacy">プライバシーポリシー</a>
     <a href="/tokushoho">特定商取引法に基づく表記</a>
     <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank">お問い合わせ</a>
   </div>
+
   <div class="copyright">
     &copy; 2025 Mojitap, All Rights Reserved.
   </div>
@@ -277,6 +281,7 @@
         shareSection.style.display = "none";
       }
     }
+
     function copyToClipboard() {
       navigator.clipboard.writeText("https://mojitap.com").then(() => {
         alert("リンクをコピーしました！");
@@ -284,6 +289,20 @@
         alert("コピーに失敗しました...");
       });
     }
+
+    // ▼ 追加: アプリ内ブラウザ検知
+    (function() {
+      const ua = navigator.userAgent.toLowerCase();
+      // LINE or FB/Instagram の一部UA
+      const isInApp = (
+        ua.indexOf("line/") !== -1 ||
+        ua.indexOf("fbav") !== -1 ||
+        ua.indexOf("instagram") !== -1
+      );
+      if (isInApp) {
+        document.getElementById("inAppWarning").style.display = "block";
+      }
+    })();
   </script>
 </body>
 </html>
