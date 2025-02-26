@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- ▼ 追加：スマホ画面のスケーリング対応 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mojitap</title>
   <style>
     /* ======== 全体のベース設定 ======== */
@@ -16,14 +18,12 @@
     /* ======== コンテナ設定 ======== */
     .container {
       max-width: 600px;
-      margin: 0 auto;
-      background: #fff;  /* カード風に白背景 */
+      margin: 40px auto 80px auto; /* 上40px, 下80px余白 */
+      background: #fff;            /* カード風に白背景 */
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
-      margin-top: 40px;   /* 上に少し余白 */
-      margin-bottom: 80px;/* 下に余白をとる */
     }
 
     /* ======== ロゴ画像 ======== */
@@ -157,11 +157,38 @@
       text-decoration: underline;
     }
 
-    /* フッターのコピーライトなど */
     .copyright {
       margin-top: 20px;
       font-size: 0.8rem;
       color: #999;
+      text-align: center;
+      margin-bottom: 20px; /* ちょっと下に余白 */
+    }
+
+    /* ============================================
+       ▼ スマホ向けにさらに縮小したい場合の例
+       ============================================ */
+    @media (max-width: 480px) {
+      .btn-big {
+        font-size: 1rem;    /* ボタン文字を少し小さめに */
+        padding: 12px 18px; /* パディングも少し減らす */
+      }
+      .btn-small {
+        font-size: 0.75rem; /* 小さいボタンの文字も微調整 */
+        padding: 5px 10px;
+      }
+      .search-box {
+        font-size: 14px;    /* 検索テキストも少し縮小 */
+        padding: 10px;
+      }
+      .logo {
+        max-width: 160px;   /* ロゴも少し縮小 */
+      }
+      .container {
+        margin-top: 20px;
+        margin-bottom: 40px;
+        padding: 15px;       /* 内側パディングも少し減らす */
+      }
     }
   </style>
 </head>
@@ -178,8 +205,10 @@
         より安心してコミュニケーションを行う一助としてご活用ください。
       </p>
       <p>
-        <small>※チェックリストのデータは定期的に更新しています。<br>
-        ※本ツールは専門家の法的判断に代わるものではありません。</small>
+        <small>
+          ※チェックリストのデータは定期的に更新しています。<br>
+          ※本ツールは専門家の法的判断に代わるものではありません。
+        </small>
       </p>
     </div>
 
@@ -208,7 +237,7 @@
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
     {% else %}
-      <!-- 未ログイン -->
+      <!-- 未ログインの場合 -->
       <p>この機能を使うにはログインが必要です。</p>
       <a href="/login/google" class="btn-big main-btn">Login with Google</a>
       <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
