@@ -2,24 +2,34 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mojitap</title>
   <style>
+    /* ======== 全体のベース設定 ======== */
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f9f9f9;
-      padding: 20px;
       margin: 0;
+      font-family: 'Arial', sans-serif;
+      /* 薄いグレー背景 & 文字色を黒寄りに */
+      background-color: #f3f3f3; 
+      color: #111; 
+      /* body側の余白は0にして、.containerに余白をもたせるイメージ */
     }
+
+    /* ======== コンテナ設定 ======== */
     .container {
       max-width: 600px;
       margin: 0 auto;
-      background: #ffffff;
+      /* 背景は白にして、まわりをグレーに */
+      background: #fff;  
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
+      /* ページの高さをある程度確保したければ↓
+         min-height: 100vh; 
+      */
     }
+
+    /* ======== ロゴ画像 ======== */
     .logo {
       max-width: 200px;
       width: 100%;
@@ -27,9 +37,12 @@
       margin-top: 20px;
       margin-bottom: 20px;
     }
+
+    /* ======== 概要テキスト ======== */
     .description {
       margin-bottom: 20px;
-      color: #555;
+      color: #555; /* 若干薄めの文字色 */
+      line-height: 1.6;
     }
 
     /* ===============================
@@ -47,6 +60,7 @@
       cursor: pointer;
       max-width: 320px;
       text-align: center;
+      /* ここでは色指定しない（下の .main-btn や .premium-btn で指定） */
     }
     .btn-big:hover {
       opacity: 0.9;
