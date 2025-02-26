@@ -17,12 +17,13 @@
     .container {
       max-width: 600px;
       margin: 0 auto;
-      /* 背景は白にして、まわりをグレーに */
-      background: #fff;  
+      background: #fff;  /* カード風に白背景 */
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
+      margin-top: 40px;   /* 上に少し余白 */
+      margin-bottom: 80px;/* 下に余白をとる */
     }
 
     /* ======== ロゴ画像 ======== */
@@ -37,7 +38,7 @@
     /* ======== 概要テキスト ======== */
     .description {
       margin-bottom: 20px;
-      color: #555; /* 若干薄めの文字色 */
+      color: #555; 
       line-height: 1.6;
     }
 
@@ -64,16 +65,16 @@
     /* ▼ 1) プレミアムボタン（ゴールド系） */
     .premium-btn {
       background-color: #f0c14b; /* ゴールド系 */
-      color: #111;              /* 濃い文字色でコントラストを確保 */
+      color: #111;
     }
     .premium-btn:hover {
-      background-color: #d9a930; /* ホバー時に少し濃い金色 */
+      background-color: #d9a930;
       color: #111;
     }
 
     /* ▼ 2) チェックボタン or ログインボタン（青系） */
     .main-btn {
-      background-color: #007BFF; /* デフォルト青 */
+      background-color: #007BFF;
       color: #fff;
     }
     .main-btn:hover {
@@ -105,7 +106,7 @@
 
     /* ▼ 3) シェアボタン（明るい水色系） */
     .share-btn {
-      background-color: #00B8D9; /* 明るめのライトブルー */
+      background-color: #00B8D9;
       color: #fff;
     }
     .share-btn:hover {
@@ -130,26 +131,42 @@
       display: block;
     }
 
-    /* 共有セクションは最初非表示に */
+    /* 共有セクションは最初非表示 */
     .share-container {
       display: none;
     }
-    /* QRコードのサイズなどを調整したい場合 */
     .qr-code {
       max-width: 150px;
       margin: 10px auto;
       display: block;
     }
 
-    footer {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      color: #aaa;
+    /* ======== 下部リンクをグレー背景に ======== */
+    .footer-links {
+      background-color: #f3f3f3; /* body と同じ or 少し濃いグレーでもOK */
+      padding: 15px 0;
       text-align: center;
+    }
+    .footer-links a {
+      margin: 0 10px;
+      color: #555; 
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* フッターのコピーライトなど */
+    .copyright {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #999;
     }
   </style>
 </head>
 <body>
+  <!-- ▼ 白いカード部分 ▼ -->
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
@@ -158,16 +175,16 @@
         相手への発言や受けた言葉が、示談や裁判などの法的トラブルにつながる恐れを、<br>
         過去の例をもとに簡易チェックできるオンラインツールです。<br>
         ビジネスから日常会話まで、言葉に潜むリスクを早めに把握し、<br>
-        より安心してコミュニケーションを行う一助としてご活用ください。<br>
-        チェックリストのデータは定期的に更新しています。
+        より安心してコミュニケーションを行う一助としてご活用ください。
       </p>
       <p>
-        <small>※本ツールは専門家の法的判断に代わるものではありません。</small>
+        <small>※チェックリストのデータは定期的に更新しています。<br>
+        ※本ツールは専門家の法的判断に代わるものではありません。</small>
       </p>
     </div>
 
     {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済みの場合 -->
+      <!-- ログイン済み -->
 
       <!-- 検索フォーム -->
       <form method="POST" action="/quick_check">
@@ -176,11 +193,10 @@
         <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
-      <!-- プレミアム加入ボタン -->
+      <!-- プレミアム加入 or 解約ボタン -->
       {% if not current_user.is_premium %}
         <a href="/checkout" class="btn-big premium-btn">プレミアムプランに加入する</a>
       {% else %}
-        <!-- 解約ボタン -->
         <form action="/cancel-subscription" method="POST">
           <button type="submit" class="btn-small" style="background-color: #e55353;">
             プレミアムを解約
@@ -188,25 +204,18 @@
         </form>
       {% endif %}
 
-      <p>ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-      <a href="/tokushoho" class="btn-small">特定商取引法に基づく表記</a>
 
     {% else %}
-      <!-- 未ログインの場合 -->
+      <!-- 未ログイン -->
       <p>この機能を使うにはログインが必要です。</p>
       <a href="/login/google" class="btn-big main-btn">Login with Google</a>
       <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
-
-      <a href="/terms" class="btn-small">利用規約</a>
-      <a href="/privacy" class="btn-small">プライバシーポリシー</a>
-      <a href="/tokushoho" class="btn-small">特定商取引法に基づく表記</a>
     {% endif %}
 
     <!-- シェアボタン -->
-    <button onclick="toggleShare()" class="btn-small share-btn">友達に教える</button>
+    <button onclick="toggleShare()" class="btn-small share-btn" style="margin-top: 20px;">友達に教える</button>
 
     <!-- 共有セクション -->
     <div class="share-container" id="shareSection">
@@ -223,8 +232,19 @@
       <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
     </div>
   </div>
+  <!-- ▲ 白いカードここまで ▲ -->
 
-  <footer>&copy; 2025 Mojitap, All Rights Reserved.</footer>
+  <!-- ▼ 下部リンク（背景グレー） ▼ -->
+  <div class="footer-links">
+    <a href="/terms">利用規約</a>
+    <a href="/privacy">プライバシーポリシー</a>
+    <a href="/tokushoho">特定商取引法に基づく表記</a>
+    <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank">お問い合わせ</a>
+  </div>
+
+  <div class="copyright">
+    &copy; 2025 Mojitap, All Rights Reserved.
+  </div>
 
   <script>
     function toggleShare() {
@@ -235,7 +255,6 @@
         shareSection.style.display = "none";
       }
     }
-
     function copyToClipboard() {
       navigator.clipboard.writeText("https://mojitap.com").then(() => {
         alert("リンクをコピーしました！");
