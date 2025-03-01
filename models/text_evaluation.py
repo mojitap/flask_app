@@ -1,8 +1,6 @@
-# text_evaluation.py
 import os
 import json
 import re
-
 from collections import OrderedDict  # キャッシュ管理用
 from functools import lru_cache
 import spacy
@@ -11,18 +9,17 @@ from rapidfuzz import fuzz
 import jaconv
 import pykakasi
 
-# あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて調整してください）
+# あなたの環境で苗字をロードする関数
 from models.load_surnames import load_surnames
 
-# 形態素解析のキャッシュ
-nlp = spacy.load("ja_core_news_sm")  # from .load_surnames import load_surnames事前にロード（1回だけ）
+nlp = spacy.load("ja_core_news_sm")
 
 @lru_cache(maxsize=1000)
 def cached_tokenize(text):
     doc = nlp(text)
     return [token.lemma_ for token in doc]
 
-# 簡易キャッシュ（メモリに保存）: テキスト → 判定結果
+# テキストごとの判定結果をキャッシュ
 _eval_cache = {}
 
 def load_offensive_dict(json_path="offensive_words.json"):
@@ -33,8 +30,7 @@ def load_offensive_dict(json_path="offensive_words.json"):
         "insults": [...],
         "defamation": [...],
         "harassment": [...],
-        "threats": [...],
-         ...
+        ...
       },
       "names": [...]
     }
@@ -56,7 +52,7 @@ def load_whitelist(json_path="data/whitelist.json"):
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     return set(data)
-    
+
 def flatten_offensive_words(offensive_dict):
     """
     offensive_words.json の "categories" 内のリストを全て合体して、1次元リストとして返す。
@@ -74,15 +70,11 @@ def normalize_text(text):
     - 漢字→ひらがな変換
     """
     kakasi = pykakasi.kakasi()
-    result = kakasi.convert(text)  # ✅ 新しいAPIで変換
+    result = kakasi.convert(text)
     return "".join([entry['hira'] for entry in result])
 
 def tokenize_and_lemmatize(text):
     return cached_tokenize(text)
-
-def check_keywords_via_token(text, keywords):
-    tokens = tokenize_and_lemmatize(text)
-    return any(kw in tokens for kw in keywords)
 
 def fuzzy_match_keywords(text, keywords, threshold=90):
     """
@@ -102,110 +94,125 @@ def check_partial_match(text, word_list, threshold=80):
       - fuzz.ratio(w, text) が threshold 以上ならマッチ
     """
     for w in word_list:
+        # 文章登録(例：「学校来るな」)のように「textにwがそのまま含まれている」場合は即マッチ
         if w in text:
             return True, w, 100
+        # fuzz.ratioで近似度チェック (短文だとスコアが上がりにくい可能性あり)
         score = fuzz.ratio(w, text)
         if score >= threshold:
             return True, w, score
     return False, None, None
 
 def detect_personal_accusation(text):
+    """
+    「お前」などの指示語 + 「詐欺グループ」「反社」等が同一文にあるかをざっくり検出
+    """
     pronouns_pattern = r"(お前|こいつ|この人|あなた|アナタ|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
     crime_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン)"
+
     norm = normalize_text(text)
-    pattern = rf"{pronouns_pattern}.*{crime_pattern}|{crime_pattern}.*{pronouns_pattern}"
-    return re.search(pattern, norm) is not None
+    pattern = rf"{pronouns_pattern}\W*{crime_pattern}|{crime_pattern}\W*{pronouns_pattern}"
+    
+    match = re.search(pattern, norm)
+    return match is not None
+
 
 def evaluate_text(text, offensive_dict, whitelist=None):
+    """
+    テキストを総合的に評価し、
+    「問題ありません」もしくは「⚠️ 一部の表現が問題となる可能性があります。」
+    を返す。detail に補足説明を入れる。
+    """
     if whitelist is None:
         whitelist = set()
 
+    # キャッシュにあれば使う
     if text in _eval_cache:
         return _eval_cache[text]
+    # キャッシュが大きくなりすぎないよう適当に削除
     if len(_eval_cache) > 1000:
-        _eval_cache.popitem(last=False)  # キャッシュサイズ制限
+        _eval_cache.popitem(last=False)
 
     normalized = normalize_text(text)
     all_offensive = flatten_offensive_words(offensive_dict)
+    surnames = load_surnames()
 
-    judgement = "問題ありません"
-    detail = ""
+    # 判定用フラグや詳細メッセージをためる
+    problematic = False
+    detail_flags = []
 
-    # (1) offensive_words.json に基づく部分一致チェック（70%以上）
-    found_words = []
+    # --- (1) offensive_words.json に基づく部分一致チェック ---
     match, w, score = check_partial_match(normalized, tuple(all_offensive), threshold=80)
     if match:
-        if w in whitelist:
-            print(f"✅ ホワイトリスト入りなので除外: {w}")
-        else:
-            found_words.append((w, score))
+        # ホワイトリストでなければ「問題あり」候補
+        if w not in whitelist:
+            problematic = True
+            detail_flags.append(f"offensive_word: {w} (score={score})")
 
-    # (2) 苗字チェック
-    surnames = load_surnames()  # ✅ 修正
-    found_surnames = [sn for sn in surnames if sn in normalized]  # ✅ 修正
+    # --- (2) 苗字チェック ---
+    found_surnames = [sn for sn in surnames if sn in normalized]
+    if found_surnames:
+        detail_flags.append(f"found_surnames: {found_surnames}")
 
-    # (3) 個人攻撃 + 犯罪組織
+    # --- (3) 個人攻撃 + 犯罪組織 ---
     if detect_personal_accusation(text):
-        judgement = "⚠️ 個人攻撃 + 犯罪組織関連の表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+        problematic = True
+        detail_flags.append("個人攻撃+犯罪組織表現")
 
-    # (4) 人名あり + offensive_words.json 登録キーワードがある場合（80%以上で判定）
-    if found_words and found_surnames:
-        judgement = "⚠️ 一部の表現が問題となる可能性があります。"
-        detail = "人名 + ワード\n※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+    # --- (4) 苗字 + offensiveワード が同時にあれば問題度UP ---
+    #     (すでにfound_surnamesも(1)もtrueなら問題あり)
+    if found_surnames and match:
+        problematic = True
+        detail_flags.append("人名+オフェンシブ表現")
 
-    # (5) offensive_words.json に登録しているキーワードのみの場合
-    if found_words:
-        judgement = "⚠️ 一部の表現が問題の可能性"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+    # --- (5) ここまででオフェンシブ辞書にヒットしなかった場合でも
+    #          (6) (7) (8) の暴力表現・ハラスメント・脅迫を確認したいので、まだreturnしない ---
 
-    _eval_cache[text] = (judgement, detail)
-    return judgement, detail
-
-    # (6) 暴力表現の例（登録外でも、キーワードと入力テキストの類似度が50%以上なら検出）
+    # (6) 暴力的表現
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
+    # しきい値ゆるめ (60) で判定
     if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=60):
-        judgement = "⚠️ 暴力的表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+        problematic = True
+        detail_flags.append("暴力的表現")
 
-    # (7) いじめ/ハラスメントの例（50%以上で検出）
-    harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
+    # (7) ハラスメント例
+    harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ", "学校来るな"]
+    # 「学校来るな」もここに入れたい場合はこの配列に追加しておくか、offensive_words.jsonに入れて部分一致でもOK
     if any(kw in normalized for kw in harassment_kws) or fuzzy_match_keywords(normalized, harassment_kws, threshold=60):
-        judgement = "⚠️ ハラスメント表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+        problematic = True
+        detail_flags.append("ハラスメント的表現")
 
-    # (8) 脅迫など（50%以上で検出）
+    # (8) 脅迫表現
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(kw in normalized for kw in threat_kws) or fuzzy_match_keywords(normalized, threat_kws, threshold=60):
-        judgement = "⚠️ 脅迫表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
-        _eval_cache[text] = (judgement, detail)
-        return judgement, detail
+        problematic = True
+        detail_flags.append("脅迫的表現")
+
+    # --- 最終判定 ---
+    if problematic:
+        judgement = "⚠️ 一部の表現が問題となる可能性があります。"
+        detail = " / ".join(detail_flags) + "\n※この判定は約束できるものではありません。専門家にご相談ください。"
+    else:
+        judgement = "問題ありません"
+        detail = ""
 
     _eval_cache[text] = (judgement, detail)
     return judgement, detail
 
-# テスト用サンプル
+
 if __name__ == "__main__":
+    # テスト
     offensive_dict = load_offensive_dict("offensive_words.json")
-    tests = [
-        "山下ってブスだよな",           # 人名+侮辱 => 問題あり
-        "山下は政治家",                 # 人名のみ => 問題なし
-        "ブスだな",                     # 人名なし+オフェンシブ => 問題あり
-        "死ね",                         # 暴力的(形態素チェック) => 問題あり
-        "お前は詐欺グループとつながってる",   # 個人攻撃+犯罪組織 => 問題あり
-        "普通の文章です"                # 問題なし
+    test_texts = [
+        "山下ってブスだよな",         # 人名+侮辱 => 問題あり
+        "山下は政治家",               # 人名のみ => 問題なし
+        "ブスだな",                   # (辞書に「ブス」あれば) => 問題あり
+        "死ね",                       # 暴力的 => 問題あり
+        "お前は詐欺グループとつながってる", # 個人攻撃+犯罪組織 => 問題あり
+        "普通の文章です",            # 問題なし
+        "学校来るな"                 # ハラスメント => 問題あり
     ]
-    for t in tests:
+
+    for t in test_texts:
         res = evaluate_text(t, offensive_dict)
-        print(f"入力: {t} => 判定: {res}")
+        print(f"\n入力: {t}\n判定: {res}\n{'-'*40}")
