@@ -193,22 +193,26 @@
 </head>
 <body>
 
-  <!-- ▼ 追加: アプリ内ブラウザ警告 -->
+  <!-- ▼ アプリ内ブラウザ警告（必要なら） ▼ -->
   <div id="inAppWarning" class="inapp-warning">
     <p>ご利用のブラウザでは、Google/Twitterログインがブロックされる可能性があります。</p>
     <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
-    <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>Safariで開く</strong>)<br>
-    (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
+    <p style="font-size: 0.85rem;">
+      (iPhoneの場合: 右下または右上メニュー→<strong>Safariで開く</strong>)<br>
+      (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)
+    </p>
   </div>
-  <!-- ▲ 追加ここまで ▲ -->
 
-  <!-- ▼ 白いカード部分 ▼ -->
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
     <div class="description">
       <p>
-        相手への発言や受けた言葉が、示談や裁判などの法的トラブルにつながる恐れを、過去の例をもとに簡易チェックできるオンラインツールです。ビジネスから日常会話まで、言葉に潜むリスクを早めに把握し、より安心してコミュニケーションを行う一助としてご活用ください。
+        相手への発言や受けた言葉が、示談や裁判などの法的トラブルにつながる恐れを、<br>
+        過去の例をもとに簡易チェックできるオンラインツールです。<br>
+        ビジネスから日常会話まで、<br>
+        言葉に潜むリスクを早めに把握し、<br>
+        より安心してコミュニケーションを行う一助としてご活用ください。
       </p>
       <p>
         <small>
@@ -218,25 +222,18 @@
       </p>
     </div>
 
-    {% if current_user and current_user.is_authenticated %}
-      <!-- ログイン済み -->
+    {% if current_user.is_authenticated %}
+      <!-- ▼ ログイン済みユーザーはすぐ検索できる ▼ -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
         <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
-      {% if not current_user.is_premium %}
-        <a href="/checkout" class="btn-big premium-btn">プレミアムプランに加入する</a>
-      {% else %}
-        <form action="/cancel-subscription" method="POST">
-          <button type="submit" class="btn-small" style="background-color: #e55353;">
-            プレミアムを解約
-          </button>
-        </form>
-      {% endif %}
+      <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
     {% else %}
-      <!-- 未ログイン -->
+      <!-- ▼ 未ログイン: ログイン誘導 ▼ -->
       <p>この機能を使うにはログインが必要です。</p>
       <a href="/login/google" class="btn-big main-btn">Login with Google</a>
       <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
@@ -260,9 +257,7 @@
       <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
     </div>
   </div>
-  <!-- ▲ 白いカードここまで ▲ -->
 
-  <!-- ▼ 下部リンク（背景グレー） ▼ -->
   <div class="footer-links">
     <a href="/terms">利用規約</a>
     <a href="/privacy">プライバシーポリシー</a>
@@ -292,10 +287,9 @@
       });
     }
 
-    // ▼ 追加: アプリ内ブラウザ検知
+    // ▼ アプリ内ブラウザ検知
     (function() {
       const ua = navigator.userAgent.toLowerCase();
-      // LINE or FB/Instagram の一部UA
       const isInApp = (
         ua.indexOf("line/") !== -1 ||
         ua.indexOf("fbav") !== -1 ||
