@@ -225,16 +225,6 @@
         <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
-      {% if not current_user.is_premium %}
-        <a href="/checkout" class="btn-big premium-btn">プレミアムプランに加入する</a>
-      {% else %}
-        <form action="/cancel-subscription" method="POST">
-          <button type="submit" class="btn-small" style="background-color: #e55353;">
-            プレミアムを解約
-          </button>
-        </form>
-      {% endif %}
-
       <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
