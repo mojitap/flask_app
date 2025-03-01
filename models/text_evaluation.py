@@ -98,8 +98,8 @@ def check_partial_match(text, word_list, threshold=80):
         if w in text:
             return True, w, 100
         # ★ ここを ratio から partial_ratio に置き換える
--       score = fuzz.ratio(w, text)
-+       score = fuzz.partial_ratio(w, text)
+
+        score = fuzz.partial_ratio(w, text)
 
         if score >= threshold:
             return True, w, score
