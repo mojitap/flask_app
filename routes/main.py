@@ -36,13 +36,6 @@ whitelist = load_whitelist("data/whitelist.json")
 
 @main.route("/quick_check", methods=["POST"])
 @login_required
-def quick_check():
-    if not current_user.is_premium:
-        flash("検索結果を見るにはプレミアムプランへの加入が必要です。")
-        return redirect(url_for("checkout"))
-
-    # 2) (プレミアムユーザーだけが通る)
-    query = request.form.get("text", "")
 
     # (a) Render.com でダウンロード/ロード済みの辞書
     offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
