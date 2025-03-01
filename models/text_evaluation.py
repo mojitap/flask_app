@@ -71,7 +71,7 @@ def normalize_text(text):
     """
     - 全角→半角変換
     - カタカナ→ひらがな変換
-    - 漢字→ひらがな変換（追加）
+    - 漢字→ひらがな変換
     """
     text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
     text = jaconv.kata2hira(text)
@@ -83,7 +83,9 @@ def normalize_text(text):
     conv = kakasi.getConverter()
     text = conv.do(text)
 
-    return text  # ★ ここを追加！
+    print(f"🔍 正規化結果: {text}")  # デバッグ用
+
+    return text
 
 def tokenize_and_lemmatize(text):
     return cached_tokenize(text)
