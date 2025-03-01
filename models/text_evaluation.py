@@ -191,12 +191,12 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     # --- 最終判定 ---
     if problematic:
         judgement = "⚠️ 一部の表現が問題となる可能性があります。"
-        detail = " / ".join(detail_flags) + "\n※この判定は約束できるものではありません。専門家にご相談ください。"
+        detail = " / ".join(detail_flags) + "\n※この判定は..."
     else:
         judgement = "問題ありません"
         detail = ""
 
-    _eval_cache[text] = (judgement, detail)
+    # ここで初めて return
     return judgement, detail
 
 
