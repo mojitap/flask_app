@@ -53,37 +53,6 @@ def create_app():
 
     # ... DB init, login_manager, blueprint登録など ...
 
-    @app.route("/checkout")
-    @login_required
-    def checkout():
-        return render_template("checkout.html", stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY"))
-
-    @app.route("/create-checkout-session", methods=["POST"])
-    @login_required
-    def create_checkout_session():
-        session = stripe.checkout.Session.create(
-            line_items=[{
-                "price": "price_1QwIQhP8wMOQp1FurzBAyZhx",
-                "quantity": 1
-            }],
-            mode="subscription",
-            success_url="https://mojitap.com/success",
-            cancel_url="https://mojitap.com/cancel"
-        )
-        return jsonify({"id": session.id})
-
-    @app.route("/success")
-    @login_required
-    def success():
-        # current_user.is_premium = True
-        # db.session.commit()
-        return render_template("success.html")
-
-    @app.route("/cancel")
-    @login_required
-    def cancel():
-        return render_template("cancel.html")
-
     @app.route("/cancel-subscription", methods=["POST"])
     @login_required
     def cancel_subscription():
