@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-import stripe
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager, login_required, current_user
 from authlib.integrations.flask_client import OAuth
@@ -19,7 +18,6 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
     
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
@@ -48,53 +46,6 @@ def create_app():
     oauth = OAuth(app)
     oauth.init_app(app)
     app.config["OAUTH_INSTANCE"] = oauth
-
-    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # シークレットキー
-
-    # ... DB init, login_manager, blueprint登録など ...
-
-    @app.route("/checkout")
-    @login_required
-    def checkout():
-        return render_template("checkout.html", stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY"))
-
-    @app.route("/create-checkout-session", methods=["POST"])
-    @login_required
-    def create_checkout_session():
-        session = stripe.checkout.Session.create(
-            line_items=[{
-                "price": "price_1QwIQhP8wMOQp1FurzBAyZhx",
-                "quantity": 1
-            }],
-            mode="subscription",
-            success_url="https://mojitap.com/success",
-            cancel_url="https://mojitap.com/cancel"
-        )
-        return jsonify({"id": session.id})
-
-    @app.route("/success")
-    @login_required
-    def success():
-        # current_user.is_premium = True
-        # db.session.commit()
-        return render_template("success.html")
-
-    @app.route("/cancel")
-    @login_required
-    def cancel():
-        return render_template("cancel.html")
-
-    @app.route("/cancel-subscription", methods=["POST"])
-    @login_required
-    def cancel_subscription():
-        # subscription_id を保存している場合は、Stripe上で削除
-        if current_user.stripe_subscription_id:
-            stripe.Subscription.delete(current_user.stripe_subscription_id)
-        # DB上でも is_premium=False
-        current_user.is_premium = False
-        db.session.commit()
-        flash("プレミアムプランを解約しました。")
-        return redirect(url_for("home"))  
 
     # --- Dropbox からファイルをダウンロードする関数 ---
     def download_file(url, local_path):
