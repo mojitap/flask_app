@@ -74,7 +74,7 @@ Mojitap（以下「本サービス」といいます）を運営する個人ま�
 
 ■ 運営者情報  
 運営者：MojiTap 代表 野寺 孝彦（個人運営）  
-お問い合わせ：https://forms.gle/Y3PkCGKdrmzvUdPZ6  
+お問い合わせ：<a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank">こちらからメールを送信できます。</a>
 住所：お問い合わせいただいた場合に開示いたします。
 
 
