@@ -9,6 +9,7 @@ import spacy
 from spacy.lang.ja import Japanese
 from rapidfuzz import fuzz
 import jaconv
+import pykakasi
 
 # あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて調整してください）
 from .load_surnames import load_surnames
@@ -68,10 +69,21 @@ def flatten_offensive_words(offensive_dict):
 
 def normalize_text(text):
     """
-    全角→半角、カタカナ→ひらがな に変換
+    - 全角→半角変換
+    - カタカナ→ひらがな変換
+    - 漢字→ひらがな変換（追加）
     """
     text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
-    return jaconv.kata2hira(text)
+    text = jaconv.kata2hira(text)
+
+    kakasi = pykakasi.kakasi()
+    kakasi.setMode("J", "H")  # 漢字をひらがなに変換
+    kakasi.setMode("K", "H")  # カタカナをひらがなに変換
+    kakasi.setMode("r", "Hepburn")  # ローマ字はそのまま
+    conv = kakasi.getConverter()
+    text = conv.do(text)
+
+    return text  # ★ ここを追加！
 
 def tokenize_and_lemmatize(text):
     return cached_tokenize(text)
@@ -127,7 +139,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     judgement = "問題ありません"
     detail = ""
 
-    # (1) offensive_words.json に基づく部分一致チェック（90%以上）
+    # (1) offensive_words.json に基づく部分一致チェック（70%以上）
     found_words = []
     match, w, score = check_partial_match(normalized, tuple(all_offensive), threshold=80)
     if match:
@@ -162,7 +174,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
 
-    # (6) 暴力表現の例（登録外でも、キーワードと入力テキストの類似度が90%以上なら検出）
+    # (6) 暴力表現の例（登録外でも、キーワードと入力テキストの類似度が50%以上なら検出）
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
     if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=60):
         judgement = "⚠️ 暴力的表現あり"
@@ -170,7 +182,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
 
-    # (7) いじめ/ハラスメントの例（90%以上で検出）
+    # (7) いじめ/ハラスメントの例（50%以上で検出）
     harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
     if any(kw in normalized for kw in harassment_kws) or fuzzy_match_keywords(normalized, harassment_kws, threshold=60):
         judgement = "⚠️ ハラスメント表現あり"
@@ -178,7 +190,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
 
-    # (8) 脅迫など（90%以上で検出）
+    # (8) 脅迫など（50%以上で検出）
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(kw in normalized for kw in threat_kws) or fuzzy_match_keywords(normalized, threat_kws, threshold=60):
         judgement = "⚠️ 脅迫表現あり"
