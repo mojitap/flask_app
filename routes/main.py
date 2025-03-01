@@ -36,14 +36,14 @@ whitelist = load_whitelist("data/whitelist.json")
 
 @main.route("/quick_check", methods=["POST"])
 @login_required
+def quick_check():
+    query = request.form.get("query", "").strip()
 
-    # (a) Render.com でダウンロード/ロード済みの辞書
-    offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
+    with current_app.app_context():
+        offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
 
-    # (b) 評価する
     judgement, detail = evaluate_text(query, offensive_dict)
 
-    # (c) 履歴を保存
     SearchHistory.add_or_increment(query)
 
     return render_template("result.html", query=query, result=judgement, detail=detail)
