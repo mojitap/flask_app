@@ -12,10 +12,10 @@ import jaconv
 import pykakasi
 
 # あなたの環境で苗字をロードする関数（相対 or 絶対インポートに合わせて調整してください）
-from .load_surnames import load_surnames
+from models.load_surnames import load_surnames
 
 # 形態素解析のキャッシュ
-nlp = spacy.load("ja_core_news_sm")  # 事前にロード（1回だけ）
+nlp = spacy.load("ja_core_news_sm")  # from .load_surnames import load_surnames事前にロード（1回だけ）
 
 @lru_cache(maxsize=1000)
 def cached_tokenize(text):
@@ -73,19 +73,9 @@ def normalize_text(text):
     - カタカナ→ひらがな変換
     - 漢字→ひらがな変換
     """
-    text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
-    text = jaconv.kata2hira(text)
-
     kakasi = pykakasi.kakasi()
-    kakasi.setMode("J", "H")  # 漢字をひらがなに変換
-    kakasi.setMode("K", "H")  # カタカナをひらがなに変換
-    kakasi.setMode("r", "Hepburn")  # ローマ字はそのまま
-    conv = kakasi.getConverter()
-    text = conv.do(text)
-
-    print(f"🔍 正規化結果: {text}")  # デバッグ用
-
-    return text
+    result = kakasi.convert(text)  # ✅ 新しいAPIで変換
+    return "".join([entry['hira'] for entry in result])
 
 def tokenize_and_lemmatize(text):
     return cached_tokenize(text)
@@ -151,8 +141,8 @@ def evaluate_text(text, offensive_dict, whitelist=None):
             found_words.append((w, score))
 
     # (2) 苗字チェック
-    surnames = load_surnames()
-    found_surnames = [sn for sn in surnames if sn in normalized]
+    surnames = load_surnames()  # ✅ 修正
+    found_surnames = [sn for sn in surnames if sn in normalized]  # ✅ 修正
 
     # (3) 個人攻撃 + 犯罪組織
     if detect_personal_accusation(text):
@@ -164,8 +154,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     # (4) 人名あり + offensive_words.json 登録キーワードがある場合（80%以上で判定）
     if found_words and found_surnames:
         judgement = "⚠️ 一部の表現が問題となる可能性があります。"
-        detail = ("人名 + ワード\n"
-                  "※この判定は約束できるものではありません。専門家にご相談ください。")
+        detail = "人名 + ワード\n※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
 
@@ -175,6 +164,9 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
+
+    _eval_cache[text] = (judgement, detail)
+    return judgement, detail
 
     # (6) 暴力表現の例（登録外でも、キーワードと入力テキストの類似度が50%以上なら検出）
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
