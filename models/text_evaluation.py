@@ -23,22 +23,16 @@ def cached_tokenize(text):
 _eval_cache = {}
 
 def load_offensive_dict(json_path="offensive_words.json"):
-    """
-    offensive_words.json を辞書としてロード。
-    {
-      "categories": {
-        "insults": [...],
-        "defamation": [...],
-        "harassment": [...],
-        ...
-      },
-      "names": [...]
-    }
-    """
+    print("DEBUG: loading file =>", os.path.abspath(json_path))  # ★ デバッグ出力1
+
     if not os.path.exists(json_path):
         raise FileNotFoundError(f"{json_path} が見つかりません。")
+
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    print("DEBUG: loaded data =>", data)  # ★ デバッグ出力2
+
     return data
 
 def load_whitelist(json_path="data/whitelist.json"):
@@ -171,7 +165,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     #          (6) (7) (8) の暴力表現・ハラスメント・脅迫を確認したいので、まだreturnしない ---
 
     # (6) 暴力的表現
-    violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
+    violence_keywords = ["殺す", "死ね", "殺し", "殴って", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "クソが"]
     # しきい値ゆるめ (60) で判定
     if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=90):
         problematic = True
@@ -185,7 +179,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         detail_flags.append("ハラスメント的表現")
 
     # (8) 脅迫表現
-    threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
+    threat_kws = ["晒す", "晒そう" "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(kw in normalized for kw in threat_kws) or fuzzy_match_keywords(normalized, threat_kws, threshold=60):
         problematic = True
         detail_flags.append("脅迫的表現")
