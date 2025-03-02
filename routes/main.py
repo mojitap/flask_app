@@ -37,7 +37,7 @@ whitelist = load_whitelist("data/whitelist.json")
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
-    query = request.form.get("query", "").strip()
+    query = request.form.get("text", "").strip()  # "text" に合わせる
 
     with current_app.app_context():
         offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
