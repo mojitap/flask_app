@@ -9,38 +9,35 @@ from spacy.lang.ja import Japanese
 from rapidfuzz import fuzz
 import jaconv
 import pykakasi
+import io  # ✅ メモリでデータを処理するために追加
 
-SURNAMES_CSV_PATH = "models/surnames.csv"
+# Dropbox の URL
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/tvmzgc4vgy97nkl6v1u54/surnames.csv?rlkey=xxxxx&dl=1"
 
 nlp = spacy.load("ja_core_news_sm")
 
 def load_surnames():
-    """苗字リストを Dropbox からダウンロードしてロード"""
-    if not os.path.exists(SURNAMES_CSV_PATH):
-        print(f"⚠️ {SURNAMES_CSV_PATH} が見つかりません。Dropboxからダウンロードします...")
-        try:
-            response = requests.get(DROPBOX_SURNAMES_URL, timeout=10)
-            response.raise_for_status()
-            with open(SURNAMES_CSV_PATH, "wb") as f:
-                f.write(response.content)
-            print(f"✅ {SURNAMES_CSV_PATH} をダウンロードしました！")
-        except requests.RequestException as e:
-            print(f"❌ Dropboxから {SURNAMES_CSV_PATH} のダウンロードに失敗しました: {e}")
-            return []
-    
+    """✅ Dropbox から苗字リストを取得し、メモリ上で処理"""
+    print(f"📥 Dropbox から {DROPBOX_URL} をダウンロードします...")
     try:
-        with open(SURNAMES_CSV_PATH, "r", encoding="utf-8") as f:
-            surnames = [line.strip() for line in f]
+        response = requests.get(DROPBOX_URL, timeout=10)
+        response.raise_for_status()
+        
+        csv_data = response.content.decode("utf-8")  # ✅ ファイル保存せずメモリ処理
+        surnames = [line.strip() for line in csv_data.splitlines()]
+
         if not surnames:
             print("⚠️ 苗字リストが空です。")
+        else:
+            print(f"✅ 苗字リストを {len(surnames)} 件ロードしました！")
+        
         return surnames
-    except Exception as e:
-        print(f"❌ 苗字リストの読み込みに失敗しました: {e}")
+    except requests.RequestException as e:
+        print(f"❌ Dropbox から surnames.csv のダウンロードに失敗しました: {e}")
         return []
 
 def load_whitelist(json_path="data/whitelist.json"):
-    """whitelist.json を読み込んで set(...) を返す"""
+    """✅ ホワイトリストを読み込む"""
     if not os.path.exists(json_path):
         print(f"⚠️ {json_path} が見つかりません。ホワイトリストは空です。")
         return set()
@@ -56,7 +53,7 @@ def cached_tokenize(text):
 _eval_cache = {}
 
 def load_offensive_dict(json_path="offensive_words.json"):
-    """offensive_words.json を読み込む"""
+    """✅ offensive_words.json を読み込む"""
     if not os.path.exists(json_path):
         raise FileNotFoundError(f"{json_path} が見つかりません。")
     
@@ -66,7 +63,7 @@ def load_offensive_dict(json_path="offensive_words.json"):
     return data
 
 def flatten_offensive_words(offensive_dict):
-    """offensive_words.json の全ての単語をリスト化"""
+    """✅ offensive_words.json の全単語をリスト化"""
     all_words = []
     categories = offensive_dict.get("categories", {})
     for _, word_list in categories.items():
@@ -74,15 +71,13 @@ def flatten_offensive_words(offensive_dict):
     return list(set(all_words))
 
 def normalize_text(text):
-    """全角→半角, カタカナ→ひらがな, 漢字→ひらがな変換"""
+    """✅ 全角→半角, カタカナ→ひらがな, 漢字→ひらがな変換"""
     kakasi = pykakasi.kakasi()
     result = kakasi.convert(text)
     return "".join([entry['hira'] for entry in result])
 
 def fuzzy_match_keywords(text, keywords, threshold=80):
-    """
-    類似度チェック（閾値80に設定）
-    """
+    """✅ 類似度チェック（閾値80）"""
     for kw in keywords:
         score = fuzz.partial_ratio(kw, text)
         if score >= threshold:
@@ -91,13 +86,13 @@ def fuzzy_match_keywords(text, keywords, threshold=80):
 
 @lru_cache(maxsize=1000)
 def check_partial_match(text, word_list, whitelist, threshold=80):
-    """部分一致チェック（ホワイトリスト考慮）"""
+    """✅ 部分一致チェック（ホワイトリスト考慮）"""
     for w in word_list:
         if w in whitelist:
-            continue  # ホワイトリストにある場合は無視
+            continue  # ✅ ホワイトリストにある場合は無視
 
         if w in text:
-            return True, w, 100  # 完全一致なら即マッチ
+            return True, w, 100  # ✅ 完全一致なら即マッチ
 
         score = fuzz.partial_ratio(w, text)
         if score >= threshold:
@@ -105,7 +100,7 @@ def check_partial_match(text, word_list, whitelist, threshold=80):
     return False, None, None
 
 def detect_personal_accusation(text):
-    """「お前」などの指示語 + 「詐欺グループ」「反社」等が同一文にあるかを検出"""
+    """✅ 「お前」などの指示語 + 「詐欺グループ」「反社」等が同一文にあるかを検出"""
     pronouns_pattern = r"(お前|こいつ|この人|あなた|アナタ|あいつ|あんた|アンタ|おまえ|オマエ|コイツ|てめー|テメー|アイツ)"
     crime_pattern = r"(反社|暴力団|詐欺団体|詐欺グループ|犯罪組織|闇組織|マネロン)"
 
@@ -116,7 +111,7 @@ def detect_personal_accusation(text):
     return bool(matches)
 
 def evaluate_text(text, offensive_dict, whitelist=None):
-    """テキストを評価し、問題のある表現を検出する"""
+    """✅ テキストを評価し、問題のある表現を検出する"""
     if whitelist is None:
         whitelist = set()
 
@@ -125,12 +120,12 @@ def evaluate_text(text, offensive_dict, whitelist=None):
 
     normalized = normalize_text(text.lower())  
     all_offensive = flatten_offensive_words(offensive_dict)
-    surnames = load_surnames()  # ✅ Dropbox から取得する方式に修正
+    surnames = load_surnames()  # ✅ Dropbox から取得する方式
 
     problematic = False
     detail_flags = []
 
-    # 固定リストによる完全一致チェック
+    # ✅ 固定リストによる完全一致チェック
     violence_keywords = {"殺す", "死ね", "殴る", "蹴る", "爆破"}
     harassment_kws = {"お前消えろ", "存在価値ない", "いらない人間"}
     threat_kws = {"晒す", "特定する", "ぶっ壊す", "復讐する"}
