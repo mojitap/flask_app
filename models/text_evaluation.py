@@ -87,7 +87,7 @@ def fuzzy_match_keywords(text, keywords, threshold=90):
     return False
 
 @lru_cache(maxsize=1000)
-def check_partial_match(text, word_list, threshold=80):
+def check_partial_match(text, word_list, threshold=95):
     """
     offensive_words.json に基づく文字列ベースの部分一致チェック
       - 完全一致なら score=100
@@ -173,7 +173,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     # (6) 暴力的表現
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破"]
     # しきい値ゆるめ (60) で判定
-    if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=60):
+    if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=90):
         problematic = True
         detail_flags.append("暴力的表現")
 
