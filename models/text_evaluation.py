@@ -120,7 +120,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     if text in _eval_cache:
         return _eval_cache[text]
 
-    normalized = normalize_text(text.lower())  
+    normalized = normalize_text(text.lower())
     all_offensive = flatten_offensive_words(offensive_dict)
     surnames = load_surnames()
 
@@ -139,8 +139,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     if normalized in threat_kws:
         return "⚠️ 一部の表現が問題となる可能性があります。", "脅迫的表現（完全一致）"
 
-    # ✅ `whitelist` を追加
-    match, w, score = check_partial_match(normalized, tuple(all_offensive), whitelist, threshold=80)
+    match, w, score = check_partial_match(normalized, tuple(all_offensive), tuple(whitelist), threshold=80)
     if match and w not in whitelist:
         problematic = True
         detail_flags.append(f"offensive_word: {w} (score={score})")
