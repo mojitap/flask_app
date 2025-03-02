@@ -16,11 +16,11 @@ DROPBOX_URL = "https://www.dropbox.com/scl/fi/tvmzgc4vgy97nkl6v1u54/surnames.csv
 nlp = spacy.load("ja_core_news_sm")
 
 def load_surnames():
-    """苗字リストをロード（なければDropboxからダウンロード）"""
+    """苗字リストを Dropbox からダウンロードしてロード"""
     if not os.path.exists(SURNAMES_CSV_PATH):
         print(f"⚠️ {SURNAMES_CSV_PATH} が見つかりません。Dropboxからダウンロードします...")
         try:
-            response = requests.get(DROPBOX_URL, timeout=10)
+            response = requests.get(DROPBOX_SURNAMES_URL, timeout=10)
             response.raise_for_status()
             with open(SURNAMES_CSV_PATH, "wb") as f:
                 f.write(response.content)
@@ -29,12 +29,15 @@ def load_surnames():
             print(f"❌ Dropboxから {SURNAMES_CSV_PATH} のダウンロードに失敗しました: {e}")
             return []
     
-    with open(SURNAMES_CSV_PATH, "r", encoding="utf-8") as f:
-        surnames = [line.strip() for line in f]
-
-    if not surnames:
-        print("⚠️ 苗字リストが空です。")
-    return surnames
+    try:
+        with open(SURNAMES_CSV_PATH, "r", encoding="utf-8") as f:
+            surnames = [line.strip() for line in f]
+        if not surnames:
+            print("⚠️ 苗字リストが空です。")
+        return surnames
+    except Exception as e:
+        print(f"❌ 苗字リストの読み込みに失敗しました: {e}")
+        return []
 
 def load_whitelist(json_path="data/whitelist.json"):
     """whitelist.json を読み込んで set(...) を返す"""
@@ -120,9 +123,9 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     if text in _eval_cache:
         return _eval_cache[text]
 
-    normalized = normalize_text(text.lower())
+    normalized = normalize_text(text.lower())  
     all_offensive = flatten_offensive_words(offensive_dict)
-    surnames = load_surnames()
+    surnames = load_surnames()  # ✅ Dropbox から取得する方式に修正
 
     problematic = False
     detail_flags = []
