@@ -37,14 +37,19 @@ whitelist = load_whitelist("data/whitelist.json")
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
+    # フォームからテキストを取得
     query = request.form.get("text", "").strip()
 
+    # Flaskのアプリコンテキストの中で設定や辞書データを取り出す
     with current_app.app_context():
         offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
-        # もし whitelist を使いたいなら
         global_whitelist = load_whitelist("data/whitelist.json")
 
-     judgement, detail = evaluate_text(query, offensive_dict, whitelist=global_whitelist)
+    # テキストを判定する
+    judgement, detail = evaluate_text(query, offensive_dict, whitelist=global_whitelist)
 
+    # 検索履歴を保存
     SearchHistory.add_or_increment(query)
+
+    # 判定結果を result.html に渡してレンダリング
     return render_template("result.html", query=query, result=judgement, detail=detail)
