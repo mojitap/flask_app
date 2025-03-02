@@ -90,10 +90,11 @@ def load_surnames():
 
 def check_direct_keywords(normalized_text, keywords):
     """
-    GitHub に直接登録しているキーワードについて、単純部分一致でチェックする。
+    GitHub に直接登録しているキーワードについて、正規化済みテキスト中に含まれているかチェックする。
     """
     for kw in keywords:
-        if kw in normalized_text:
+        kw_norm = normalize_text(kw)
+        if kw_norm in normalized_text:
             return True, kw
     return False, None
 
@@ -101,17 +102,20 @@ def evaluate_keywords(normalized_text, tokenized_text, keywords, threshold=80):
     """
     offensive ワードリスト (keywords) について、入力テキスト（正規化済み・トークン化済み）と比較する。
     完全一致の場合はスコア100、部分一致なら fuzzy マッチ（fuzz.partial_ratio）でスコアを計算する。
+    ここでは、キーワード側にも同じトークン化処理を適用して比較するようにする。
     最大スコアが threshold 以上なら (True, 該当ワード, スコア) を返す。
     """
     max_score = 0
     matched_keyword = None
     for kw in keywords:
         kw_norm = normalize_text(kw)
+        # キーワード側も形態素解析してトークン列にする
+        kw_tokens = tokenize_text(kw_norm)
+        kw_tokenized = " ".join(kw_tokens)
         if kw_norm in normalized_text:
             score = 100
         else:
-            # トークン列をスペース区切りの文字列にして fuzzy 比較
-            score = fuzz.partial_ratio(kw_norm, tokenized_text)
+            score = fuzz.partial_ratio(kw_tokenized, tokenized_text)
         if score > max_score:
             max_score = score
             matched_keyword = kw
@@ -145,6 +149,10 @@ def evaluate_text(text, offensive_list, whitelist=None):
     normalized = normalize_text(text)
     tokens = tokenize_text(text)
     tokenized_text = " ".join(tokens)
+    
+    # デバッグ用ログ（必要ならコメントアウト）
+    print("Normalized text:", normalized)
+    print("Tokenized text:", tokenized_text)
 
     results = []
 
