@@ -32,6 +32,18 @@ def load_offensive_dict(json_path="offensive_words.json"):
 
     return data
 
+def load_whitelist(json_path="data/whitelist.json"):
+    """
+    whitelist.json を読み込んで set(...) を返す。
+    形式: ["ありえない", "誤検出しがち", ...]
+    """
+    if not os.path.exists(json_path):
+        print(f"⚠️ {json_path} が見つかりません。ホワイトリストは空です。")
+        return set()
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return set(data)
+
 def flatten_offensive_words(offensive_dict):
     """offensive_words.json の全ての単語をリスト化"""
     all_words = []
