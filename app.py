@@ -1,14 +1,14 @@
 import os
 import json
 import requests
-from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
-from flask_login import LoginManager, login_required, current_user
+from flask import Flask, render_template, redirect, url_for, send_from_directory, current_app, request
+from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
-from requests_oauthlib import OAuth1Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+# ローカルのファイル
 from extensions import db
 from routes.main import main
 from routes.auth import auth
@@ -18,7 +18,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-    
+
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
@@ -32,6 +32,8 @@ def create_app():
     # Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
+    # ログインしていない状態で @login_required のページにアクセスしたとき
+    # auth.login という関数名を持つルートへリダイレクトする
     login_manager.login_view = "auth.login"
 
     @login_manager.user_loader
@@ -59,18 +61,13 @@ def create_app():
         else:
             print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
 
-    # Dropboxファイルダウンロード
+    # DropboxファイルURL
     dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
-    dropbox_whitelist_url = os.getenv("DROPBOX_WHITELIST_URL")
-
     local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
-    local_whitelist_path = os.path.join(app.root_path, "data", "whitelist.json")
 
+    # ダウンロード実行
     if dropbox_offensive_words_url:
         download_file(dropbox_offensive_words_url, local_offensive_words_path)
-
-    if dropbox_whitelist_url:
-        download_file(dropbox_whitelist_url, local_whitelist_path)
 
     # offensive_words.json のロード
     try:
@@ -82,7 +79,7 @@ def create_app():
         app.logger.error(f"{local_offensive_words_path} が見つかりません。")
         app.config["OFFENSIVE_WORDS"] = {}
 
-    # OAuth登録
+    # OAuth登録 (Twitter / Google)
     oauth.register(
         name="google",
         client_id=os.getenv("GOOGLE_CLIENT_ID"),
@@ -106,42 +103,18 @@ def create_app():
     def robots():
         return send_from_directory(app.static_folder, "robots.txt")
 
-    # ---- (A) 利用規約の表示 ----
     @app.route("/terms")
     def show_terms():
-        terms_path = os.path.join(app.root_path, "terms.txt")
-        try:
-            with open(terms_path, "r", encoding="utf-8") as f:
-                terms_content = f.read()
-            return render_template("terms.html", terms_content=terms_content)
-        except FileNotFoundError:
-            current_app.logger.error(f"{terms_path} が見つかりません。")
-            return render_template("terms.html", terms_content="利用規約は現在利用できません。")
+        # 利用規約
+        # ... 省略
+        return render_template("terms.html")
 
-    # ---- (B) プライバシーポリシーの表示 ----
     @app.route("/privacy")
     def show_privacy():
-        privacy_path = os.path.join(app.root_path, "privacy.txt")
-        try:
-            with open(privacy_path, "r", encoding="utf-8") as f:
-                privacy_content = f.read()
-            return render_template("privacy.html", privacy_content=privacy_content)
-        except FileNotFoundError:
-            current_app.logger.error(f"{privacy_path} が見つかりません。")
-            return render_template("privacy.html", privacy_content="プライバシーポリシーは現在利用できません。")
+        # プライバシーポリシー
+        # ... 省略
+        return render_template("privacy.html")
 
-    # ---- (C) 特定商取引法に基づく表記の表示 ----
-    @app.route("/tokushoho")
-    def show_tokushoho():
-        tokushoho_path = os.path.join(app.root_path, "tokushoho.txt")  # ここを実際の配置場所に合わせる
-        try:
-            with open(tokushoho_path, "r", encoding="utf-8") as f:
-                tokushoho_content = f.read()
-            return render_template("tokushoho.html", tokushoho_content=tokushoho_content)
-        except FileNotFoundError:
-            current_app.logger.error(f"{tokushoho_path} が見つかりません。")
-            return render_template("tokushoho.html", tokushoho_content="特定商取引法に基づく表記は現在利用できません。")
- 
     return app
 
 app = create_app()
