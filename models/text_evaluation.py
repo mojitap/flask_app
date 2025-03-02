@@ -168,4 +168,4 @@ if __name__ == "__main__":
 
     for t in test_texts:
         res = evaluate_text(t, offensive_dict)
-        print(f"\n入力: {t}\n判定: {res}\n{'-'*40'}")
+        print(f"\n入力: {t}\n判定: {res}\n{'-'*40}")
