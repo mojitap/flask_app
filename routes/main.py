@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 from flask import Blueprint, render_template, request, current_app, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models.search_history import SearchHistory
-from models.text_evaluation import evaluate_text
+from models.text_evaluation import evaluate_text, load_whitelist
 from sqlalchemy import text
 from extensions import db
 
