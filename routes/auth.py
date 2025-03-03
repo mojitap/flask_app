@@ -127,23 +127,21 @@ def login_line():
 
 @auth.route("/authorize/line")
 def authorize_line():
-    # code = request.args["code"]
-    token = line_client.fetch_token(
-        url="https://api.line.me/oauth2/v2.1/token",
-        grant_type="authorization_code",
-        code=request.args["code"],
-    )
-    # token["access_token"] にアクセストークンが入っている
+    # ... LINEのtoken取得 + プロフィール取得 ...
+    line_user_id = profile["userId"]
+    line_display_name = profile["displayName"]
 
-    # Authorizationヘッダーを手動で設定して /v2/profile をGET
-    resp = line_client.get(
-        "https://api.line.me/v2/profile",
-        headers={"Authorization": f"Bearer {token['access_token']}"}
-    )
-    profile = resp.json()
-    line_user_id = profile.get("userId")
-    line_display_name = profile.get("displayName")
+    # 既存ユーザー検索
+    user = User.query.filter_by(id=line_user_id).first()
+    if not user:
+        user = User(id=line_user_id, email="dummy@example.com", display_name=line_display_name)
+        db.session.add(user)
+    else:
+        user.display_name = line_display_name
 
-    # DB保存やlogin_user(...)など
-    # ...
+    db.session.commit()
+
+    # ここでログインセッションを作る
+    login_user(user)
+
     return redirect(url_for("main.home"))
