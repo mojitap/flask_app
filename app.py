@@ -96,6 +96,19 @@ def create_app():
         client_secret=os.getenv("TWITTER_API_SECRET"),
         request_token_params={"scope": "read write"}
     )
+    oauth.register(
+    name="line",
+    client_id=os.getenv("LINE_CLIENT_ID"),
+    client_secret=os.getenv("LINE_CLIENT_SECRET"),
+    access_token_url="https://api.line.me/oauth2/v2.1/token",
+    authorize_url="https://access.line.me/oauth2/v2.1/authorize",
+    api_base_url="https://api.line.me/v2/profile",
+    client_kwargs={
+        "scope": "profile openid email",
+        "token_endpoint_auth_method": "client_secret_post",
+        "token_placement": "header",
+        }
+    )
 
     # 静的ファイル & 利用規約ページなどのルート
     @app.route("/static/<path:filename>")
