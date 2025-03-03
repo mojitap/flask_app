@@ -159,11 +159,15 @@ def authorize_line():
         current_app.logger.error("LINE認証エラー: userIdが取得できませんでした")
         return redirect(url_for("auth.login"))
 
+    # ✅ 仮のメールアドレスを作成（emailが取得できないため）
+    fake_email = f"{line_user_id}@example.com"
+
     # ✅ 既存のユーザーをDBで検索 or 新規作成
     user = User.query.filter_by(id=line_user_id).first()
     if not user:
         user = User(
             id=line_user_id, 
+            email=fake_email,  # 仮のメールアドレス
             display_name=line_display_name,
             provider="line"
         )
