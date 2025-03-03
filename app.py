@@ -110,7 +110,7 @@ def create_app():
             "token_endpoint_auth_method": "client_secret_post",
             "token_placement": "header",
             "fetch_discovery": False             # これが重要！
-            }
+        }
     )
 
     # 静的ファイル & 利用規約ページなどのルート
