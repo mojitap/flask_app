@@ -127,21 +127,19 @@ def login_line():
 
 @auth.route("/authorize/line")
 def authorize_line():
-    # ... LINEのtoken取得 + プロフィール取得 ...
+    # ... (LINEからaccess_tokenを取得し、プロフィールを取得)
     line_user_id = profile["userId"]
     line_display_name = profile["displayName"]
 
-    # 既存ユーザー検索
     user = User.query.filter_by(id=line_user_id).first()
     if not user:
-        user = User(id=line_user_id, email="dummy@example.com", display_name=line_display_name)
+        user = User(id=line_user_id, email="dummy@line.com", display_name=line_display_name)
         db.session.add(user)
     else:
         user.display_name = line_display_name
 
     db.session.commit()
 
-    # ここでログインセッションを作る
-    login_user(user)
+    login_user(user)  # ★ これが重要 ★
 
     return redirect(url_for("main.home"))
