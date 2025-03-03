@@ -119,11 +119,9 @@ def authorize_line():
     oauth = current_app.config["OAUTH_INSTANCE"]
     code = request.args.get("code")
 
-    # 手動でトークンを交換
-    # fetch_token() を使うと Authlib の IDトークン検証をスキップできる
-    token = oauth.line.fetch_token(
-        # トークンエンドポイント
-        "https://api.line.me/oauth2/v2.1/token",
+    # ここが重要: oauth.line.session.fetch_token(...) を使う
+    token = oauth.line.session.fetch_token(
+        url="https://api.line.me/oauth2/v2.1/token",
         grant_type="authorization_code",
         code=code,
         redirect_uri=url_for("auth.authorize_line", _external=True),
@@ -131,13 +129,12 @@ def authorize_line():
         client_secret=os.getenv("LINE_CLIENT_SECRET")
     )
 
-    # 次に /v2/profile を呼んでユーザー情報を取得
-    # api_base_url="https://api.line.me/v2" としているなら下記のように
-    resp = oauth.line.get("profile", token=token)
+    # その後、プロフィールを取得
+    resp = oauth.line.session.get("https://api.line.me/v2/profile", token=token)
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
 
-    # ここで DB 保存や login_user(user) など
+    # DB 保存や login_user(...) など
     # ...
     return redirect(url_for("main.home"))
