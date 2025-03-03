@@ -103,7 +103,7 @@ def authorize_twitter():
 @auth.route("/login/line")
 def login_line():
     """LINEログイン開始"""
-    oauth = current_app.config["OAUTH_INSTANCE"]  # あなたの実装に合わせる
+    oauth = current_app.config["OAUTH_INSTANCE"]
     redirect_uri = url_for("auth.authorize_line", _external=True)
     return oauth.line.authorize_redirect(redirect_uri)
 
@@ -112,23 +112,18 @@ def authorize_line():
     """LINE認証処理"""
     oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.line.authorize_access_token()
-    # token の中にアクセストークンや IDトークンなどが含まれる
 
-    # プロフィールを取得
+    # プロフィール取得
     resp = oauth.line.get("https://api.line.me/v2/profile", token=token)
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
 
-    # 必要に応じて IDトークンを decode し、email を取得することもある
-    # id_token = token.get("id_token")
-    # ...
-
     # DBにユーザーを保存 or 更新
     user = User.query.filter_by(line_id=line_user_id).first()
     if not user:
         user = User(
-            id=line_user_id,  # あるいは line_id カラムを用意
+            id=line_user_id,  # or line_id=...
             display_name=line_display_name,
             provider="line"
         )
