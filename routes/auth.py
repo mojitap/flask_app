@@ -127,29 +127,23 @@ def login_line():
 
 @auth.route("/authorize/line")
 def authorize_line():
-    """
-    3) コールバック:
-       code を使ってトークンを取得し、プロフィールAPIを呼んでユーザー情報を取得
-    """
-    # code = request.args.get("code")
-    # state = request.args.get("state")
-    # if state != session.get("line_auth_state"):  # 必要ならチェック
-
+    # code = request.args["code"]
     token = line_client.fetch_token(
         url="https://api.line.me/oauth2/v2.1/token",
         grant_type="authorization_code",
-        code=request.args["code"],  # LINEから返ってくる code
+        code=request.args["code"],
     )
-    # token = {"access_token": "...", "id_token": "...", ...}
+    # token["access_token"] にアクセストークンが入っている
 
-    # 4) プロフィール取得
-    resp = line_client.get("https://api.line.me/v2/profile", token=token)
+    # Authorizationヘッダーを手動で設定して /v2/profile をGET
+    resp = line_client.get(
+        "https://api.line.me/v2/profile",
+        headers={"Authorization": f"Bearer {token['access_token']}"}
+    )
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
 
-    # DB保存や login_user(user) など
-    # 例: DB上で line_user_id を主キー or line_id カラムに保存
-    #     email取得が必要なら IDトークンを自前でdecodeする必要あり
+    # DB保存やlogin_user(...)など
     # ...
     return redirect(url_for("main.home"))
