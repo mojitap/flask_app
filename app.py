@@ -104,7 +104,7 @@ def create_app():
     authorize_url="https://access.line.me/oauth2/v2.1/authorize",
     api_base_url="https://api.line.me/v2/profile",
     client_kwargs={
-        "scope": "profile openid email",
+        "scope": "profile email",
         "token_endpoint_auth_method": "client_secret_post",
         "token_placement": "header",
         }
