@@ -127,24 +127,61 @@ def login_line():
 
 @auth.route("/authorize/line")
 def authorize_line():
-    token = line_client.fetch_token(
-        url="https://api.line.me/oauth2/v2.1/token",
-        grant_type="authorization_code",
-        code=request.args["code"],
-    )
-    # token = {"access_token": "...", "id_token": "...", ...}
+    """LINE認証処理"""
 
-    # ここでプロフィールを取得し、変数 profile に格納
-    resp = line_client.get(
-        "https://api.line.me/v2/profile",
-        headers={"Authorization": f"Bearer {token['access_token']}"}
-    )
-    profile = resp.json()
+    # ✅ LINEのアクセストークンを取得
+    try:
+        token = line_client.fetch_token(
+            url="https://api.line.me/oauth2/v2.1/token",
+            grant_type="authorization_code",
+            code=request.args["code"],
+        )
+    except Exception as e:
+        current_app.logger.error(f"LINEトークン取得失敗: {e}")
+        return redirect(url_for("auth.login"))  # 失敗したらログイン画面へ
 
-    # これで profile が定義済み
-    line_user_id = profile["userId"]       # OK
-    line_display_name = profile["displayName"]
+    # ✅ LINEのプロフィールを取得
+    try:
+        resp = line_client.get(
+            "https://api.line.me/v2/profile",
+            headers={"Authorization": f"Bearer {token['access_token']}"}
+        )
+        profile = resp.json()
+    except Exception as e:
+        current_app.logger.error(f"LINEプロフィール取得失敗: {e}")
+        return redirect(url_for("auth.login"))  # 失敗したらログイン画面へ
 
-    # DB保存 + login_user(...)
-    # ...
+    # ✅ 必要な情報を取得
+    line_user_id = profile.get("userId")
+    line_display_name = profile.get("displayName")
+
+    if not line_user_id:
+        current_app.logger.error("LINE認証エラー: userIdが取得できませんでした")
+        return redirect(url_for("auth.login"))
+
+    # ✅ 既存のユーザーをDBで検索 or 新規作成
+    user = User.query.filter_by(id=line_user_id).first()
+    if not user:
+        user = User(
+            id=line_user_id, 
+            display_name=line_display_name,
+            provider="line"
+        )
+        db.session.add(user)
+    else:
+        user.display_name = line_display_name  # 名前の更新
+
+    db.session.commit()
+
+    # ✅ Flask-Login でログイン処理
+    login_user(user, remember=True)
+
+    # ✅ セッションに情報を保存
+    session["user_id"] = user.id
+    session["logged_in"] = True  # ログイン状態を記録
+    session.permanent = True  # セッションを保持
+
+    current_app.logger.info(f"LINEログイン成功: {user.display_name}")
+
+    # ✅ 正しくログイン後のページにリダイレクト
     return redirect(url_for("main.home"))
