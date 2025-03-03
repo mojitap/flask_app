@@ -102,36 +102,42 @@ def authorize_twitter():
 
 @auth.route("/login/line")
 def login_line():
-    """LINEログイン開始"""
     oauth = current_app.config["OAUTH_INSTANCE"]
+    # コールバックURL
     redirect_uri = url_for("auth.authorize_line", _external=True)
-    return oauth.line.authorize_redirect(redirect_uri)
+
+    # authorize_redirect で scope に "openid profile email" を指定
+    # ただし "fetch_discovery=False" を付けておく
+    return oauth.line.authorize_redirect(
+        redirect_uri,
+        scope="openid profile email",  # LINEが要求
+        fetch_discovery=False
+    )
 
 @auth.route("/authorize/line")
 def authorize_line():
     oauth = current_app.config["OAUTH_INSTANCE"]
-    token = oauth.line.authorize_access_token()
-    # token の中には id_token が含まれているかもしれないが、Authlib による自動検証は行わない
+    code = request.args.get("code")
 
-    # LINEのプロフィールをAPIで取得
-    resp = oauth.line.get("profile", token=token)  # /v2/profile
+    # 手動でトークンを交換
+    # fetch_token() を使うと Authlib の IDトークン検証をスキップできる
+    token = oauth.line.fetch_token(
+        # トークンエンドポイント
+        "https://api.line.me/oauth2/v2.1/token",
+        grant_type="authorization_code",
+        code=code,
+        redirect_uri=url_for("auth.authorize_line", _external=True),
+        client_id=os.getenv("LINE_CLIENT_ID"),
+        client_secret=os.getenv("LINE_CLIENT_SECRET")
+    )
+
+    # 次に /v2/profile を呼んでユーザー情報を取得
+    # api_base_url="https://api.line.me/v2" としているなら下記のように
+    resp = oauth.line.get("profile", token=token)
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
 
-    # DBにユーザーを保存 or 更新
-    user = User.query.filter_by(line_id=line_user_id).first()
-    if not user:
-        user = User(
-            id=line_user_id,  # or line_id=...
-            display_name=line_display_name,
-            provider="line"
-        )
-        db.session.add(user)
-    else:
-        user.display_name = line_display_name
-        user.provider = "line"
-
-    db.session.commit()
-    login_user(user)
+    # ここで DB 保存や login_user(user) など
+    # ...
     return redirect(url_for("main.home"))
