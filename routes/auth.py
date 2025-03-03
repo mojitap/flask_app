@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, url_for, session, current_app, request
 from flask_login import login_user
 from requests_oauthlib import OAuth1Session
+from authlib.integrations.requests_client import OAuth2Session
 import os
 from models import User  # ✅ `models/__init__.py` で `User` をインポートしているため
 from extensions import db
@@ -100,41 +101,55 @@ def authorize_twitter():
     login_user(user)
     return redirect(url_for("main.home"))
 
+LINE_CLIENT_ID = os.getenv("LINE_CLIENT_ID")
+LINE_CLIENT_SECRET = os.getenv("LINE_CLIENT_SECRET")
+
+line_client = OAuth2Session(
+    client_id=LINE_CLIENT_ID,
+    client_secret=LINE_CLIENT_SECRET,
+    scope="openid profile email",  # LINEが要求
+    redirect_uri="https://mojitap.com/authorize/line",
+    token_endpoint_auth_method="client_secret_post",
+)
+
 @auth.route("/login/line")
 def login_line():
-    oauth = current_app.config["OAUTH_INSTANCE"]
-    # コールバックURL
-    redirect_uri = url_for("auth.authorize_line", _external=True)
-
-    # authorize_redirect で scope に "openid profile email" を指定
-    # ただし "fetch_discovery=False" を付けておく
-    return oauth.line.authorize_redirect(
-        redirect_uri,
-        scope="openid profile email",  # LINEが要求
-        fetch_discovery=False
+    """
+    2) LINEログイン開始:
+       認可URLを生成してリダイレクト
+    """
+    # 認可URLを生成
+    authorization_url, state = line_client.create_authorization_url(
+        "https://access.line.me/oauth2/v2.1/authorize"
     )
+    # 必要なら session["line_auth_state"] = state
+    return redirect(authorization_url)
 
 @auth.route("/authorize/line")
 def authorize_line():
-    oauth = current_app.config["OAUTH_INSTANCE"]
-    code = request.args.get("code")
+    """
+    3) コールバック:
+       code を使ってトークンを取得し、プロフィールAPIを呼んでユーザー情報を取得
+    """
+    # code = request.args.get("code")
+    # state = request.args.get("state")
+    # if state != session.get("line_auth_state"):  # 必要ならチェック
 
-    # ここが重要: oauth.line.session.fetch_token(...) を使う
-    token = oauth.line.session.fetch_token(
+    token = line_client.fetch_token(
         url="https://api.line.me/oauth2/v2.1/token",
         grant_type="authorization_code",
-        code=code,
-        redirect_uri=url_for("auth.authorize_line", _external=True),
-        client_id=os.getenv("LINE_CLIENT_ID"),
-        client_secret=os.getenv("LINE_CLIENT_SECRET")
+        code=request.args["code"],  # LINEから返ってくる code
     )
+    # token = {"access_token": "...", "id_token": "...", ...}
 
-    # その後、プロフィールを取得
-    resp = oauth.line.session.get("https://api.line.me/v2/profile", token=token)
+    # 4) プロフィール取得
+    resp = line_client.get("https://api.line.me/v2/profile", token=token)
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
 
-    # DB 保存や login_user(...) など
+    # DB保存や login_user(user) など
+    # 例: DB上で line_user_id を主キー or line_id カラムに保存
+    #     email取得が必要なら IDトークンを自前でdecodeする必要あり
     # ...
     return redirect(url_for("main.home"))
