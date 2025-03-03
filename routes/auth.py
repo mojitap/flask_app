@@ -109,12 +109,12 @@ def login_line():
 
 @auth.route("/authorize/line")
 def authorize_line():
-    """LINE認証処理"""
     oauth = current_app.config["OAUTH_INSTANCE"]
     token = oauth.line.authorize_access_token()
+    # token の中には id_token が含まれているかもしれないが、Authlib による自動検証は行わない
 
-    # プロフィール取得
-    resp = oauth.line.get("https://api.line.me/v2/profile", token=token)
+    # LINEのプロフィールをAPIで取得
+    resp = oauth.line.get("profile", token=token)  # /v2/profile
     profile = resp.json()
     line_user_id = profile.get("userId")
     line_display_name = profile.get("displayName")
