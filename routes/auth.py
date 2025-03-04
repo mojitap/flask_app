@@ -166,18 +166,18 @@ def authorize_line():
     user = User.query.filter_by(id=line_user_id).first()
     if not user:
         user = User(
-            id=line_user_id, 
-            email=fake_email,  
-            display_name=line_display_name,  
+            id=line_user_id,
+            email=fake_email,
+            display_name=line_display_name,
             provider="line",
-            line_display_name=line_display_name,  # ✅ 表示名を保存
-            line_user_id=line_user_id  # ✅ LINE内部User IDを保存
+            line_display_name=line_display_name,
+            line_user_id=line_user_id
         )
         db.session.add(user)
     else:
         user.display_name = line_display_name
-        user.line_display_name = line_display_name  # ✅ 表示名を更新
-        user.line_user_id = line_user_id  # ✅ LINE内部User IDを更新
+        user.line_display_name = line_display_name
+        user.line_user_id = line_user_id
 
     db.session.commit()  # ✅ 変更を保存
 
