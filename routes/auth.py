@@ -138,7 +138,7 @@ def authorize_line():
         )
     except Exception as e:
         current_app.logger.error(f"LINEトークン取得失敗: {e}")
-        return redirect(url_for("auth.login"))  # 失敗したらログイン画面へ
+        return redirect(url_for("auth.login"))
 
     # ✅ LINEのプロフィールを取得
     try:
@@ -149,17 +149,17 @@ def authorize_line():
         profile = resp.json()
     except Exception as e:
         current_app.logger.error(f"LINEプロフィール取得失敗: {e}")
-        return redirect(url_for("auth.login"))  # 失敗したらログイン画面へ
+        return redirect(url_for("auth.login"))
 
     # ✅ 必要な情報を取得
-    line_user_id = profile.get("userId")
-    line_display_name = profile.get("displayName")
+    line_user_id = profile.get("userId")  # LINEの内部User ID（UUID）
+    line_display_name = profile.get("displayName")  # 表示名
 
     if not line_user_id:
         current_app.logger.error("LINE認証エラー: userIdが取得できませんでした")
         return redirect(url_for("auth.login"))
 
-    # ✅ 仮のメールアドレスを作成（emailが取得できないため）
+    # ✅ 仮のメールアドレス（emailは取得できない）
     fake_email = f"{line_user_id}@example.com"
 
     # ✅ 既存のユーザーをDBで検索 or 新規作成
@@ -167,13 +167,17 @@ def authorize_line():
     if not user:
         user = User(
             id=line_user_id, 
-            email=fake_email,  # 仮のメールアドレス
-            display_name=line_display_name,
-            provider="line"
+            email=fake_email,  
+            display_name=line_display_name,  
+            provider="line",
+            line_display_name=line_display_name,  # ✅ 表示名を保存
+            line_user_id=line_user_id  # ✅ LINE内部User IDを保存
         )
         db.session.add(user)
     else:
-        user.display_name = line_display_name  # 名前の更新
+        user.display_name = line_display_name
+        user.line_display_name = line_display_name  # ✅ 表示名を更新
+        user.line_user_id = line_user_id  # ✅ LINE内部User IDを更新
 
     db.session.commit()
 
@@ -182,10 +186,9 @@ def authorize_line():
 
     # ✅ セッションに情報を保存
     session["user_id"] = user.id
-    session["logged_in"] = True  # ログイン状態を記録
-    session.permanent = True  # セッションを保持
+    session["logged_in"] = True
+    session.permanent = True
 
-    current_app.logger.info(f"LINEログイン成功: {user.display_name}")
+    current_app.logger.info(f"LINEログイン成功: {user.display_name} (ID: {line_user_id})")
 
-    # ✅ 正しくログイン後のページにリダイレクト
     return redirect(url_for("main.home"))
