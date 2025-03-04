@@ -179,7 +179,7 @@ def authorize_line():
         user.line_display_name = line_display_name  # ✅ 表示名を更新
         user.line_user_id = line_user_id  # ✅ LINE内部User IDを更新
 
-    db.session.commit()
+    db.session.commit()  # ✅ 変更を保存
 
     # ✅ Flask-Login でログイン処理
     login_user(user, remember=True)
