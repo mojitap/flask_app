@@ -12,6 +12,8 @@ class User(UserMixin, db.Model):
     display_name = db.Column(db.String(255))
     provider = db.Column(db.String(50))
     twitter_screen_name = db.Column(db.String(255))
+    line_display_name = db.Column(db.String(255), nullable=True)  # ✅ LINE表示名
+    line_user_id = db.Column(db.String(255), nullable=True)  # ✅ LINE内部User ID
     
     def __repr__(self):
         return f"<User id={self.id} email={self.email} display_name={self.display_name}>"
