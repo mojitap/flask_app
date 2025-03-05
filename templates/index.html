@@ -112,6 +112,11 @@
     .share-container {
       display: none;
     }
+    .quiz-btn {
+      background-color: #ff9999; /* お好みの薄い赤 */
+      color: #fff;               /* 白文字 */
+      /* 必要ならホバー時の色や余白などを追加 */
+    }
     .qr-code {
       max-width: 150px;
       margin: 10px auto;
@@ -263,13 +268,13 @@
   <!-- ▲ 白いカードここまで ▲ -->
 
   <!-- ▼ クイズへのリンクボタン ▼ -->
-  <div style="margin-top: 30px; text-align: center;">
-    <button onclick="location.href='/quiz'" class="btn-small main-btn">
-      試しにクイズを受けてみる
+  <div style="margin-top: 10px; text-align: center;">
+    <button onclick="location.href='/quiz'" class="btn-small quiz-btn">
+      クイズを受けてみる
     </button>
   </div>
   <!-- ▲ クイズボタンここまで ▲ -->
-  
+
   <!-- ▼ 下部リンク（背景グレー） ▼ -->
   <div class="footer-links">
     <a href="/terms">利用規約</a>
