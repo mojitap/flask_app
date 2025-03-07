@@ -48,25 +48,30 @@ def create_app():
     oauth.init_app(app)
     app.config["OAUTH_INSTANCE"] = oauth
 
-    # --- Dropbox からファイルをダウンロードする関数 ---
+    # --- `data/` フォルダを確実に作成 ---
+    DATA_FOLDER = os.path.join(os.path.dirname(__file__), "data")
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+
+    # --- 汎用的なファイルダウンロード関数 ---
     def download_file(url, local_path):
-        """ 汎用的なファイルダウンロード関数 """
+        """ 一般的なファイルダウンロード関数 """
         if not url:
-            app.logger.error(f"❌ {local_path} のURLが設定されていません")
+            print(f"❌ {local_path} のURLが設定されていません")
             return
 
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)  # ← フォルダを確実に作成
+
         try:
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
             response = requests.get(url, stream=True)
             if response.status_code == 200:
                 with open(local_path, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                app.logger.info(f"✅ {local_path} をダウンロードしました")
+                        f.write(chunk)  # ✅ **インデント修正**
+                print(f"✅ {local_path} をダウンロードしました")
             else:
-                app.logger.error(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
+                print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
         except Exception as e:
-            app.logger.error(f"❌ {local_path} のダウンロード中にエラー発生: {str(e)}")
+            print(f"❌ {local_path} のダウンロード中にエラー発生: {str(e)}")
 
     # --- `offensive_words.json` のダウンロード ---
     def download_offensive_words():
@@ -87,7 +92,7 @@ def create_app():
         extract_path = os.path.join(app.root_path, "data", "surnames")
 
         if not dropbox_url:
-            app.logger.error("❌ DROPBOX_SURNAMES_URL が設定されていません")
+            print("❌ DROPBOX_SURNAMES_URL が設定されていません")
             return
 
         try:
@@ -98,25 +103,25 @@ def create_app():
                 with open(local_zip_path, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
-                app.logger.info("✅ `surnames.zip` をダウンロードしました")
+                print("✅ `surnames.zip` をダウンロードしました")
 
                 # **ZIPファイルを解凍**
                 with zipfile.ZipFile(local_zip_path, "r") as zip_ref:
                     zip_ref.extractall(extract_path)
-                app.logger.info("✅ `surnames` フォルダを解凍しました")
+                print("✅ `surnames` フォルダを解凍しました")
 
                 # **解凍後、ZIPファイルを削除**
                 try:
                     os.remove(local_zip_path)
-                    app.logger.info("✅ `surnames.zip` を削除しました")
+                    print("✅ `surnames.zip` を削除しました")
                 except Exception as e:
-                    app.logger.warning(f"⚠️ `surnames.zip` の削除に失敗: {str(e)}")
+                    print(f"⚠️ `surnames.zip` の削除に失敗: {str(e)}")
 
             else:
-                app.logger.error(f"❌ `surnames.zip` のダウンロードに失敗しました: {response.status_code}")
+                print(f"❌ `surnames.zip` のダウンロードに失敗しました: {response.status_code}")
 
         except Exception as e:
-            app.logger.error(f"❌ `surnames.zip` のダウンロードまたは解凍でエラー発生: {str(e)}")
+            print(f"❌ `surnames.zip` のダウンロードまたは解凍でエラー発生: {str(e)}")
 
     # **アプリ起動時にファイルをダウンロード**
     download_offensive_words()
@@ -156,7 +161,6 @@ def create_app():
                 terms_content = f.read()
             return render_template("terms.html", terms_content=terms_content)
         except FileNotFoundError:
-            current_app.logger.error(f"{terms_path} が見つかりません。")
             return render_template("terms.html", terms_content="利用規約は現在利用できません。")
 
     # ---- (B) プライバシーポリシーの表示 ----
@@ -168,21 +172,19 @@ def create_app():
                 privacy_content = f.read()
             return render_template("privacy.html", privacy_content=privacy_content)
         except FileNotFoundError:
-            current_app.logger.error(f"{privacy_path} が見つかりません。")
             return render_template("privacy.html", privacy_content="プライバシーポリシーは現在利用できません。")
 
     # ---- (C) 特定商取引法に基づく表記の表示 ----
     @app.route("/tokushoho")
     def show_tokushoho():
-        tokushoho_path = os.path.join(app.root_path, "tokushoho.txt")  # ここを実際の配置場所に合わせる
+        tokushoho_path = os.path.join(app.root_path, "tokushoho.txt")
         try:
             with open(tokushoho_path, "r", encoding="utf-8") as f:
                 tokushoho_content = f.read()
             return render_template("tokushoho.html", tokushoho_content=tokushoho_content)
         except FileNotFoundError:
-            current_app.logger.error(f"{tokushoho_path} が見つかりません。")
             return render_template("tokushoho.html", tokushoho_content="特定商取引法に基づく表記は現在利用できません。")
- 
+
     return app
 
 app = create_app()
