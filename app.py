@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import zipfile
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager, login_required, current_user
 from authlib.integrations.flask_client import OAuth
@@ -49,38 +50,78 @@ def create_app():
 
     # --- Dropbox からファイルをダウンロードする関数 ---
     def download_file(url, local_path):
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        response = requests.get(url, stream=True)
-        if response.status_code == 200:
-            with open(local_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            print(f"✅ {local_path} をダウンロードしました")
-        else:
-            print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
+        """ 汎用的なファイルダウンロード関数 """
+        if not url:
+            app.logger.error(f"❌ {local_path} のURLが設定されていません")
+            return
 
-    # Dropboxファイルダウンロード
-    dropbox_offensive_words_url = os.getenv("DROPBOX_OFFENSIVE_WORDS_URL")
-    dropbox_whitelist_url = os.getenv("DROPBOX_WHITELIST_URL")
+        try:
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                with open(local_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                app.logger.info(f"✅ {local_path} をダウンロードしました")
+            else:
+                app.logger.error(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
+        except Exception as e:
+            app.logger.error(f"❌ {local_path} のダウンロード中にエラー発生: {str(e)}")
 
-    local_offensive_words_path = os.path.join(app.root_path, "data", "offensive_words.json")
-    local_whitelist_path = os.path.join(app.root_path, "data", "whitelist.json")
+    # --- `offensive_words.json` のダウンロード ---
+    def download_offensive_words():
+        dropbox_url = os.getenv("DROPBOX_OFFENSIVE_URL")
+        local_path = os.path.join(app.root_path, "data", "offensive_words.json")
+        download_file(dropbox_url, local_path)
 
-    if dropbox_offensive_words_url:
-        download_file(dropbox_offensive_words_url, local_offensive_words_path)
+    # --- `whitelist.json` のダウンロード ---
+    def download_whitelist():
+        dropbox_url = os.getenv("DROPBOX_WHITELIST_URL")
+        local_path = os.path.join(app.root_path, "data", "whitelist.json")
+        download_file(dropbox_url, local_path)
 
-    if dropbox_whitelist_url:
-        download_file(dropbox_whitelist_url, local_whitelist_path)
+    # --- `surnames.zip` のダウンロード & 解凍 ---
+    def download_surnames():
+        dropbox_url = os.getenv("DROPBOX_SURNAMES_URL")
+        local_zip_path = os.path.join(app.root_path, "data", "surnames.zip")
+        extract_path = os.path.join(app.root_path, "data", "surnames")
 
-    # offensive_words.json のロード
-    try:
-        with open(local_offensive_words_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        app.config["OFFENSIVE_WORDS"] = data
-        print("✅ `offensive_words.json` をロードしました")
-    except FileNotFoundError:
-        app.logger.error(f"{local_offensive_words_path} が見つかりません。")
-        app.config["OFFENSIVE_WORDS"] = {}
+        if not dropbox_url:
+            app.logger.error("❌ DROPBOX_SURNAMES_URL が設定されていません")
+            return
+
+        try:
+            os.makedirs(os.path.dirname(local_zip_path), exist_ok=True)
+
+            response = requests.get(dropbox_url, stream=True)
+            if response.status_code == 200:
+                with open(local_zip_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                app.logger.info("✅ `surnames.zip` をダウンロードしました")
+
+                # **ZIPファイルを解凍**
+                with zipfile.ZipFile(local_zip_path, "r") as zip_ref:
+                    zip_ref.extractall(extract_path)
+                app.logger.info("✅ `surnames` フォルダを解凍しました")
+
+                # **解凍後、ZIPファイルを削除**
+                try:
+                    os.remove(local_zip_path)
+                    app.logger.info("✅ `surnames.zip` を削除しました")
+                except Exception as e:
+                    app.logger.warning(f"⚠️ `surnames.zip` の削除に失敗: {str(e)}")
+
+            else:
+                app.logger.error(f"❌ `surnames.zip` のダウンロードに失敗しました: {response.status_code}")
+
+        except Exception as e:
+            app.logger.error(f"❌ `surnames.zip` のダウンロードまたは解凍でエラー発生: {str(e)}")
+
+    # **アプリ起動時にファイルをダウンロード**
+    download_offensive_words()
+    download_whitelist()
+    download_surnames()
 
     # OAuth登録
     oauth.register(
