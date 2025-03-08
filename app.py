@@ -92,25 +92,25 @@ def create_app():
         extract_path = os.path.join(app.root_path, "data", "surnames")
 
         if not dropbox_url:
-            print("❌ DROPBOX_OFFENSIVE_URL が設定されていません")
+            print("❌ DROPBOX_SURNAMES_URL が設定されていません")
             return
 
         try:
-            os.makedirs(os.path.dirname(local_path), exist_ok=True) 
+            os.makedirs(os.path.dirname(local_zip_path), exist_ok=True)  # ✅ **ZIPファイル用のフォルダを作成**
 
             response = requests.get(dropbox_url, stream=True)
             if response.status_code == 200:
-                with open(local_path, "wb") as f:
+                with open(local_zip_path, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                print(f"✅ {local_path} をダウンロードしました")
+                    f.write(chunk)
+                print("✅ `surnames.zip` をダウンロードしました")
 
-                # **ZIPファイルを解凍**
+                # ✅ **ZIPファイルを解凍**
                 with zipfile.ZipFile(local_zip_path, "r") as zip_ref:
                     zip_ref.extractall(extract_path)
                 print("✅ `surnames` フォルダを解凍しました")
 
-                # **解凍後、ZIPファイルを削除**
+                # ✅ **解凍後、ZIPファイルを削除**
                 try:
                     os.remove(local_zip_path)
                     print("✅ `surnames.zip` を削除しました")
@@ -118,10 +118,10 @@ def create_app():
                     print(f"⚠️ `surnames.zip` の削除に失敗: {str(e)}")
 
             else:
-                print(f"❌ `offensive_words.json` のダウンロードに失敗: {response.status_code}")
+                print(f"❌ `surnames.zip` のダウンロードに失敗: {response.status_code}")  # ✅ **エラーメッセージを正しく修正**
 
         except Exception as e:
-            print(f"❌ `offensive_words.json` のダウンロードエラー: {str(e)}")
+            print(f"❌ `surnames.zip` のダウンロードまたは解凍でエラー発生: {str(e)}")
 
     # **アプリ起動時にファイルをダウンロード**
     download_offensive_words()
