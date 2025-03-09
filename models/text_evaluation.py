@@ -159,7 +159,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
         return judgement, detail
 
     # (6) 暴力表現の例（登録外でも、キーワードと入力テキストの類似度が60%以上なら検出）
-    violence_keywords = ["殺す", "死ね", "殴る", ...]
+    violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "死んでしまえ"]
     if any(kw in normalized for kw in violence_keywords) or fuzzy_match_keywords(normalized, violence_keywords, threshold=60):
         judgement = "⚠️ 暴力的表現あり"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
