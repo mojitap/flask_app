@@ -1,7 +1,6 @@
 import os
 import json
 import requests
-import zipfile
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
 from flask_login import LoginManager, login_required, current_user
 from authlib.integrations.flask_client import OAuth
@@ -88,40 +87,15 @@ def create_app():
     # --- `surnames.zip` のダウンロード & 解凍 ---
     def download_surnames():
         dropbox_url = os.getenv("DROPBOX_SURNAMES_URL")
-        local_zip_path = os.path.join(app.root_path, "data", "surnames.zip")
-        extract_path = os.path.join(app.root_path, "data", "surnames")
+        local_csv_path = os.path.join(app.root_path, "data", "surnames.csv")
 
         if not dropbox_url:
             print("❌ DROPBOX_SURNAMES_URL が設定されていません")
             return
 
-        try:
-            os.makedirs(os.path.dirname(local_zip_path), exist_ok=True)  # ✅ **ZIPファイル用のフォルダを作成**
-
-            response = requests.get(dropbox_url, stream=True)
-            if response.status_code == 200:
-                with open(local_zip_path, "wb") as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                print("✅ `surnames.zip` をダウンロードしました")
-
-                # ✅ **ZIPファイルを解凍**
-                with zipfile.ZipFile(local_zip_path, "r") as zip_ref:
-                    zip_ref.extractall(extract_path)
-                print("✅ `surnames` フォルダを解凍しました")
-
-                # ✅ **解凍後、ZIPファイルを削除**
-                try:
-                    os.remove(local_zip_path)
-                    print("✅ `surnames.zip` を削除しました")
-                except Exception as e:
-                    print(f"⚠️ `surnames.zip` の削除に失敗: {str(e)}")
-
-            else:
-                print(f"❌ `surnames.zip` のダウンロードに失敗: {response.status_code}")  # ✅ **エラーメッセージを正しく修正**
-
-        except Exception as e:
-            print(f"❌ `surnames.zip` のダウンロードまたは解凍でエラー発生: {str(e)}")
+        # 既存の download_file 関数を使ってダウンロード
+        download_file(dropbox_url, local_csv_path)
+        print("✅ `surnames.csv` をダウンロードしました（ZIP解凍は不要）")
 
     # **アプリ起動時にファイルをダウンロード**
     download_offensive_words()
