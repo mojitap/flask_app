@@ -2,7 +2,7 @@ import csv
 import os
 
 # CSVファイルのパスを指定
-csv_file_path = os.path.join(os.path.dirname(__file__), "surnames.csv")
+csv_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "surnames.csv")
 
 def load_surnames():
     """CSVファイルから苗字リストを読み込む関数"""
