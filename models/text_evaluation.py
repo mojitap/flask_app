@@ -117,6 +117,16 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     if len(_eval_cache) > 1000:
         _eval_cache.popitem(last=False)  # キャッシュサイズ制限
 
+    # ▼▼▼ デバッグ出力を入れる ▼▼▼
+    print(f"[DEBUG] evaluate_text called with text='{text}'")
+
+    normalized = normalize_text(text)
+    print(f"[DEBUG] normalized='{normalized}'")
+
+    all_offensive = flatten_offensive_words(offensive_dict)
+    # "[:34]" はサンプルです。必要に応じて [:10] や [:50] に変えてOK。
+    print(f"[DEBUG] all_offensive[:34] = {all_offensive[:34]}")
+
     normalized = normalize_text(text)
     all_offensive = flatten_offensive_words(offensive_dict)
 
