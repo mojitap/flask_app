@@ -65,7 +65,7 @@ def create_app():
             if response.status_code == 200:
                 with open(local_path, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)  # ✅ **インデント修正**
+                        f.write(chunk)
                 print(f"✅ {local_path} をダウンロードしました")
             else:
                 print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
@@ -78,13 +78,25 @@ def create_app():
         local_path = os.path.join(app.root_path, "data", "offensive_words.json")
         download_file(dropbox_url, local_path)
 
+        # ▼ ダウンロード直後に中身を読み込んで print してみる (return app の前に置く！)
+        if os.path.exists(local_path):
+            try:
+                with open(local_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                print("[DEBUG] downloaded offensive_words.json content:")
+                print(content)
+            except Exception as e:
+                print(f"[DEBUG] error reading {local_path}: {e}")
+        else:
+            print(f"[DEBUG] {local_path} not found after download!")
+
     # --- `whitelist.json` のダウンロード ---
     def download_whitelist():
         dropbox_url = os.getenv("DROPBOX_WHITELIST_URL")
         local_path = os.path.join(app.root_path, "data", "whitelist.json")
         download_file(dropbox_url, local_path)
 
-    # --- `surnames.zip` のダウンロード & 解凍 ---
+    # --- `surnames.csv` のダウンロード ---
     def download_surnames():
         dropbox_url = os.getenv("DROPBOX_SURNAMES_URL")
         local_csv_path = os.path.join(app.root_path, "data", "surnames.csv")
