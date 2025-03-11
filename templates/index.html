@@ -2,16 +2,14 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- ▼ スマホ表示対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mojitap</title>
   <style>
-    /* ======== 全体のベース設定など、必要なスタイルはここに ======== */
     body {
       margin: 0;
       font-family: 'Arial', sans-serif;
-      background-color: #f3f3f3; 
-      color: #111; 
+      background-color: #f3f3f3;
+      color: #111;
     }
     .container {
       max-width: 600px;
@@ -19,13 +17,13 @@
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       text-align: center;
     }
     .logo {
       max-width: 200px;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin: 20px auto;
+      display: block;
     }
     .description {
       margin-bottom: 20px;
@@ -44,23 +42,14 @@
       cursor: pointer;
       max-width: 320px;
       text-align: center;
+      background-color: #007BFF;
+      color: #fff;
     }
     .btn-big:hover {
       opacity: 0.9;
     }
-    .main-btn {
-      background-color: #007BFF;
-      color: #fff;
-    }
-    .main-btn:hover {
-      background-color: #0056b3;
-    }
-    .google-btn {
-      background-color: #ffd700 !important;
-      color: #111 !important;
-    }
     .btn-small {
-      display: block;
+      display: inline-block;
       margin: 6px auto;
       padding: 6px 12px;
       font-size: 0.8rem;
@@ -69,8 +58,6 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      max-width: 180px;
-      text-align: center;
       color: #fff;
       background-color: #007BFF;
     }
@@ -87,6 +74,15 @@
       border-radius: 5px;
       resize: vertical;
       box-sizing: border-box;
+      margin: 10px auto;
+      display: block;
+    }
+    .share-container {
+      display: none; /* ← 初期は非表示 */
+      margin-top: 20px;
+    }
+    .qr-code {
+      max-width: 150px;
       margin: 10px auto;
       display: block;
     }
@@ -111,8 +107,6 @@
       text-align: center;
       margin-bottom: 20px;
     }
-
-    /* ▼ アプリ内ブラウザ警告用スタイル */
     .inapp-warning {
       display: none;
       background-color: #ffe6e6;
@@ -134,121 +128,107 @@
       text-decoration: underline;
       font-weight: bold;
     }
+    /* ▼ 相談バナーのサンプルスタイル */
+    .support-banner {
+      display: inline-block;
+      width: 80%;
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 12px;
+      border-radius: 5px;
+      background-color: #ffcccc;
+      color: #900;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+    }
+    .support-banner:hover {
+      background-color: #ffb3b3;
+    }
   </style>
 </head>
 <body>
 
   <!-- ▼ アプリ内ブラウザ警告 -->
   <div id="inAppWarning" class="inapp-warning">
-    <p>ご利用のブラウザでは、Google/X（旧Twitter）/LINEでログインがブロックされる可能性があります。</p>
+    <p>ご利用のブラウザでは、Google/Twitter/LINEでログインがブロックされる可能性があります。</p>
     <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
-    <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>ブラウザで開く</strong>)<br>
-    (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
+    <p style="font-size: 0.85rem;">(iPhone: 右下/右上メニュー→<strong>ブラウザで開く</strong>)<br>
+       (Android: 右上メニュー→<strong>ブラウザで開く</strong>)</p>
   </div>
   <!-- ▲ アプリ内ブラウザ警告ここまで -->
 
-  <!-- ▼ メインコンテンツ ▼ -->
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
 
-    <div class="description">
-      <p>
-        相手への発言や受けた言葉が、示談や裁判などの法的トラブルにつながる恐れを、過去の例をもとに簡易チェックできるオンラインツールです。<br>
-        ビジネスから日常会話まで、言葉に潜むリスクを早めに把握し、より安心してコミュニケーションを行う一助としてご活用ください。
-      </p>
-      <p>
-        <small>
-          ※チェックリストのデータは定期的に更新しています。<br>
-          ※本ツールは専門家の法的判断に代わるものではありません。
-        </small>
-      </p>
-    </div>
-
     {% if current_user and current_user.is_authenticated %}
-      <!-- ▼ ログイン済みユーザーのみ表示 ▼ -->
+      <!-- ログイン済み -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <button type="submit" class="btn-big main-btn">チェックする</button>
+        <button type="submit" class="btn-big">チェックする</button>
       </form>
-
-      <!-- いじめ相談（児童・生徒向け） -->
-      <div class="support-section" style="text-align: left; margin-top: 30px;">
-        <h3>いじめ相談（児童・生徒向け）</h3>
-        <ul>
-          <li>
-            <strong>24時間子供SOSダイヤル</strong><br>
-            電話: <a href="tel:0120-0-78310">0120-0-78310</a>（フリーダイヤル・24時間受付）
-          </li>
-          <li>
-            <strong>子どもの人権110番（法務局）</strong><br>
-            電話: <a href="tel:0120-007-110">0120-007-110</a>（平日）<br>
-            公式サイト: 
-            <a href="https://www.moj.go.jp/JINKEN/jinken112.html" target="_blank">子どもの人権110番</a>
-          </li>
-          <li>
-            <strong>チャイルドライン</strong><br>
-            電話: <a href="tel:0120-99-7777">0120-99-7777</a>（毎日16～21時）<br>
-            チャット（Webフォーム）: 
-            <a href="https://childline.or.jp/chat" target="_blank">チャイルドライン公式サイト</a>
-          </li>
-          <li>
-            <strong>教育委員会・スクールカウンセラー</strong><br>
-            学校いじめの場合、教育委員会の相談窓口やスクールカウンセラーを活用可能（公立なら無料）。<br>
-            お住まいの自治体の教育委員会サイトを確認してください。<br>
-            例: <a href="https://www.mext.go.jp/" target="_blank">文部科学省</a>
-          </li>
-        </ul>
-
-        <!-- 大人向け（一般相談） -->
-        <h3>大人向け（一般相談）</h3>
-        <ul>
-          <li>
-            <strong>地方自治体の「消費生活センター」</strong><br>
-            ハラスメントやネットトラブル含む生活トラブル全般を相談可能。<br>
-            費用: 多くは無料または低額。<br>
-            <a href="https://www.kokusen.go.jp/map/" target="_blank">
-              国民生活センターの地図</a> からお住まいの地域を選び、問い合わせフォームや電話番号を確認。
-          </li>
-        </ul>
-      </div>
-      <!-- ▲ 相談先の情報ここまで ▲ -->
 
       <p style="margin-top: 20px;">
         ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。
       </p>
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
+      <!-- ▼▼ 相談先の情報を「バナー」風にする ▼▼ -->
+      <div style="margin-top: 30px;">
+        <!-- 児童・生徒向けバナー -->
+        <a href="tel:0120-0-78310" class="support-banner">
+          24時間子供SOSダイヤル
+        </a><br>
+        <a href="tel:0120-007-110" class="support-banner">
+          子どもの人権110番（法務局）
+        </a><br>
+        <a href="tel:0120-99-7777" class="support-banner">
+          チャイルドライン（16～21時）
+        </a><br>
+        <a href="https://www.mext.go.jp/" target="_blank" class="support-banner">
+          教育委員会・スクールカウンセラー
+        </a>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <!-- 大人向けバナー -->
+        <a href="https://www.kokusen.go.jp/map/" target="_blank" class="support-banner">
+          消費生活センター検索（大人向け）
+        </a>
+      </div>
+      <!-- ▲ 相談先バナーここまで ▲ -->
+
     {% else %}
-      <!-- ▼ 未ログインの場合 ▼ -->
+      <!-- 未ログイン -->
       <p>この機能を使うにはログインが必要です。</p>
-      <a href="/login/google" class="btn-big main-btn google-btn">Login with Google</a>
-      <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
-      <a href="/login/line" class="btn-big main-btn" style="background-color: #00c300;">
+      <a href="/login/google" class="btn-big google-btn">Login with Google</a>
+      <a href="/login/twitter" class="btn-big">Login with Twitter</a>
+      <a href="/login/line" class="btn-big" style="background-color: #00c300;">
         Login with LINE
       </a>
     {% endif %}
 
-    <!-- シェアボタンなど -->
-    <button onclick="toggleShare()" class="btn-small share-btn" style="margin-top: 20px;">
+    <!-- ▼ シェアボタンとシェアコンテナ ▼ -->
+    <button onclick="toggleShare()" class="btn-small" style="margin-top: 20px;">
       友達に教える
     </button>
     <div class="share-container" id="shareSection">
       <h3>MojiTap を友達に教える</h3>
       <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
       <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com"
-         target="_blank" class="btn-small share-btn">LINEでシェア</a>
+         target="_blank" class="btn-small">LINEでシェア</a>
       <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com"
-         class="btn-small share-btn">メールで送る</a>
+         class="btn-small">メールで送る</a>
       <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com"
-         target="_blank" class="btn-small share-btn">X（旧Twitter）でシェア</a>
+         target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
       <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com"
-         target="_blank" class="btn-small share-btn">Facebookでシェア</a>
-      <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
+         target="_blank" class="btn-small">Facebookでシェア</a>
+      <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
     </div>
+    <!-- ▲ シェアコンテナここまで ▲ -->
   </div>
-  <!-- ▲ container終了 -->
 
-  <!-- ▼ 下部リンク（フッター） ▼ -->
+  <!-- ▼ フッター ▼ -->
   <div class="footer-links">
     <a href="/terms">利用規約</a>
     <a href="/privacy">プライバシーポリシー</a>
