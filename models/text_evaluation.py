@@ -156,8 +156,7 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     # (4) 人名あり + offensive_words.json 登録キーワードがある場合（80%以上で判定）
     if found_words and found_surnames:
         judgement = "⚠️ 一部の表現が問題となる可能性があります。"
-        detail = ("人名 + ワード\n"
-                  "※この判定は約束できるものではありません。専門家にご相談ください。")
+        detail = ("※この判定は約束できるものではありません。専門家にご相談ください。")
         _eval_cache[text] = (judgement, detail)
         return judgement, detail
 
