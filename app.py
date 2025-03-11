@@ -82,9 +82,9 @@ def create_app():
         if os.path.exists(local_path):
             try:
                 with open(local_path, "r", encoding="utf-8") as f:
-                    content = f.read()
+                    data = json.load(f)
                 print("[DEBUG] downloaded offensive_words.json content:")
-                print(content)
+                print(data)
                 app.config["OFFENSIVE_WORDS"] = data
                 print("[DEBUG] app.config['OFFENSIVE_WORDS'] is set successfully!")
             except Exception as e:
