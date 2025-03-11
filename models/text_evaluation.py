@@ -73,8 +73,18 @@ def tokenize_and_lemmatize(text):
     return cached_tokenize(text)
 
 def check_keywords_via_token(text, keywords):
-    tokens = tokenize_and_lemmatize(text)
-    return any(kw in tokens for kw in keywords)
+    """
+    形態素解析した結果（トークン列）で判定するサンプル。
+    text, keywords の両方を tokenize_and_lemmatize してから、
+    set(kw_tokens).issubset(set(text_tokens)) で包含判定する例。
+    """
+    text_tokens = tokenize_and_lemmatize(text)
+    for kw in keywords:
+        kw_tokens = tokenize_and_lemmatize(kw)
+        # すべてのトークンが text_tokens に含まれているか？
+        if set(kw_tokens).issubset(set(text_tokens)):
+            return True
+    return False
 
 def fuzzy_match_keywords(text, keywords, threshold=90):
     """
