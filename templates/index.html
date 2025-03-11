@@ -2,28 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- ▼ スマホ表示対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mojitap</title>
   <style>
+    /* ======== 全体のベース設定 ======== */
     body {
       margin: 0;
       font-family: 'Arial', sans-serif;
-      background-color: #f3f3f3;
-      color: #111;
+      background-color: #f3f3f3; 
+      color: #111; 
     }
     .container {
       max-width: 600px;
-      margin: 40px auto 80px auto;
+      margin: 40px auto 80px auto; /* 上40px, 下80px余白 */
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
     }
     .logo {
       max-width: 200px;
-      margin: 20px auto;
-      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     .description {
       margin-bottom: 20px;
@@ -42,14 +46,32 @@
       cursor: pointer;
       max-width: 320px;
       text-align: center;
-      background-color: #007BFF;
-      color: #fff;
     }
     .btn-big:hover {
       opacity: 0.9;
     }
+    .premium-btn {
+      background-color: #f0c14b;
+      color: #111;
+    }
+    .premium-btn:hover {
+      background-color: #d9a930;
+      color: #111;
+    }
+    .main-btn {
+      background-color: #007BFF;
+      color: #fff;
+    }
+    .main-btn:hover {
+      background-color: #0056b3;
+      color: #fff;
+    }
+    .google-btn {
+      background-color: #ffd700 !important; /* 薄い黄色 */
+      color: #111 !important;              /* テキストを黒系 */
+    }
     .btn-small {
-      display: inline-block;
+      display: block;
       margin: 6px auto;
       padding: 6px 12px;
       font-size: 0.8rem;
@@ -58,11 +80,21 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      max-width: 180px;
+      text-align: center;
       color: #fff;
       background-color: #007BFF;
     }
     .btn-small:hover {
       background-color: #0056b3;
+    }
+    .share-btn {
+      background-color: #00B8D9;
+      color: #fff;
+    }
+    .share-btn:hover {
+      background-color: #00A0BE;
+      color: #fff;
     }
     .search-box {
       width: 100%;
@@ -78,8 +110,7 @@
       display: block;
     }
     .share-container {
-      display: none; /* ← 初期は非表示 */
-      margin-top: 20px;
+      display: none;
     }
     .qr-code {
       max-width: 150px;
@@ -100,6 +131,16 @@
     .footer-links a:hover {
       text-decoration: underline;
     }
+
+    /* ▼ スマホでフッターリンクを縦並びにする */
+    @media (max-width: 480px) {
+      .footer-links a {
+        display: block;      /* ブロック要素化して縦並び */
+        margin: 8px auto;    /* 縦方向に余白を入れる */
+        max-width: 200px;    /* 横幅を制限して中央寄せ */
+      }
+    }
+
     .copyright {
       margin-top: 20px;
       font-size: 0.8rem;
@@ -107,8 +148,32 @@
       text-align: center;
       margin-bottom: 20px;
     }
+    @media (max-width: 480px) {
+      .btn-big {
+        font-size: 1rem;
+        padding: 12px 18px;
+      }
+      .btn-small {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+      }
+      .search-box {
+        font-size: 14px;
+        padding: 10px;
+      }
+      .logo {
+        max-width: 160px;
+      }
+      .container {
+        margin-top: 20px;
+        margin-bottom: 40px;
+        padding: 15px;
+      }
+    }
+
+    /* ▼ 追加: アプリ内ブラウザ警告用スタイル */
     .inapp-warning {
-      display: none;
+      display: none; /* 初期は非表示 */
       background-color: #ffe6e6;
       color: #b00;
       padding: 10px 15px;
@@ -128,50 +193,41 @@
       text-decoration: underline;
       font-weight: bold;
     }
-    /* ▼ 相談バナーのサンプルスタイル */
-    .support-banner {
-      display: inline-block;
-      width: 80%;
-      max-width: 300px;
-      margin: 10px auto;
-      padding: 12px;
-      border-radius: 5px;
-      background-color: #ffcccc;
-      color: #900;
-      font-weight: bold;
-      text-align: center;
-      text-decoration: none;
-    }
-    .support-banner:hover {
-      background-color: #ffb3b3;
-    }
   </style>
 </head>
 <body>
 
-  <!-- ▼ アプリ内ブラウザ警告 -->
+  <!-- ▼ 追加: アプリ内ブラウザ警告 -->
   <div id="inAppWarning" class="inapp-warning">
     <p>ご利用のブラウザでは、Google/Twitter/LINEでログインがブロックされる可能性があります。</p>
     <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
-    <p style="font-size: 0.85rem;">(iPhone: 右下/右上メニュー→<strong>ブラウザで開く</strong>)<br>
-       (Android: 右上メニュー→<strong>ブラウザで開く</strong>)</p>
+    <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>ブラウザで開く</strong>)<br>
+    (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
   </div>
-  <!-- ▲ アプリ内ブラウザ警告ここまで -->
+  <!-- ▲ 追加ここまで ▲ -->
 
+  <!-- ▼ 白いカード部分 ▼ -->
   <div class="container">
     <img src="{{ url_for('static', filename='mojitaplogo-logo.png') }}" alt="MojiTap Logo" class="logo">
+
+    <div class="description">
+      <p>
+        相手への発言や受けた言葉が、示談や裁判などの法的トラブルにつながる恐れを、過去の例をもとに簡易チェックできるオンラインツールです。ビジネスから日常会話まで、言葉に潜むリスクを早めに把握し、より安心してコミュニケーションを行う一助としてご活用ください。
+      </p>
+      <p>
+        <small>
+          ※チェックリストのデータは定期的に更新しています。<br>
+          ※本ツールは専門家の法的判断に代わるものではありません。
+        </small>
+      </p>
+    </div>
 
     {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済み -->
       <form method="POST" action="/quick_check">
         <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <button type="submit" class="btn-big">チェックする</button>
+        <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
-
-      <p style="margin-top: 20px;">
-        ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。
-      </p>
-      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
       <!-- ▼▼ 相談先の情報を「バナー」風にする ▼▼ -->
       <div style="margin-top: 30px;">
@@ -197,55 +253,61 @@
         </a>
       </div>
       <!-- ▲ 相談先バナーここまで ▲ -->
+    
+      <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
+      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
     {% else %}
       <!-- 未ログイン -->
       <p>この機能を使うにはログインが必要です。</p>
-      <a href="/login/google" class="btn-big google-btn">Login with Google</a>
-      <a href="/login/twitter" class="btn-big">Login with Twitter</a>
-      <a href="/login/line" class="btn-big" style="background-color: #00c300;">
+      <a href="/login/google" class="btn-big main-btn google-btn">Login with Google</a>
+      <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
+      <a href="/login/line" class="btn-big main-btn" style="background-color: #00c300;">
         Login with LINE
       </a>
     {% endif %}
 
-    <!-- ▼ シェアボタンとシェアコンテナ ▼ -->
-    <button onclick="toggleShare()" class="btn-small" style="margin-top: 20px;">
-      友達に教える
-    </button>
+    <!-- シェアボタン -->
+    <button onclick="toggleShare()" class="btn-small share-btn" style="margin-top: 20px;">友達に教える</button>
+
+    <!-- 共有セクション -->
     <div class="share-container" id="shareSection">
       <h3>MojiTap を友達に教える</h3>
       <img src="{{ url_for('static', filename='Mojitap_qrcode.png') }}" alt="QRコード" class="qr-code">
       <a href="https://social-plugins.line.me/lineit/share?url=https://mojitap.com"
-         target="_blank" class="btn-small">LINEでシェア</a>
+         target="_blank" class="btn-small share-btn">LINEでシェア</a>
       <a href="mailto:?subject=MojiTapを試してみて！&body=MojiTapを試してみて！%0D%0Ahttps://mojitap.com"
-         class="btn-small">メールで送る</a>
+         class="btn-small share-btn">メールで送る</a>
       <a href="https://twitter.com/intent/tweet?text=MojiTapを試してみて！%20https://mojitap.com"
-         target="_blank" class="btn-small">X（旧Twitter）でシェア</a>
+         target="_blank" class="btn-small share-btn">X（旧Twitter）でシェア</a>
       <a href="https://www.facebook.com/sharer/sharer.php?u=https://mojitap.com"
-         target="_blank" class="btn-small">Facebookでシェア</a>
-      <button onclick="copyToClipboard()" class="btn-small">リンクをコピー</button>
+         target="_blank" class="btn-small share-btn">Facebookでシェア</a>
+      <button onclick="copyToClipboard()" class="btn-small share-btn">リンクをコピー</button>
     </div>
-    <!-- ▲ シェアコンテナここまで ▲ -->
   </div>
+  <!-- ▲ 白いカードここまで ▲ -->
 
-  <!-- ▼ フッター ▼ -->
+  <!-- ▼ 下部リンク（背景グレー） ▼ -->
   <div class="footer-links">
     <a href="/terms">利用規約</a>
     <a href="/privacy">プライバシーポリシー</a>
     <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank">お問い合わせ</a>
   </div>
+
   <div class="copyright">
     &copy; 2025 Mojitap, All Rights Reserved.
   </div>
 
   <script>
-    // シェアセクションの開閉
     function toggleShare() {
       const shareSection = document.getElementById("shareSection");
-      shareSection.style.display = (shareSection.style.display === "block") ? "none" : "block";
+      if (!shareSection.style.display || shareSection.style.display === "none") {
+        shareSection.style.display = "block";
+      } else {
+        shareSection.style.display = "none";
+      }
     }
 
-    // リンクをクリップボードにコピー
     function copyToClipboard() {
       navigator.clipboard.writeText("https://mojitap.com").then(() => {
         alert("リンクをコピーしました！");
@@ -254,9 +316,10 @@
       });
     }
 
-    // アプリ内ブラウザ検知
+    // ▼ 追加: アプリ内ブラウザ検知
     (function() {
       const ua = navigator.userAgent.toLowerCase();
+      // LINE or FB/Instagram の一部UA
       const isInApp = (
         ua.indexOf("line/") !== -1 ||
         ua.indexOf("fbav") !== -1 ||
