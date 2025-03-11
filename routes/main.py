@@ -45,6 +45,13 @@ def quick_check():
         offensive_dict = current_app.config.get("OFFENSIVE_WORDS", {})
         global_whitelist = load_whitelist("data/whitelist.json")
 
+    # ▼ デバッグ出力
+    print("[DEBUG] quick_check: offensive_dict keys =", offensive_dict.keys() if isinstance(offensive_dict, dict) else "No dict")
+    if isinstance(offensive_dict, dict) and "offensive" in offensive_dict:
+        print("[DEBUG] first 10 words from offensive:", offensive_dict["offensive"][:10])
+    else:
+        print("[DEBUG] 'offensive' key not found in offensive_dict")
+        
     # テキストを判定する
     judgement, detail = evaluate_text(query, offensive_dict, whitelist=global_whitelist)
 
