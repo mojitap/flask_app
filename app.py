@@ -85,6 +85,8 @@ def create_app():
                     content = f.read()
                 print("[DEBUG] downloaded offensive_words.json content:")
                 print(content)
+                app.config["OFFENSIVE_WORDS"] = data
+                print("[DEBUG] app.config['OFFENSIVE_WORDS'] is set successfully!")
             except Exception as e:
                 print(f"[DEBUG] error reading {local_path}: {e}")
         else:
