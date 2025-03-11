@@ -199,7 +199,7 @@
 
   <!-- ▼ 追加: アプリ内ブラウザ警告 -->
   <div id="inAppWarning" class="inapp-warning">
-    <p>ご利用のブラウザでは、Google/X（旧Twitter）/LINEでログインがブロックされる可能性があります。</p>
+    <p>ご利用のブラウザでは、Google/Twitter/LINEでログインがブロックされる可能性があります。</p>
     <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
     <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>ブラウザで開く</strong>)<br>
     (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
@@ -232,11 +232,59 @@
       <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
       <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
 
+      <!-- ▼▼ ここから相談先の情報 ▼▼ -->
+      <div class="support-section" style="text-align: left; margin-top: 30px;">
+        <h3>いじめ相談（児童・生徒向け）</h3>
+        <ul>
+          <li>
+            <strong>24時間子供SOSダイヤル</strong><br>
+            電話: <a href="tel:0120-0-78310">0120-0-78310</a>（フリーダイヤル・24時間受付）
+          </li>
+          <li>
+            <strong>子どもの人権110番（法務局）</strong><br>
+            電話: <a href="tel:0120-007-110">0120-007-110</a>（平日）<br>
+            公式サイト: <a href="https://www.moj.go.jp/JINKEN/jinken112.html" target="_blank">子どもの人権110番</a>
+          </li>
+          <li>
+            <strong>チャイルドライン</strong><br>
+            電話: <a href="tel:0120-99-7777">0120-99-7777</a>（毎日16～21時）<br>
+            チャット（Webフォーム）: <a href="https://childline.or.jp/chat" target="_blank">チャイルドライン公式サイト</a>
+          </li>
+          <li>
+            <strong>教育委員会・スクールカウンセラー</strong><br>
+            学校いじめの場合、教育委員会の相談窓口やスクールカウンセラーを活用可能（公立なら無料）。
+          </li>
+        </ul>
+
+        <h3>大人向け（一般相談）</h3>
+        <ul>
+          <li>
+            <strong>地方自治体の「消費生活センター」</strong><br>
+            市区町村・都道府県の消費生活相談で、ハラスメントやネットトラブル含む生活トラブル全般を相談可能。
+            <br>費用: 多くは無料または低額。<br>
+            連絡先: お住まいの自治体の公式サイトを確認。
+          </li>
+          <li>
+            <strong>法テラス（日本司法支援センター）</strong><br>
+            概要: 法律トラブル全般について、無料で情報提供。弁護士費用の立替制度なども。<br>
+            電話: <a href="tel:0570-078374">0570-078374</a><br>
+            公式サイト: <a href="https://www.houterasu.or.jp/" target="_blank">法テラス</a>
+          </li>
+          <li>
+            <strong>ネットトラブル専門相談（NPOや弁護士会など）</strong><br>
+            ネット上の誹謗中傷・プライバシー侵害に特化した相談窓口や<br>
+            弁護士会の無料相談を利用できる場合があります。<br>
+            （例）<a href="https://www.nicole.or.jp/" target="_blank">日本ネット被害連絡協会</a>（NICOLE）
+          </li>
+        </ul>
+      </div>
+      <!-- ▲▲ 相談先の情報ここまで ▲▲ -->
+
     {% else %}
       <!-- 未ログイン -->
       <p>この機能を使うにはログインが必要です。</p>
       <a href="/login/google" class="btn-big main-btn google-btn">Login with Google</a>
-      <a href="/login/twitter" class="btn-big main-btn">Login with X（旧Twitter）</a>
+      <a href="/login/twitter" class="btn-big main-btn">Login with Twitter</a>
       <a href="/login/line" class="btn-big main-btn" style="background-color: #00c300;">
         Login with LINE
       </a>
