@@ -78,13 +78,18 @@ def create_app():
         local_path = os.path.join(app.root_path, "data", "offensive_words.json")
         download_file(dropbox_url, local_path)
 
-        # ▼ ダウンロード直後に中身を読み込んで print してみる (return app の前に置く！)
+        # ▼ ダウンロード直後に中身を読み込んで print してみる
         if os.path.exists(local_path):
             try:
                 with open(local_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                print("[DEBUG] downloaded offensive_words.json content:")
-                print(data)
+                print("[DEBUG] downloaded offensive_words.json content (first 10):")
+
+                # "offensive"キーがあれば先頭10件だけを表示
+                if "offensive" in data:
+                    print(data["offensive"][:10])
+
+                # app.config にセット
                 app.config["OFFENSIVE_WORDS"] = data
                 print("[DEBUG] app.config['OFFENSIVE_WORDS'] is set successfully!")
             except Exception as e:
