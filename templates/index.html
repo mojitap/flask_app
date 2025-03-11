@@ -193,13 +193,29 @@
       text-decoration: underline;
       font-weight: bold;
     }
+    .support-banner {
+      display: inline-block;
+      width: 80%;
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 12px;
+      border-radius: 5px;
+      background-color: #ffcccc; /* バナーの背景色 */
+      color: #900;              /* 文字色 */
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;    /* リンクの下線を消す */
+    }
+    .support-banner:hover {
+      background-color: #ffb3b3; /* ホバー時の背景色 */
+    }
   </style>
 </head>
 <body>
 
   <!-- ▼ 追加: アプリ内ブラウザ警告 -->
   <div id="inAppWarning" class="inapp-warning">
-    <p>ご利用のブラウザでは、Google/Twitter/LINEでログインがブロックされる可能性があります。</p>
+    <p>ご利用のブラウザでは、Google/X（旧Twitter）/LINEでログインがブロックされる可能性があります。</p>
     <p>SafariやChromeなど、通常のブラウザで開き直してください。</p>
     <p style="font-size: 0.85rem;">(iPhoneの場合: 右下または右上メニュー→<strong>ブラウザで開く</strong>)<br>
     (Androidの場合: 右上メニュー→<strong>ブラウザで開く</strong>など)</p>
@@ -231,15 +247,15 @@
 
       <!-- ▼▼ 相談先の情報を「バナー」風にする ▼▼ -->
       <div style="margin-top: 30px;">
-        <!-- 児童・生徒向けバナー -->
+        <!-- 学生向けバナー -->
         <a href="tel:0120-0-78310" class="support-banner">
-          24時間子供SOSダイヤル
+          24時間子供SOSダイヤル（※電話）
         </a><br>
         <a href="tel:0120-007-110" class="support-banner">
-          子どもの人権110番（法務局）
+          子どもの人権110番「法務局」（※電話）
         </a><br>
         <a href="tel:0120-99-7777" class="support-banner">
-          チャイルドライン（16～21時）
+          チャイルドライン「16～21時」（※電話）
         </a><br>
         <a href="https://www.mext.go.jp/" target="_blank" class="support-banner">
           教育委員会・スクールカウンセラー
@@ -249,7 +265,7 @@
       <div style="margin-top: 20px;">
         <!-- 大人向けバナー -->
         <a href="https://www.kokusen.go.jp/map/" target="_blank" class="support-banner">
-          消費生活センター検索（大人向け）
+          消費生活センター検索「都道府県別」
         </a>
       </div>
       <!-- ▲ 相談先バナーここまで ▲ -->
