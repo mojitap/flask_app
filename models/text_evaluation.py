@@ -112,7 +112,6 @@ def detect_personal_accusation(text: str) -> bool:
 # =========================================
 _eval_cache = {}
 
-@lru_cache(maxsize=1000)
 def evaluate_text(
     text: str,
     offensive_list: list,  # [{"original":..., "norm":..., "tokens":[...]}]
