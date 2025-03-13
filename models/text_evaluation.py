@@ -37,14 +37,6 @@ def normalize_text(text: str) -> str:
     text = jaconv.kata2hira(text)
     return text
 
-@lru_cache(maxsize=1000)
-def cached_tokenize(text: str):
-    """
-    spaCy で形態素解析して lemma を返す。キャッシュ付き。
-    """
-    doc = nlp(text)
-    return [token.lemma_ for token in doc]
-
 def tokenize_and_lemmatize(text: str):
     """
     正規化 + spaCy lemma の一連の処理
@@ -150,6 +142,7 @@ def evaluate_text(
                 print(f"✅ ホワイトリスト除外: {dict_original}")
                 continue
             found_offensive.append(dict_original)
+            print("[DEBUG] found_offensive =", found_offensive)
 
     # C) 個人攻撃 + 犯罪組織
     if detect_personal_accusation(text):
