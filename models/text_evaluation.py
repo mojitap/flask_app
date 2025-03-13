@@ -14,7 +14,28 @@ import jaconv
 from .load_surnames import load_surnames
 
 # 形態素解析のキャッシュ
-nlp = spacy.load("ja_core_news_sm")
+nlp = spacy.load("ja_core_news_sm")  # 事前にロード（1回だけ）
+
+@lru_cache(maxsize=1000)
+def cached_tokenize(text):
+    doc = nlp(text)
+    return [token.lemma_ for token in doc]
+
+# 簡易キャッシュ（メモリに保存）: テキスト → 判定結果
+_eval_cache = {}
+
+# =========================================
+# A) ユーティリティ関数
+# =========================================
+def normalize_text(text: str) -> str:
+    """
+    全角→半角、カタカナ→ひらがな など簡易正規化
+    """
+    # 全角→半角 (数字, 英字, 記号, カナ)
+    text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
+    # カタカナ→ひらがな
+    text = jaconv.kata2hira(text)
+    return text
 
 @lru_cache(maxsize=1000)
 def cached_tokenize(text: str):
@@ -24,13 +45,16 @@ def cached_tokenize(text: str):
     doc = nlp(text)
     return [token.lemma_ for token in doc]
 
-# 簡易キャッシュ（メモリに保存）: テキスト → 判定結果
-_eval_cache = {}
+def tokenize_and_lemmatize(text: str):
+    """
+    正規化 + spaCy lemma の一連の処理
+    """
+    norm = normalize_text(text)
+    return cached_tokenize(norm)
 
-
-# =====================================================
-# 1) offensive_words.json をロード → 形態素解析
-# =====================================================
+# =========================================
+# B) offensive_words.json のロード（token化付き）
+# =========================================
 def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     """
     1) JSON をロード
@@ -44,7 +68,7 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     with open(json_path, "r", encoding="utf-8") as f:
         raw_data = json.load(f)
 
-    words = raw_data.get("offensive", [])  # "offensive"キーが無ければ空
+    words = raw_data.get("offensive", [])  # "offensive" キーが無ければ空
     results = []
     for w in words:
         w_norm = normalize_text(w)
@@ -56,9 +80,9 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
         })
     return results
 
-# =====================================================
-# 2) whitelist.json のロード
-# =====================================================
+# =========================================
+# C) whitelist.json のロード（set で保持）
+# =========================================
 def load_whitelist(json_path="data/whitelist.json"):
     """
     ["ありがとう", "愛してる", ...] のように配列形式を想定 → set(...) へ
@@ -68,12 +92,11 @@ def load_whitelist(json_path="data/whitelist.json"):
         return set()
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    # data は配列想定
     return set(data)
-    
-# =====================================================
-# 3) 個別のロジック（個人攻撃 + 犯罪組織）
-# =====================================================
+
+# =========================================
+# D) 個別ロジック（例: 個人攻撃 + 犯罪組織）
+# =========================================
 def detect_personal_accusation(text: str) -> bool:
     """
     「お前 × 詐欺グループ」など個人攻撃 + 犯罪組織の簡易検出
@@ -84,9 +107,9 @@ def detect_personal_accusation(text: str) -> bool:
     pattern = rf"{pronouns_pattern}.*{crime_pattern}|{crime_pattern}.*{pronouns_pattern}"
     return bool(re.search(pattern, norm))
 
-# =====================================================
-# 4) メインの判定
-# =====================================================
+# =========================================
+# E) メインの判定ロジック
+# =========================================
 _eval_cache = {}
 
 @lru_cache(maxsize=1000)
@@ -173,9 +196,9 @@ def evaluate_text(
     _eval_cache[text] = ("問題ありません", "")
     return ("問題ありません", "")
 
-# =====================================================
+# =========================================
 # 5) テスト実行
-# =====================================================
+# =========================================
 if __name__ == "__main__":
     from pathlib import Path
 
