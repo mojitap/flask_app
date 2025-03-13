@@ -161,7 +161,7 @@ def evaluate_text(
     # D) offensive_list にヒットした場合
     if found_offensive:
         judgement = "⚠️ 一部の表現が問題の可能性"
-        detail = f"辞書ヒット: {', '.join(found_offensive)}\n※専門家にご相談ください。"
+        detail = f" {', '.join(found_offensive)}\n※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
@@ -171,7 +171,7 @@ def evaluate_text(
     if any(kw in input_norm for kw in violence_keywords) \
        or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in violence_keywords):
         judgement = "⚠️ 暴力的表現あり"
-        detail = "※専門家にご相談ください。"
+        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
@@ -179,7 +179,7 @@ def evaluate_text(
     if any(kw in input_norm for kw in harassment_kws) \
        or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in harassment_kws):
         judgement = "⚠️ ハラスメント表現あり"
-        detail = "※専門家にご相談ください。"
+        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
@@ -187,7 +187,7 @@ def evaluate_text(
     if any(kw in input_norm for kw in threat_kws) \
        or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in threat_kws):
         judgement = "⚠️ 脅迫表現あり"
-        detail = "※専門家にご相談ください。"
+        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
