@@ -14,14 +14,14 @@ from routes.main import main
 from routes.auth import auth
 from models.user import User
 
-# ★★★ ここを追加: text_evaluation から呼び出す関数を import
+# ★★★ ここを追加
 from models.text_evaluation import load_offensive_dict_with_tokens, load_whitelist
 
 load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-
+    
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
@@ -54,13 +54,11 @@ def create_app():
     DATA_FOLDER = os.path.join(os.path.dirname(__file__), "data")
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    # --- 汎用的なファイルダウンロード関数 ---
+    # ▼▼▼ ダウンロード用関数群 ▼▼▼
     def download_file(url, local_path):
-        """ 一般的なファイルダウンロード関数 """
         if not url:
             print(f"❌ {local_path} のURLが設定されていません")
             return
-
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         try:
             response = requests.get(url, stream=True)
@@ -70,17 +68,14 @@ def create_app():
                         f.write(chunk)
                 print(f"✅ {local_path} をダウンロードしました")
             else:
-                print(f"❌ {local_path} のダウンロードに失敗しました: {response.status_code}")
+                print(f"❌ {local_path} のダウンロードに失敗: {response.status_code}")
         except Exception as e:
-            print(f"❌ {local_path} のダウンロード中にエラー発生: {str(e)}")
+            print(f"❌ {local_path} のダウンロード中にエラー: {str(e)}")
 
-    # --- `offensive_words.json` のダウンロード ---
     def download_offensive_words():
         dropbox_url = os.getenv("DROPBOX_OFFENSIVE_URL")
         local_path = os.path.join(app.root_path, "data", "offensive_words.json")
         download_file(dropbox_url, local_path)
-
-        # ▼ ダウンロード直後の中身を一部デバッグ表示
         if os.path.exists(local_path):
             try:
                 with open(local_path, "r", encoding="utf-8") as f:
@@ -88,32 +83,26 @@ def create_app():
                 print("[DEBUG] downloaded offensive_words.json content (first 10):")
                 if "offensive" in data:
                     print(data["offensive"][:10])
-                app.config["OFFENSIVE_WORDS"] = data  # ここは一旦 raw dict
-                print("[DEBUG] app.config['OFFENSIVE_WORDS'] is set successfully!")
+                # ここでは raw dict を一旦 app.config に保存するだけ
+                app.config["OFFENSIVE_WORDS"] = data
             except Exception as e:
                 print(f"[DEBUG] error reading {local_path}: {e}")
-        else:
-            print(f"[DEBUG] {local_path} not found after download!")
 
-    # --- `whitelist.json` のダウンロード ---
     def download_whitelist_json():
         dropbox_url = os.getenv("DROPBOX_WHITELIST_URL")
         local_path = os.path.join(app.root_path, "data", "whitelist.json")
         download_file(dropbox_url, local_path)
 
-    # --- `surnames.csv` のダウンロード ---
     def download_surnames():
         dropbox_url = os.getenv("DROPBOX_SURNAMES_URL")
         local_csv_path = os.path.join(app.root_path, "data", "surnames.csv")
-
         if not dropbox_url:
             print("❌ DROPBOX_SURNAMES_URL が設定されていません")
             return
-
         download_file(dropbox_url, local_csv_path)
         print("✅ `surnames.csv` をダウンロードしました（ZIP解凍は不要）")
 
-    # **アプリ起動時にファイルをダウンロード**
+    # ダウンロード実行
     download_offensive_words()
     download_whitelist_json()
     download_surnames()
@@ -121,15 +110,12 @@ def create_app():
     # --------------------------------------------------------
     # ★ ここで text_evaluation.py の関数を使って token 化する
     # --------------------------------------------------------
-    # 1) OFFENSIVE_WORDS (raw dict) があれば token 化
     raw_offensive_dict = app.config.get("OFFENSIVE_WORDS", None)
     if raw_offensive_dict:
-        # 形態素解析済みリストに変換
-        #   まずファイルパスを "data/offensive_words.json" としてロード
-        #   or 直接 raw_offensive_dict を使うために一時ファイルへ書き出す方法などがありますが、
-        #   シンプルにもう一度 load_offensive_dict_with_tokens() を呼ぶ方が確実です。
-        #   → もしくは text_evaluation.py に "dict を token 化する関数" を作ってもOK
-        #   ここではもう一度ファイルを読む例を示します:
+        # "data/offensive_words.json" を再ロードして token 化
+        #   または text_evaluation.py 側に
+        #   「既存 dict を token 化する関数」を作ってもOK
+        #   ここではシンプルにファイルをもう一度読む方法を例示
         offensive_list = load_offensive_dict_with_tokens(
             os.path.join(app.root_path, "data", "offensive_words.json")
         )
@@ -137,14 +123,13 @@ def create_app():
     else:
         app.config["OFFENSIVE_LIST"] = []
 
-    # 2) whitelist.json を読み込んで set 化
-    #    さきほどダウンロードした "data/whitelist.json" を読み込む
+    # whitelist.json → set 化
     whitelist_set = load_whitelist(
         os.path.join(app.root_path, "data", "whitelist.json")
     )
     app.config["WHITELIST_SET"] = whitelist_set
 
-    # OAuth登録
+    # OAuth登録 (Google, Twitter)
     oauth.register(
         name="google",
         client_id=os.getenv("GOOGLE_CLIENT_ID"),
@@ -159,7 +144,7 @@ def create_app():
         request_token_params={"scope": "read write"}
     )
 
-    # 静的ファイル & 利用規約ページなどのルート
+    # 静的ファイル & 利用規約など
     @app.route("/static/<path:filename>")
     def static_files(filename):
         return send_from_directory("static", filename)
