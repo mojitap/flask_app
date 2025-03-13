@@ -98,16 +98,13 @@ def fuzzy_match_keywords(text, keywords, threshold=90):
 
 @lru_cache(maxsize=1000)
 def check_partial_match(text, word_list, threshold=80):
-    """
-    offensive_words.json に基づく文字列ベースの部分一致チェック
-      - 完全一致なら score=100
-      - fuzz.ratio(w, text) が threshold 以上ならマッチ
-    """
     for w in word_list:
         if w in text:
+            print(f"[DEBUG] check_partial_match: exact match w={w} in text={text}")
             return True, w, 100
         score = fuzz.ratio(w, text)
         if score >= threshold:
+            print(f"[DEBUG] check_partial_match: fuzz match w={w} text={text} score={score}")
             return True, w, score
     return False, None, None
 
@@ -143,12 +140,13 @@ def evaluate_text(text, offensive_dict, whitelist=None):
     judgement = "問題ありません"
     detail = ""
 
-    # (1) offensive_words.json に基づく部分一致チェック（80%以上）
+    # (1) offensive_words.json に基づく部分一致チェック
     found_words = []
     match, w, score = check_partial_match(normalized, tuple(all_offensive), threshold=80)
     if match:
-        if w in whitelist:
-            print(f"✅ ホワイトリスト入りなので除外: {w}")
+        w_norm = normalize_text(w)
+        if w_norm in whitelist:
+            print(f"✅ ホワイトリスト入りなので除外: {w} (normalized={w_norm})")
         else:
             found_words.append((w, score))
 
