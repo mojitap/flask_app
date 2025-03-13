@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from flask import Flask, render_template, redirect, url_for, send_from_directory, session, current_app
-from flask_login import LoginManager, login_required, current_user
+from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth1Session
@@ -14,11 +14,14 @@ from routes.main import main
 from routes.auth import auth
 from models.user import User
 
+# ★★★ ここを追加: text_evaluation から呼び出す関数を import
+from models.text_evaluation import load_offensive_dict_with_tokens, load_whitelist
+
 load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder="static")
-    
+
     # Flask設定
     app.secret_key = os.getenv("SECRET_KEY", "dummy_secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///instance/local.db")
@@ -58,8 +61,7 @@ def create_app():
             print(f"❌ {local_path} のURLが設定されていません")
             return
 
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)  # ← フォルダを確実に作成
-
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
         try:
             response = requests.get(url, stream=True)
             if response.status_code == 200:
@@ -78,19 +80,15 @@ def create_app():
         local_path = os.path.join(app.root_path, "data", "offensive_words.json")
         download_file(dropbox_url, local_path)
 
-        # ▼ ダウンロード直後に中身を読み込んで print してみる
+        # ▼ ダウンロード直後の中身を一部デバッグ表示
         if os.path.exists(local_path):
             try:
                 with open(local_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 print("[DEBUG] downloaded offensive_words.json content (first 10):")
-
-                # "offensive"キーがあれば先頭10件だけを表示
                 if "offensive" in data:
                     print(data["offensive"][:10])
-
-                # app.config にセット
-                app.config["OFFENSIVE_WORDS"] = data
+                app.config["OFFENSIVE_WORDS"] = data  # ここは一旦 raw dict
                 print("[DEBUG] app.config['OFFENSIVE_WORDS'] is set successfully!")
             except Exception as e:
                 print(f"[DEBUG] error reading {local_path}: {e}")
@@ -98,7 +96,7 @@ def create_app():
             print(f"[DEBUG] {local_path} not found after download!")
 
     # --- `whitelist.json` のダウンロード ---
-    def download_whitelist():
+    def download_whitelist_json():
         dropbox_url = os.getenv("DROPBOX_WHITELIST_URL")
         local_path = os.path.join(app.root_path, "data", "whitelist.json")
         download_file(dropbox_url, local_path)
@@ -112,14 +110,39 @@ def create_app():
             print("❌ DROPBOX_SURNAMES_URL が設定されていません")
             return
 
-        # 既存の download_file 関数を使ってダウンロード
         download_file(dropbox_url, local_csv_path)
         print("✅ `surnames.csv` をダウンロードしました（ZIP解凍は不要）")
 
     # **アプリ起動時にファイルをダウンロード**
     download_offensive_words()
-    download_whitelist()
+    download_whitelist_json()
     download_surnames()
+
+    # --------------------------------------------------------
+    # ★ ここで text_evaluation.py の関数を使って token 化する
+    # --------------------------------------------------------
+    # 1) OFFENSIVE_WORDS (raw dict) があれば token 化
+    raw_offensive_dict = app.config.get("OFFENSIVE_WORDS", None)
+    if raw_offensive_dict:
+        # 形態素解析済みリストに変換
+        #   まずファイルパスを "data/offensive_words.json" としてロード
+        #   or 直接 raw_offensive_dict を使うために一時ファイルへ書き出す方法などがありますが、
+        #   シンプルにもう一度 load_offensive_dict_with_tokens() を呼ぶ方が確実です。
+        #   → もしくは text_evaluation.py に "dict を token 化する関数" を作ってもOK
+        #   ここではもう一度ファイルを読む例を示します:
+        offensive_list = load_offensive_dict_with_tokens(
+            os.path.join(app.root_path, "data", "offensive_words.json")
+        )
+        app.config["OFFENSIVE_LIST"] = offensive_list
+    else:
+        app.config["OFFENSIVE_LIST"] = []
+
+    # 2) whitelist.json を読み込んで set 化
+    #    さきほどダウンロードした "data/whitelist.json" を読み込む
+    whitelist_set = load_whitelist(
+        os.path.join(app.root_path, "data", "whitelist.json")
+    )
+    app.config["WHITELIST_SET"] = whitelist_set
 
     # OAuth登録
     oauth.register(
