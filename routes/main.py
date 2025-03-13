@@ -31,14 +31,16 @@ def home():
     print("✅ / にアクセスされました")
     return render_template("index.html")
 
+
 @main.route("/quick_check", methods=["POST"])
 @login_required
 def quick_check():
     query = request.form.get("text", "").strip()
 
-    # アプリ起動時に app.config へ格納しておいた offensive_list / whitelist_set を取り出す
     with current_app.app_context():
+        # 形態素解析済みの offensive_list
         offensive_list = current_app.config.get("OFFENSIVE_LIST", [])
+        # whitelist
         global_whitelist = current_app.config.get("WHITELIST_SET", set())
 
     # ▼ デバッグ出力
