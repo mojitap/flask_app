@@ -154,7 +154,7 @@ def evaluate_text(
     # D) offensive_list にヒットした場合
     if found_offensive:
         judgement = "⚠️ 一部の表現が問題の可能性"
-        detail = f" {', '.join(found_offensive)}\n※この判定は約束できるものではありません。専門家にご相談ください。"
+        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
