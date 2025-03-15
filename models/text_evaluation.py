@@ -1,9 +1,3 @@
-下記で平気ですか？
-
-
-
-
-# text_evaluation.py
 import os
 import json
 import re
