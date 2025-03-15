@@ -161,24 +161,21 @@ def evaluate_text(
     # E) 以下、暴力・ハラスメント・脅迫などを substring/fuzzy で判定
     # --------------------------------------------------
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "死んでしまえ"]
-    if any(kw in input_norm for kw in violence_keywords) \
-       or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in violence_keywords):
+    if any(fuzz.partial_ratio(kw, normalized) >= 90 for kw in violence_keywords):
         judgement = "⚠️ 暴力的表現あり"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
     harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
-    if any(kw in input_norm for kw in harassment_kws) \
-       or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in harassment_kws):
+    if any(fuzz.partial_ratio(kw, normalized) >= 90 for kw in harassment_kws):
         judgement = "⚠️ ハラスメント表現あり"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
-    if any(kw in input_norm for kw in threat_kws) \
-       or any(fuzz.partial_ratio(kw, input_norm) >= 60 for kw in threat_kws):
+    if any(fuzz.partial_ratio(kw, normalized) >= 90 for kw in threat_kws):
         judgement = "⚠️ 脅迫表現あり"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
         _eval_cache[text] = (judgement, detail)
