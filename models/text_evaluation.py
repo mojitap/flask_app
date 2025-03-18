@@ -59,11 +59,12 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     with open(json_path, "r", encoding="utf-8") as f:
         raw_data = json.load(f)
 
-    words = raw_data.get("offensive", [])  # "offensive" キーが無ければ空
+    words = raw_data.get("offensive", [])
     results = []
     for w in words:
         w_norm = normalize_text(w)
         w_tokens = tokenize_and_lemmatize(w_norm)
+        print(f"[DEBUG] offensive_word = '{w}', norm='{w_norm}', tokens={w_tokens}")  # ★ 追加
         results.append({
             "original": w,
             "norm": w_norm,
@@ -125,7 +126,9 @@ def evaluate_text(
 
     # A) 入力テキストを形態素解析
     input_norm = normalize_text(text)
+    print(f"[DEBUG] input_norm = '{input_norm}'")
     input_tokens = tokenize_and_lemmatize(input_norm)
+    print(f"[DEBUG] input_tokens = {input_tokens}")
 
     # B) offensive_list 判定
     found_offensive = []
