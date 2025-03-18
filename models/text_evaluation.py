@@ -119,7 +119,7 @@ def token_match(dict_token, input_token, threshold=85):
         return dict_token == input_token
     else:
         return fuzz.partial_ratio(dict_token, input_token) >= threshold
-        
+
 # =========================================
 # E) メインの判定ロジック
 # =========================================
@@ -154,15 +154,14 @@ def evaluate_text(
         dict_norm = item["norm"]
         dict_tokens = item["tokens"]
 
-        # --- ファジーマッチを使った判定へ変更 ---
-        # 「辞書の全トークン」が「入力文のどこかに80%以上部分一致」すればOKとする
+        # 「辞書の全トークン」が「入力文のどこかに閾値85%以上の部分一致」
+        # あるいは2文字以下なら完全一致  => ヒット
         if all(
             any(token_match(dict_token, inp_token) for inp_token in input_tokens)
             for dict_token in dict_tokens
         ):
             # ホワイトリストチェック
             if dict_original in whitelist or dict_norm in whitelist:
-                # print(f"✅ ホワイトリスト除外: {dict_original}")
                 continue
             found_offensive.append(dict_original)
 
@@ -182,8 +181,7 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
-    # E) 以下、暴力・ハラスメント・脅迫などを substring/fuzzy で判定
-    # --------------------------------------------------
+    # E) 暴力・ハラスメント・脅迫 など特定キーワードをチェック
     surnames = load_surnames()
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "死んでしまえ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in violence_keywords):
@@ -192,7 +190,6 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
-    surnames = load_surnames()
     harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in harassment_kws):
         judgement = "⚠️ ハラスメント表現あり"
@@ -200,7 +197,6 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
-    surnames = load_surnames()
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in threat_kws):
         judgement = "⚠️ 脅迫表現あり"
@@ -230,7 +226,7 @@ if __name__ == "__main__":
         "殴ってやる",                 # 暴力表現
         "お前消えろ",                  # ハラスメント
         "お前は詐欺グループとつながってる",  # 個人攻撃 + 犯罪組織
-        "中居ってレイプ魔だろ",       # ←ファジーマッチで "レイプ魔" を検出
+        "中居ってレイプ魔だろ",       # ファジーマッチで "レイプ魔" を検出
         "普通の文章です"               # 問題なし
     ]
     for t in tests:
