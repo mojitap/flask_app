@@ -109,10 +109,17 @@ def detect_personal_accusation(text: str) -> bool:
 # =========================================
 # ファジーマッチ用関数
 # =========================================
-def token_match(token, input_token, threshold=80):
-    """部分一致で閾値を超えていれば True を返す例"""
-    return fuzz.partial_ratio(token, input_token) >= threshold
-    
+def token_match(dict_token, input_token, threshold=85):
+    """
+    短いdict_token(2文字以下)は完全一致でチェック。
+    3文字以上の場合はpartial_ratioで閾値判定。
+    """
+    # もし 2文字以下の単語なら完全一致チェック
+    if len(dict_token) <= 2:
+        return dict_token == input_token
+    else:
+        return fuzz.partial_ratio(dict_token, input_token) >= threshold
+        
 # =========================================
 # E) メインの判定ロジック
 # =========================================
