@@ -82,21 +82,17 @@
             {% endif %}
 
             <!-- トップページに戻る -->
-            <a href="/" style="margin-bottom: 20px; display:inline-block;">
-                トップページに戻る
-            </a>
+            <a href="/" style="margin-bottom: 20px; display:inline-block;">トップページに戻る</a>
 
-            <!-- ◆ 誤判定ボタン ◆ -->
-            {% if result != "問題ありません" %}
-                <p style="margin-top: 20px; font-size: 0.95rem;">
-                  この判定がおかしいと思ったら、下記のボタンからフィードバックをお寄せください
-                </p>
-                <button class="btn-small"
-                        onclick="reportOffensive('{{ query }}', '{{ result }}')"
-                        style="margin-top: 10px;">
-                  誤判定を報告
-                </button>
-            {% endif %}
+            <!-- ◆ 常にボタン表示 ◆ -->
+            <p style="margin-top: 20px; font-size: 0.95rem;">
+              この判定がおかしいと思ったら、下記のボタンからフィードバックをお寄せください
+            </p>
+            <button class="btn-small"
+                    onclick="reportOffensive('{{ query }}', '{{ result }}')"
+                    style="margin-top: 10px;">
+              誤判定を報告
+            </button>
         </div>
     </main>
 
