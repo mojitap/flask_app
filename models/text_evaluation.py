@@ -154,6 +154,14 @@ def evaluate_text(
         dict_norm = item["norm"]
         dict_tokens = item["tokens"]
 
+        matched_all = True
+        for dict_token in dict_tokens:
+            # ファジーマッチするかどうか
+            any_match = any(token_match(dict_token, inp_token) for inp_token in input_tokens)
+            if not any_match:
+                matched_all = False
+                break
+            
         # 「辞書の全トークン」が「入力文のどこかに閾値85%以上の部分一致」
         # あるいは2文字以下なら完全一致  => ヒット
         if all(
@@ -165,6 +173,9 @@ def evaluate_text(
                 continue
             found_offensive.append(dict_original)
 
+            print(f"[DEBUG] Offensive match: dict_word='{dict_original}' "
+              f"dict_tokens={dict_tokens} / input_tokens={input_tokens}")
+            
     # C) 個人攻撃 + 犯罪組織
     surnames = load_surnames()
     if any(sn in text for sn in surnames) and any(neg in text for neg in ["きらい", "嫌い", "憎い"]):
