@@ -28,10 +28,13 @@ _eval_cache = {}
 # =========================================
 def normalize_text(text: str) -> str:
     """
-    全角→半角、カタカナ→ひらがな など簡易正規化
+    全角→半角、カタカナ→ひらがな など簡易正規化しつつ、
+    半角の「ｰ」(U+FF70) を全角の「ー」(U+30FC) に統一する
     """
     # 全角→半角 (数字, 英字, 記号, カナ)
     text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
+    # 半角の長音「ｰ」→ 全角の長音「ー」
+    text = text.replace('ｰ', 'ー') 
     # カタカナ→ひらがな
     text = jaconv.kata2hira(text)
     return text
