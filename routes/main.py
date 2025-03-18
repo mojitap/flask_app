@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, current_app, redirect, ur
 from flask_login import login_required, current_user
 from models.search_history import SearchHistory
 from models.text_evaluation import evaluate_text  # evaluate_text のみインポート
+from models.report_history import ReportHistory   # ← 後で作成するモデルをインポート
 from sqlalchemy import text
 from extensions import db
 
@@ -52,3 +53,24 @@ def quick_check():
     SearchHistory.add_or_increment(query)
 
     return render_template("result.html", query=query, result=judgement, detail=detail)
+
+@main.route("/report_offensive", methods=["POST"])
+def report_offensive():
+    """
+    ユーザーが「誤判定」と思ったら POST するAPI
+    例: { "text": "ありがとう", "judgement": "問題あり" }
+    """
+    data = request.json or {}
+    text_content = data.get("text", "")
+    judgement = data.get("judgement", "")
+
+    # DBへ保存
+    new_report = ReportHistory(
+        text_content=text_content,
+        judgement=judgement,
+        # 必要なら user_id = current_user.id, なども追加
+    )
+    db.session.add(new_report)
+    db.session.commit()
+
+    return jsonify({"status": "OK", "message": "誤判定レポートを受け付けました"}), 200
