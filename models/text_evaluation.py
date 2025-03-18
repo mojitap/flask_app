@@ -28,12 +28,20 @@ _eval_cache = {}
 # =========================================
 def normalize_text(text: str) -> str:
     """
-    全角→半角、カタカナ→ひらがな など簡易正規化しつつ、
-    半角の「ｰ」(U+FF70) を全角の「ー」(U+30FC) に統一する
+    全角カタカナに統一するサンプル例。
+      - h2z(..., kana=True) で半角カナ → 全角カナ
+      - hira2kata() でひらがな → カタカナ
+      - 半角の「ｰ」(U+FF70) は全角「ー」(U+30FC) に統一
     """
-    text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
-    text = text.replace('ｰ', 'ー')  # 半角長音 → 全角長音
-    text = jaconv.kata2hira(text)
+    # 1) 半角カナを全角カナへ
+    text = jaconv.h2z(text, kana=True, digit=False, ascii=False)
+
+    # 2) 半角の長音符号「ｰ」が残っている場合は全角「ー」に統一
+    text = text.replace('ｰ', 'ー')
+
+    # 3) ひらがな → カタカナ
+    text = jaconv.hira2kata(text)
+
     return text
 
 def tokenize_and_lemmatize(text: str):
