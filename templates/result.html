@@ -2,15 +2,16 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mojitap - 検索結果</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f9f9f9;
             padding: 20px;
             margin: 0;
-            text-align: center;  /* 🔹 中央揃え */
+            text-align: center;
         }
         .container {
             max-width: 600px;
@@ -18,32 +19,10 @@
             background: #ffffff;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .result-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .query {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .result-text {
-            font-size: 1.2rem;
-            color: red;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .detail {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* ボタンのデザイン */
+        /* 既存の .btn と .btn-small を合体 or 適宜整理 */
         .btn {
             display: block;
             margin: 10px auto;
@@ -62,14 +41,14 @@
             background-color: #0056b3;
         }
 
-        /* 小さいボタン */
+        /* 小さいボタンを薄い赤に */
         .btn-small {
             display: block;
             margin: 5px auto;
             padding: 8px 16px;
             font-size: 0.9rem;
             color: #fff;
-            background-color: #007BFF;
+            background-color: #ff7f7f; /* 薄い赤 */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -77,10 +56,10 @@
             max-width: 200px;
         }
         .btn-small:hover {
-            background-color: #0056b3;
+            background-color: #ff4f4f; /* 濃いめの赤 */
         }
 
-        /* フッター */
+        /* footer 調整 */
         footer {
             margin-top: 20px;
             font-size: 0.9rem;
@@ -92,22 +71,33 @@
     <header>
         <h1>MojiTap</h1>
     </header>
-    <main>
-        <h3>検索結果</h3>
-        <p>クエリ: {{ query }}</p>
-        <p>{{ result }}</p>
-        {% if detail %}
-            <p>詳細: {{ detail }}</p>
-        {% endif %}
-        <a href="/">トップページに戻る</a>
 
-        <!-- ◆ ここにボタンを追加 ◆ -->
-        {% if result != "問題ありません" %}
-            <button class="btn-small"
-                    onclick="reportOffensive('{{ query }}', '{{ result }}')">
-              誤判定を報告
-            </button>
-        {% endif %}
+    <main>
+        <div class="container">
+            <h3>検索結果</h3>
+            <p>クエリ: {{ query }}</p>
+            <p>{{ result }}</p>
+            {% if detail %}
+                <p>詳細: {{ detail }}</p>
+            {% endif %}
+
+            <!-- トップページに戻る -->
+            <a href="/" style="margin-bottom: 20px; display:inline-block;">
+                トップページに戻る
+            </a>
+
+            <!-- ◆ 誤判定ボタン ◆ -->
+            {% if result != "問題ありません" %}
+                <p style="margin-top: 20px; font-size: 0.95rem;">
+                  この判定がおかしいと思ったら、下記のボタンからフィードバックをお寄せください
+                </p>
+                <button class="btn-small"
+                        onclick="reportOffensive('{{ query }}', '{{ result }}')"
+                        style="margin-top: 10px;">
+                  誤判定を報告
+                </button>
+            {% endif %}
+        </div>
     </main>
 
     <nav>
@@ -119,7 +109,6 @@
         <p>© 2025 MojiTap</p>
     </footer>
 
-    <!-- ▼ JavaScriptをフッターに追加 ▼ -->
     <script>
       function reportOffensive(text, judgement) {
         fetch("/report_offensive", {
