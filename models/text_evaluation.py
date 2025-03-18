@@ -147,13 +147,15 @@ def evaluate_text(
             print("[DEBUG] found_offensive =", found_offensive)
 
     # C) 個人攻撃 + 犯罪組織
-    if detect_personal_accusation(text):
-        judgement = "⚠️ 個人攻撃 + 犯罪組織関連の表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
+    surnames = load_surnames()
+    if any(sn in text for sn in surnames) and any(neg in text for neg in ["きらい", "嫌い", "憎い"]):
+        judgement = "⚠️ 個人攻撃の可能性あり"
+        detail = "※個人名と否定的な表現の組み合わせが検出されました。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
     # D) offensive_list にヒットした場合
+    surnames = load_surnames()
     if found_offensive:
         judgement = "⚠️ 一部の表現が問題の可能性"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
@@ -162,6 +164,7 @@ def evaluate_text(
 
     # E) 以下、暴力・ハラスメント・脅迫などを substring/fuzzy で判定
     # --------------------------------------------------
+    surnames = load_surnames()
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "死んでしまえ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in violence_keywords):
         judgement = "⚠️ 暴力的表現あり"
@@ -169,6 +172,7 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
+    surnames = load_surnames()
     harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in harassment_kws):
         judgement = "⚠️ ハラスメント表現あり"
@@ -176,6 +180,7 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
+    surnames = load_surnames()
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in threat_kws):
         judgement = "⚠️ 脅迫表現あり"
