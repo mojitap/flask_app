@@ -95,11 +95,19 @@
     <main>
         <h3>検索結果</h3>
         <p>クエリ: {{ query }}</p>
-        <p>評価: {{ result }}</p>
+        <p>{{ result }}</p>
         {% if detail %}
             <p>詳細: {{ detail }}</p>
         {% endif %}
         <a href="/">トップページに戻る</a>
+
+        <!-- ◆ ここにボタンを追加 ◆ -->
+        {% if result != "問題ありません" %}
+            <button class="btn-small"
+                    onclick="reportOffensive('{{ query }}', '{{ result }}')">
+              誤判定を報告
+            </button>
+        {% endif %}
     </main>
 
     <nav>
@@ -110,5 +118,25 @@
     <footer>
         <p>© 2025 MojiTap</p>
     </footer>
+
+    <!-- ▼ JavaScriptをフッターに追加 ▼ -->
+    <script>
+      function reportOffensive(text, judgement) {
+        fetch("/report_offensive", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, judgement })
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Report response:", data);
+          alert("誤判定レポートを送信しました: " + data.message);
+        })
+        .catch(err => {
+          console.error("Report error:", err);
+          alert("エラーが発生しました。");
+        });
+      }
+    </script>
 </body>
 </html>
