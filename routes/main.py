@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # 必要なら
 
-from flask import Blueprint, render_template, request, current_app, redirect, url_for, flash
+from flask import Blueprint, render_template, request, current_app, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from models.search_history import SearchHistory
 from models.text_evaluation import evaluate_text  # evaluate_text のみインポート
