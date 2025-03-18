@@ -185,6 +185,10 @@ def create_app():
             return render_template("tokushoho.html", tokushoho_content=tokushoho_content)
         except FileNotFoundError:
             return render_template("tokushoho.html", tokushoho_content="特定商取引法に基づく表記は現在利用できません。")
+ 
+    # === ★ ここでテーブルを自動生成する ===
+    with app.app_context():
+        db.create_all()
 
     return app
 
