@@ -72,7 +72,6 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     for w in words:
         w_norm = normalize_text(w)
         w_tokens = tokenize_and_lemmatize(w_norm)
-        print(f"[DEBUG] offensive_word = '{w}', norm='{w_norm}', tokens={w_tokens}")  # ★ 追加
         results.append({
             "original": w,
             "norm": w_norm,
@@ -108,6 +107,13 @@ def detect_personal_accusation(text: str) -> bool:
     return bool(re.search(pattern, norm))
 
 # =========================================
+# ファジーマッチ用関数
+# =========================================
+def token_match(token, input_token, threshold=80):
+    """部分一致で閾値を超えていれば True を返す例"""
+    return fuzz.partial_ratio(token, input_token) >= threshold
+    
+# =========================================
 # E) メインの判定ロジック
 # =========================================
 _eval_cache = {}
@@ -129,14 +135,10 @@ def evaluate_text(
     # 既に判定済みならキャッシュから返す
     if text in _eval_cache:
         return _eval_cache[text]
-
-    print(f"[DEBUG] evaluate_text called with text='{text}'")
-
+        
     # A) 入力テキストを形態素解析
     input_norm = normalize_text(text)
-    print(f"[DEBUG] input_norm = '{input_norm}'")
     input_tokens = tokenize_and_lemmatize(input_norm)
-    print(f"[DEBUG] input_tokens = {input_tokens}")
 
     # B) offensive_list 判定
     found_offensive = []
@@ -145,14 +147,17 @@ def evaluate_text(
         dict_norm = item["norm"]
         dict_tokens = item["tokens"]
 
-        # tokens ⊆ input_tokens ?
-        if set(dict_tokens).issubset(set(input_tokens)):
+        # --- ファジーマッチを使った判定へ変更 ---
+        # 「辞書の全トークン」が「入力文のどこかに80%以上部分一致」すればOKとする
+        if all(
+            any(token_match(dict_token, inp_token) for inp_token in input_tokens)
+            for dict_token in dict_tokens
+        ):
             # ホワイトリストチェック
             if dict_original in whitelist or dict_norm in whitelist:
-                print(f"✅ ホワイトリスト除外: {dict_original}")
+                # print(f"✅ ホワイトリスト除外: {dict_original}")
                 continue
             found_offensive.append(dict_original)
-            print("[DEBUG] found_offensive =", found_offensive)
 
     # C) 個人攻撃 + 犯罪組織
     surnames = load_surnames()
@@ -204,9 +209,6 @@ def evaluate_text(
 # 5) テスト実行
 # =========================================
 if __name__ == "__main__":
-    from pathlib import Path
-
-    # 例: python text_evaluation.py
     # A) offensive_list
     offensive_list = load_offensive_dict_with_tokens("offensive_words.json")
     # B) whitelist
@@ -221,9 +223,9 @@ if __name__ == "__main__":
         "殴ってやる",                 # 暴力表現
         "お前消えろ",                  # ハラスメント
         "お前は詐欺グループとつながってる",  # 個人攻撃 + 犯罪組織
+        "中居ってレイプ魔だろ",       # ←ファジーマッチで "レイプ魔" を検出
         "普通の文章です"               # 問題なし
     ]
     for t in tests:
         j, d = evaluate_text(t, offensive_list, wl)
         print(f"[TEST] {t} => {j} / {d}")
-
