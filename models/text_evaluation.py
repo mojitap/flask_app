@@ -72,7 +72,6 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     for w in words:
         w_norm = normalize_text(w)
         w_tokens = tokenize_and_lemmatize(w_norm)
-        print(f"[DEBUG] offensive_word = '{w}', norm='{w_norm}', tokens={w_tokens}")  # ★ 追加
         results.append({
             "original": w,
             "norm": w_norm,
