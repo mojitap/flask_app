@@ -72,6 +72,7 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     for w in words:
         w_norm = normalize_text(w)
         w_tokens = tokenize_and_lemmatize(w_norm)
+        print(f"[DEBUG] offensive_word = '{w}', norm='{w_norm}', tokens={w_tokens}")  # ★ 追加
         results.append({
             "original": w,
             "norm": w_norm,
@@ -140,13 +141,26 @@ def evaluate_text(
         dict_norm = item["norm"]
         dict_tokens = item["tokens"]
 
-        # tokens ⊆ input_tokens ?
+        # ======================
+        # (1) 既存の subset チェック
+        # ======================
         if set(dict_tokens).issubset(set(input_tokens)):
             # ホワイトリストチェック
             if dict_original in whitelist or dict_norm in whitelist:
                 print(f"✅ ホワイトリスト除外: {dict_original}")
                 continue
             found_offensive.append(dict_original)
+            print("[DEBUG] found_offensive =", found_offensive)
+
+        # ======================
+        # (2) ファジーマッチの追加
+        # ======================
+        score = fuzz.partial_ratio(dict_norm, input_norm)  # 入力全体 vs. 辞書単語
+        if score >= 85:
+            # もしホワイトリストでなければ
+            if dict_original not in whitelist and dict_norm not in whitelist:
+                found_offensive.append(dict_original)
+                print(f"[DEBUG] partial_ratio={score} => {dict_norm} in {input_norm}")
 
     # C) 個人攻撃 + 犯罪組織
     surnames = load_surnames()
