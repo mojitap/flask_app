@@ -1,4 +1,3 @@
-# text_evaluation.py
 import os
 import json
 import re
@@ -29,12 +28,20 @@ _eval_cache = {}
 # =========================================
 def normalize_text(text: str) -> str:
     """
-    全角→半角、カタカナ→ひらがな など簡易正規化
+    全角カタカナに統一するサンプル例。
+      - h2z(..., kana=True) で半角カナ → 全角カナ
+      - hira2kata() でひらがな → カタカナ
+      - 半角の「ｰ」(U+FF70) は全角「ー」(U+30FC) に統一
     """
-    # 全角→半角 (数字, 英字, 記号, カナ)
-    text = jaconv.z2h(text, kana=True, digit=True, ascii=True)
-    # カタカナ→ひらがな
-    text = jaconv.kata2hira(text)
+    # 1) 半角カナを全角カナへ
+    text = jaconv.h2z(text, kana=True, digit=False, ascii=False)
+
+    # 2) 半角の長音符号「ｰ」が残っている場合は全角「ー」に統一
+    text = text.replace('ｰ', 'ー')
+
+    # 3) ひらがな → カタカナ
+    text = jaconv.hira2kata(text)
+
     return text
 
 def tokenize_and_lemmatize(text: str):
@@ -60,7 +67,7 @@ def load_offensive_dict_with_tokens(json_path="offensive_words.json"):
     with open(json_path, "r", encoding="utf-8") as f:
         raw_data = json.load(f)
 
-    words = raw_data.get("offensive", [])  # "offensive" キーが無ければ空
+    words = raw_data.get("offensive", [])
     results = []
     for w in words:
         w_norm = normalize_text(w)
@@ -121,9 +128,7 @@ def evaluate_text(
     # 既に判定済みならキャッシュから返す
     if text in _eval_cache:
         return _eval_cache[text]
-
-    print(f"[DEBUG] evaluate_text called with text='{text}'")
-
+        
     # A) 入力テキストを形態素解析
     input_norm = normalize_text(text)
     input_tokens = tokenize_and_lemmatize(input_norm)
@@ -142,16 +147,17 @@ def evaluate_text(
                 print(f"✅ ホワイトリスト除外: {dict_original}")
                 continue
             found_offensive.append(dict_original)
-            print("[DEBUG] found_offensive =", found_offensive)
 
     # C) 個人攻撃 + 犯罪組織
-    if detect_personal_accusation(text):
-        judgement = "⚠️ 個人攻撃 + 犯罪組織関連の表現あり"
-        detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
+    surnames = load_surnames()
+    if any(sn in text for sn in surnames) and any(neg in text for neg in ["きらい", "嫌い", "憎い"]):
+        judgement = "⚠️ 個人攻撃の可能性あり"
+        detail = "※個人名と否定的な表現の組み合わせが検出されました。"
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
     # D) offensive_list にヒットした場合
+    surnames = load_surnames()
     if found_offensive:
         judgement = "⚠️ 一部の表現が問題の可能性"
         detail = "※この判定は約束できるものではありません。専門家にご相談ください。"
@@ -160,6 +166,7 @@ def evaluate_text(
 
     # E) 以下、暴力・ハラスメント・脅迫などを substring/fuzzy で判定
     # --------------------------------------------------
+    surnames = load_surnames()
     violence_keywords = ["殺す", "死ね", "殴る", "蹴る", "刺す", "轢く", "焼く", "爆破", "死んでしまえ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in violence_keywords):
         judgement = "⚠️ 暴力的表現あり"
@@ -167,6 +174,7 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
+    surnames = load_surnames()
     harassment_kws = ["お前消えろ", "存在価値ない", "いらない人間", "死んだほうがいい", "社会のゴミ"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in harassment_kws):
         judgement = "⚠️ ハラスメント表現あり"
@@ -174,6 +182,7 @@ def evaluate_text(
         _eval_cache[text] = (judgement, detail)
         return (judgement, detail)
 
+    surnames = load_surnames()
     threat_kws = ["晒す", "特定する", "ぶっ壊す", "復讐する", "燃やす", "呪う", "報復する"]
     if any(fuzz.partial_ratio(kw, input_norm) >= 90 for kw in threat_kws):
         judgement = "⚠️ 脅迫表現あり"
