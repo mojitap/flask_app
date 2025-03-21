@@ -226,8 +226,10 @@
     .support-section {
       border: 1px solid #ddd;
       background-color: #fafafa;
-      padding: 15px;
-      margin: 20px auto;
+      /* 上下の余白を減らしたいなら、paddingを小さめにする */
+      padding: 10px 15px; /* 上下10px, 左右15px */
+      /* 枠全体の外側余白を減らしたい場合、marginを小さく */
+      margin: 10px auto;  /* 上下10px, 左右自動 */
       max-width: 400px;
       border-radius: 5px;
       text-align: center;
@@ -235,7 +237,8 @@
 
     .support-section h4 {
       font-size: 1rem;
-      margin-bottom: 10px;
+      margin-top: 0;      /* 上部余白をゼロに */
+      margin-bottom: 8px; /* 下部余白を少なめに */
       color: #333;
     }
   </style>
