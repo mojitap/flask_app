@@ -5,6 +5,19 @@
   <!-- ▼ スマホ表示対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mojitap</title>
+  <!-- Apple Touch Icon (iOS) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='mojitap180.png') }}">
+  <link rel="apple-touch-icon" sizes="167x167" href="{{ url_for('static', filename='mojitap167.png') }}">
+  
+  <!-- Favicon (一般的なサイズ) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='mojitap192.png') }}">
+  <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='mojitap96.png') }}">
+  <link rel="icon" type="image/png" sizes="72x72" href="{{ url_for('static', filename='mojitap72.png') }}">
+  <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='mojitap48.png') }}">
+  <link rel="icon" type="image/png" sizes="144x144" href="{{ url_for('static', filename='mojitap144.png') }}">
+  
+  <!-- PWA用 manifest (必要であれば) -->
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
   <style>
     /* ======== 全体のベース設定 ======== */
     body {
