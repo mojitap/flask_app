@@ -254,8 +254,8 @@
     {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済み -->
       <form method="POST" action="/quick_check">
-        <textarea name="text" placeholder="ここにテキストを入力してください" class="search-box"></textarea>
-        <textarea name="text" placeholder="（例）:『○○ってブス』『死ね』『消えろ』" class="search-box"></textarea>
+        <textarea name="text" class="search-box" 
+          placeholder="ここにテキストを入力してください&#10;(例):『○○ってブス』『死ね』『消えろ』"></textarea>
         <button type="submit" class="btn-big main-btn">チェックする</button>
       </form>
 
