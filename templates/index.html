@@ -249,6 +249,16 @@
       margin-bottom: 8px; /* 下部余白を少なめに */
       color: #333;
     }
+    /* ▼ double-box 追加ここ！ */
+    .double-box {
+      background-color: #fff;
+      border: 3px double #ccc;
+      padding: 20px;
+      margin: 30px auto;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+    }
   </style>
 </head>
 <body>
@@ -293,11 +303,13 @@
 
     {% if current_user and current_user.is_authenticated %}
       <!-- ログイン済み -->
-      <form method="POST" action="/quick_check">
-        <textarea name="text" class="search-box"
-          placeholder="ここにテキストを入力してください&#10;(例):『死ね』『消えろ』"></textarea>
-        <button type="submit" class="btn-big main-btn">チェックする</button>
-      </form>
+      <div class="double-box">
+        <form method="POST" action="/quick_check">
+          <textarea name="text" class="search-box"
+            placeholder="ここにテキストを入力してください&#10;(例):『死ね』『消えろ』"></textarea>
+          <button type="submit" class="btn-big main-btn">チェックする</button>
+        </form>
+      </div>
 
       <!-- ▼▼ 相談先の情報を「バナー」風にする ▼▼ -->
       <div class="support-section">
@@ -324,8 +336,10 @@
       </div>
       <!-- ▲ 相談先バナーここまで ▲ -->
     
-      <p style="margin-top: 20px;">ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。</p>
-      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small">お問い合わせフォーム</a>
+      <p style="margin: 20px auto 10px auto; text-align: center;">
+        ご意見・ご質問がある場合は、下記のボタンからお問い合わせください。
+      </p>
+      <a href="https://forms.gle/Y3PkCGKdrmzvUdPZ6" target="_blank" class="btn-small" style="margin-bottom: 30px;">お問い合わせフォーム</a>
 
     {% else %}
       <!-- 未ログイン -->
